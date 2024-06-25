@@ -1,0 +1,246 @@
+{
+    "problem_type": "MILP",
+    "description": "In the Vehicle Routing Problem with Time Windows (VRPTW), a logistics company must distribute goods from a single depot to \\param{N} customers using \\param{V} vehicles. Each vehicle has a limited capacity: Vehicle \\param{v} has a capacity of \\param{Capacity}_v units. Each customer has an associated demand that must be met within their specific time windows.\n\nThe demands for the \\param{N} customers are as follows:\nCustomer \\param{c} requires \\param{Demand}_c units of goods and must be served between \\param{StartTime}_c and \\param{EndTime}_c.\n\nThe locations (latitude and longitude) of the customers are as follows:\nCustomer \\param{c}: Latitude \\param{Latitude}_c, Longitude \\param{Longitude}_c.\n\nEach customer also has a specific service time:\nCustomer \\param{c} requires \\param{ServiceTime}_c minutes for service.\n\nThe goal is to determine the optimal routing of the vehicles such that all customer demands are met within their respective time windows, the total distance traveled is minimized, and the capacity constraints of each vehicle are not exceeded.",
+    "problem_info": "A logistics company must distribute goods from a single depot to customers using vehicles with limited capacity, meeting customer demands within specific time windows, minimizing the total distance traveled.",
+    "input_format": "Number of customers, number of vehicles, vehicle capacity for each vehicle, demand of each customer, start time of each customer, end time of each customer, latitude and longitude of each customer, service time of each customer",
+    "output_info": "Optimal routing of the vehicles, including the sequence of customer visits for each vehicle.",
+    "output_format": "Optimal routes for each vehicle, including the sequence of customers visited and the arrival and departure times at each customer.",
+    "parameters": [
+        {
+            "definition": "Number of customers",
+            "symbol": "{N}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of vehicles",
+            "symbol": "{V}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Capacity of vehicle v",
+            "symbol": "{Capacity}_v",
+            "value": "",
+            "shape": [
+                "V"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Demand of customer c",
+            "symbol": "{Demand}_c",
+            "value": "",
+            "shape": [
+                "N"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Start time of customer c",
+            "symbol": "{StartTime}_c",
+            "value": "",
+            "shape": [
+                "N"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "End time of customer c",
+            "symbol": "{EndTime}_c",
+            "value": "",
+            "shape": [
+                "N"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of customer c",
+            "symbol": "{Latitude}_c",
+            "value": "",
+            "shape": [
+                "N"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of customer c",
+            "symbol": "{Longitude}_c",
+            "value": "",
+            "shape": [
+                "N"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Service time of customer c",
+            "symbol": "{ServiceTime}_c",
+            "value": "",
+            "shape": [
+                "N"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Whether vehicle v visits customer c",
+            "symbol": "{Visit}_vc",
+            "type": "binary",
+            "shape": [
+                "V",
+                "N"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Arrival time of vehicle v at customer c",
+            "symbol": "{ArrivalTime}_vc",
+            "type": "continuous",
+            "shape": [
+                "V",
+                "N"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Departure time of vehicle v from customer c",
+            "symbol": "{DepartureTime}_vc",
+            "type": "continuous",
+            "shape": [
+                "V",
+                "N"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "data": [
+        {
+            "{N}": 6
+        },
+        {
+            "{V}": 3
+        },
+        {
+            "{Capacity}_v": [
+                50,
+                60,
+                55
+            ]
+        },
+        {
+            "{Demand}_c": [
+                10,
+                15,
+                20,
+                25,
+                30,
+                35
+            ]
+        },
+        {
+            "{StartTime}_c": [
+                8.0,
+                9.0,
+                10.0,
+                11.0,
+                12.0,
+                13.0
+            ]
+        },
+        {
+            "{EndTime}_c": [
+                10.0,
+                11.0,
+                12.0,
+                13.0,
+                14.0,
+                15.0
+            ]
+        },
+        {
+            "{Latitude}_c": [
+                40.712776,
+                40.73061,
+                40.749825,
+                40.758896,
+                40.748817,
+                40.741895
+            ]
+        },
+        {
+            "{Longitude}_c": [
+                -74.005974,
+                -73.935242,
+                -73.987963,
+                -73.98513,
+                -73.985428,
+                -73.989308
+            ]
+        },
+        {
+            "{ServiceTime}_c": [
+                0.25,
+                0.33,
+                0.42,
+                0.5,
+                0.58,
+                0.67
+            ]
+        }
+    ],
+    "path": "data/problem_2",
+    "background": "A logistics company aims to distribute goods from a single depot to multiple customers using a fleet of vehicles with limited capacity. Each customer has a demand that must be met within a specific time window, and the goal is to find the optimal routing of the vehicles to minimize total travel distance while fulfilling all demands within the time constraints and respecting vehicle capacity limitations.",
+    "objective": [
+        {
+            "description": "Minimize the total travel distance of all vehicles",
+            "status": "not_formulated"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "The visit decision for each vehicle and customer is binary (either a vehicle visits a customer or not)",
+            "formulation": "\\textup{Visit}_{vc} \\in \\{0, 1\\} \\quad \\forall \\ v \\in \\{1, \\dots, \\textup{V}\\} \\ \\text{and} \\ c \\in \\{1, \\dots, \\textup{N}\\}",
+            "reasoning": "This constraint ensures that the decision of whether a vehicle visits a customer is a binary value, either 0 or 1. It is based on the variable definition of \\textup{Visit}_vc.",
+            "status": "formulated",
+            "relevant_section": "Each vehicle has a limited capacity: Vehicle \\\\param{v} has a capacity of \\\\param{Capacity}_v units. Each customer has an associated demand that must be met within their specific time windows."
+        },
+        {
+            "description": "The arrival time of a vehicle at a customer cannot be earlier than the customer's start time",
+            "formulation": "\\textup{ArrivalTime}_{vc} \\ge \\textup{StartTime}_c \\quad \\forall \\ v \\in \\{1, \\dots, \\textup{V}\\} \\ \\text{and} \\ c \\in \\{1, \\dots, \\textup{N}\\}",
+            "reasoning": "This constraint enforces that the vehicle must arrive at a customer no earlier than the customer's specified start time. It is based on the variable definitions of \\textup{ArrivalTime}_vc and \\textup{StartTime}_c.",
+            "status": "formulated",
+            "relevant_section": "Each customer has an associated demand that must be met within their specific time windows."
+        },
+        {
+            "description": "The arrival time of a vehicle at a customer cannot be later than the customer's end time",
+            "formulation": "\\textup{ArrivalTime}_{vc} \\le \\textup{EndTime}_c \\quad \\forall \\ v \\in \\{1, \\dots, \\textup{V}\\} \\ \\text{and} \\ c \\in \\{1, \\dots, \\textup{N}\\}",
+            "reasoning": "This constraint ensures that the vehicle must arrive at a customer before the customer's specified end time. It is based on the variable definitions of \\textup{ArrivalTime}_vc and \\textup{EndTime}_c.",
+            "status": "formulated",
+            "relevant_section": "Each customer has an associated demand that must be met within their specific time windows."
+        },
+        {
+            "description": "The departure time of a vehicle from a customer is equal to its arrival time plus the service time at that customer",
+            "formulation": "\\textup{DepartureTime}_{vc} = \\textup{ArrivalTime}_{vc} + \\textup{ServiceTime}_c \\quad \\forall \\ v \\in \\{1, \\dots, \\textup{V}\\} \\ \\text{and} \\ c \\in \\{1, \\dots, \\textup{N}\\}",
+            "reasoning": "This constraint calculates the departure time from a customer based on the arrival time and the service time required at the customer. It is based on the variable definitions of \\textup{ArrivalTime}_vc, \\textup{DepartureTime}_vc, and \\textup{ServiceTime}_c.",
+            "status": "formulated",
+            "relevant_section": "Each customer also has a specific service time: Customer \\\\param{c} requires \\\\param{ServiceTime}_c minutes for service."
+        },
+        {
+            "description": "A customer can only be visited by at most one vehicle",
+            "formulation": "\\sum_{v=1}^{\\textup{V}} \\textup{Visit}_{vc} \\le 1 \\quad \\forall \\ c \\in \\{1, \\dots, \\textup{N}\\}",
+            "reasoning": "This constraint ensures that no customer is visited by more than one vehicle. It is based on the variable definition of \\textup{Visit}_vc.",
+            "status": "formulated",
+            "relevant_section": "A logistics company must distribute goods from a single depot to \\\\param{N} customers using \\\\param{V} vehicles."
+        },
+        {
+            "description": "The total demand served by a vehicle cannot exceed its capacity",
+            "formulation": "\\sum_{c=1}^{\\textup{N}} \\textup{Visit}_{vc} * \\textup{Demand}_c \\le \\textup{Capacity}_v \\quad \\forall \\ v \\in \\{1, \\dots, \\textup{V}\\}",
+            "reasoning": "This constraint ensures that the total demand served by each vehicle does not exceed its maximum capacity. It is based on the variable definition of \\textup{Visit}_vc and the parameters \\textup{Demand}_c and \\textup{Capacity}_v.",
+            "status": "formulated",
+            "relevant_section": "Each vehicle has a limited capacity: Vehicle \\\\param{v} has a capacity of \\\\param{Capacity}_v units. Each customer has an associated demand that must be met within their specific time windows."
+        }
+    ]
+}
