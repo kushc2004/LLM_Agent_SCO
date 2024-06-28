@@ -1,0 +1,145 @@
+{
+    "problem_type": "LP",
+    "description": "A firm produces n different goods using m different raw materials. Let bi, i = 1, ..., m be the available amount of the i-th raw material. The j-th good, j=1, ..., n requires ai,j units of the i-th material and results in a revenue of cj per unit produced. The firm faces the problem of deciding how much of each good to produce in order to maximize its total revenue.Formulate the problem as an LP and write a Gurobi code to solve it.",
+    "problem_info": "A firm needs to decide how much of each good to produce to maximize its total revenue, given limited resources.",
+    "input_format": "A list of available amounts of raw materials bi for i = 1, ..., m; a matrix of material requirements ai,j for i = 1, ..., m, j = 1, ..., n; and a vector of revenue per unit cj for j = 1, ..., n.",
+    "output_info": "Optimal production quantity for each good.",
+    "output_format": "Optimal production quantity of each good j = 1, ..., n.",
+    "parameters": [
+        {
+            "definition": "Number of goods",
+            "symbol": "{N}",
+            "value": null,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of raw materials",
+            "symbol": "{M}",
+            "value": null,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Available amount of raw material i",
+            "symbol": "{AvailableAmount}_i",
+            "value": null,
+            "shape": [
+                "M"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Amount of raw material i required per unit of good j",
+            "symbol": "{Requirement}_ij",
+            "value": null,
+            "shape": [
+                "M",
+                "N"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Revenue per unit of good j",
+            "symbol": "{Revenue}_j",
+            "value": null,
+            "shape": [
+                "N"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Quantity of good j to produce",
+            "symbol": "{ProductionQuantity}_j",
+            "type": "continuous",
+            "shape": [
+                "N"
+            ],
+            "status": "coded",
+            "code": "ProductionQuantity = model.addVars(N, name=\"ProductionQuantity\", vtype=gp.GRB.CONTINUOUS)"
+        },
+        {
+            "definition": "The new quantity of good j to produce",
+            "symbol": "{NewProductionQuantity}_j",
+            "shape": [
+                "N"
+            ],
+            "status": "coded",
+            "code": "NewProductionQuantity = model.addVars(N, name=\"NewProductionQuantity\")"
+        },
+        {
+            "definition": "Total amount of raw material i consumed by all goods",
+            "symbol": "{TotalRawMaterialConsumed}_i",
+            "shape": [
+                "M"
+            ],
+            "status": "coded",
+            "code": "TotalRawMaterialConsumed = model.addVars(M, vtype=gp.GRB.CONTINUOUS, name=\"TotalRawMaterialConsumed\")"
+        }
+    ],
+    "background": "A firm has a limited supply of raw materials and aims to maximize its revenue by deciding the production quantities of various goods. Each good requires specific quantities of raw materials, and each good yields a specific revenue per unit.",
+    "objective": [
+        {
+            "description": "Maximize the total revenue generated from producing all goods",
+            "status": "coded",
+            "formulation": "\\max \\quad \\sum_{j=1}^{\\textup{N}} \\textup{Revenue}_j \\cdot \\textup{ProductionQuantity}_j",
+            "related_variables": [
+                "ProductionQuantity",
+                "{TotalRawMaterialConsumed}_i"
+            ],
+            "related_parameters": [
+                "N",
+                "Revenue"
+            ],
+            "code": "obj = gp.quicksum(Revenue[j] * ProductionQuantity[j] for j in range(N))\nmodel.setObjective(obj, gp.GRB.MAXIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "The amount of the i-th raw material used is less than or equal to the available amount for all i = 1, ..., m",
+            "formulation": "\\sum_{j=1}^{n} \\textup{TotalRawMaterialConsumed}_{i,j} \\textup{ProductionQuantity}_j \\leq \\textup{AvailableAmount}_i \\quad \\forall i = 1, \\dots, m",
+            "reasoning": "This constraint ensures that the total amount of the i-th raw material used in production does not exceed the available amount.",
+            "status": "coded",
+            "relevant_section": "Let bi, i = 1, ..., m be the available amount of the i-th raw material. The j-th good, j=1, ..., n requires ai,j units of the i-th material",
+            "related_variables": [
+                "TotalRawMaterialConsumed",
+                "ProductionQuantity"
+            ],
+            "related_parameters": [
+                "AvailableAmount"
+            ],
+            "code": "for i in range(m):\n    model.addConstr(gp.quicksum(TotalRawMaterialConsumed[i, j] * ProductionQuantity[j] for j in range(n)) <= AvailableAmount[i], name=f\"raw_material_limit_{i}\")"
+        },
+        {
+            "description": "Production quantity of each good is non-negative",
+            "formulation": "\\textup{ProductionQuantity}_j \\geq 0 \\quad \\forall j = 1, \\dots, n",
+            "reasoning": "This constraint ensures that the firm cannot produce a negative quantity of any good.",
+            "status": "coded",
+            "relevant_section": "The firm faces the problem of deciding how much of each good to produce",
+            "related_variables": [
+                "ProductionQuantity"
+            ],
+            "related_parameters": [],
+            "code": "for j in range(n):\n    model.addConstr(ProductionQuantity[j] >= 0, name=\"non_negative_production\")"
+        },
+        {
+            "description": "The sum of the production quantity of each good multiplied by its respective requirement of raw material i should not exceed the available amount of raw material i",
+            "formulation": "\\sum_{j=1}^{\\textup{N}} \\textup{Requirement}_{ij} \\cdot \\textup{ProductionQuantity}_j \\leq \\textup{AvailableAmount}_i \\ \\forall i \\in \\{1, 2, ..., \\textup{M}\\}",
+            "status": "coded",
+            "related_variables": [
+                "ProductionQuantity"
+            ],
+            "related_parameters": [
+                "N",
+                "Requirement",
+                "AvailableAmount",
+                "M"
+            ],
+            "code": "for i in range(M):\n    model.addConstr(gp.quicksum(Requirement[i, j] * ProductionQuantity[j] for j in range(N)) <= AvailableAmount[i], name=f\"raw_material_constraint_{i}\")"
+        }
+    ],
+    "log_folder": "data/problem1/log",
+    "solution_status": null
+}

@@ -1,0 +1,93 @@
+{
+    "problem_type": "LP",
+    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only 2 manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The latitude and longitude of each location would be given. The cost of transportation per km is Rs. 6. The latitude and longitude are specified below.\\nBhiwandi-19.333111,73.111504\\nBengaluru-12.976750,77.575279\\nDelhi-28.704060,77.102493\\nKolkata-22.565571,88.370209\\nSurat-21.203510,72.839233\\nPune-18.520760,73.855408\\nJaipur-26.920980,75.794220\\nBhopal-23.252319,77.431091\\nAgra-27.167641,78.035873\\nLudhiana-30.913170,75.849541\\nHyderabad-17.361719,78.475166\\nIndore-22.718670,75.855713\\nVarodara-22.420550,73.165690\\nTirunelveli-8.7150,77.7656\\nAhemdabad-23.0225,72.5714\\nChennai-13.0843,80.2705",
+    "problem_info": "A protein powder supply chain network.",
+    "input_format": "Latitude and longitude of each location, cost of transportation per km.",
+    "output_info": "Selected Contract Manufacturers, allocation of Manufacturers to Warehouses, and allocation of Warehouses to Distributors.",
+    "output_format": "List of selected Contract Manufacturers, and allocation of Manufacturers to Warehouses, and allocation of Warehouses to Distributors.",
+    "parameters": [
+        {
+            "definition": "Latitude of Contract Manufacturer i",
+            "symbol": "{LatitudeCM}_i",
+            "value": 23.0225,
+            "shape": ["NumCM"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Contract Manufacturer i",
+            "symbol": "{LongitudeCM}_i",
+            "value": 72.5714,
+            "shape": ["NumCM"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Warehouse j",
+            "symbol": "{LatitudeWarehouse}_j",
+            "value": 19.333111,
+            "shape": ["NumWarehouse"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Warehouse j",
+            "symbol": "{LongitudeWarehouse}_j",
+            "value": 73.111504,
+            "shape": ["NumWarehouse"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Distributor k",
+            "symbol": "{LatitudeDistributor}_k",
+            "value": 27.167641,
+            "shape": ["NumDistributor"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Distributor k",
+            "symbol": "{LongitudeDistributor}_k",
+            "value": 78.035873,
+            "shape": ["NumDistributor"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation cost per km",
+            "symbol": "{TransportationCost}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Is Contract Manufacturer i selected?",
+            "symbol": "{IsSelectedCM}_i",
+            "type": "binary",
+            "shape": ["NumCM"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Is Manufacturer i assigned to Warehouse j?",
+            "symbol": "{IsAssignedCMWarehouse}_ijk",
+            "type": "binary",
+            "shape": ["NumCM", "NumWarehouse"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Is Warehouse j assigned to Distributor k?",
+            "symbol": "{IsAssignedWarehouseDistributor}_jk",
+            "type": "binary",
+            "shape": ["NumWarehouse", "NumDistributor"],
+            "status": "formulated"
+        }
+    ],
+    "data": [
+        {
+            "{LatitudeCM}_i": [23.0225, 13.0843, 22.565571, 18.520760, 23.252319],
+            "{LongitudeCM}_i": [72.5714, 80.2705, 88.370209, 73.855408, 77.431091],
+            "{LatitudeWarehouse}_j": [19.333111, 12.976750, 28.704060],
+            "{LongitudeWarehouse}_j": [73.111504, 77.575279, 77.102493],
+            "{LatitudeDistributor}_k": [27.167641, 30.913170, 17.361719, 22.718670, 26.920980, 21.203510, 22.420550, 8.7150],
+            "{LongitudeDistributor}_k": [78.035873, 75.849541, 78.475166, 75.855713, 75.794220, 72.839233, 73.165690, 77.7656],
+            "{TransportationCost}": 6
+        }
+    ]
+}

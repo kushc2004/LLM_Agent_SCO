@@ -1,0 +1,17 @@
+A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only 2 manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The latitude and longitude of each location would be given. The cost of transportation per km is Rs. 6. The latitude and longitude are specified below.
+Bhiwandi-19.333111,73.111504
+Bengaluru-12.976750,77.575279
+Delhi-28.704060,77.102493
+Kolkata-22.565571,88.370209
+Surat-21.203510,72.839233
+Pune-18.520760,73.855408
+Jaipur-26.920980,75.794220
+Bhopal-23.252319,77.431091
+Agra-27.167641,78.035873
+Ludhiana-30.913170,75.849541
+Hyderabad-17.361719,78.475166
+Indore-22.718670,75.855713
+Varodara-22.420550,73.165690
+Tirunelveli-8.7150,77.7656
+Ahemdabad-23.0225,72.5714
+Chennai-13.0843,80.2705

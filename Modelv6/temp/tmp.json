@@ -1,0 +1,47 @@
+{
+    "problem_type": "LP",
+    "problem_info": "A firm produces goods using raw materials with limited availability.",
+    "input_format": "Number of goods, number of raw materials, available amount of each raw material, units of each raw material required per unit of each good, revenue per unit of each good.",
+    "output_info": "Optimal production quantity for each good to maximize revenue.",
+    "output_format": "Production quantity for each good.",
+    "parameters": [
+        {
+            "definition": "Number of goods",
+            "symbol": "{N}",
+            "value": 0.0,
+            "shape": []
+        },
+        {
+            "definition": "Number of raw materials",
+            "symbol": "{M}",
+            "value": 0.0,
+            "shape": []
+        },
+        {
+            "definition": "Available amount of raw material i",
+            "symbol": "{AvailableAmount}_i",
+            "value": 0.0,
+            "shape": ["M"]
+        },
+        {
+            "definition": "Units of raw material i required per unit of good j",
+            "symbol": "{Requirement}_ij",
+            "value": 0.0,
+            "shape": ["M", "N"]
+        },
+        {
+            "definition": "Revenue per unit of good j",
+            "symbol": "{Revenue}_j",
+            "value": 0.0,
+            "shape": ["N"]
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Production quantity of good j",
+            "symbol": "{ProductionQuantity}_j",
+            "type": "continuous",
+            "shape": ["N"]
+        }
+    ]
+}
