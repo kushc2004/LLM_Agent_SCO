@@ -1,0 +1,12 @@
+[
+    {
+        "agent_name": "Formulator",
+        "task": "Define the objective function, variables and constraints for the optimization problem.",
+        "result": "Formulation Done! Now we can write the code."
+    },
+    {
+        "agent_name": "Programmer",
+        "task": "Write the code for the optimization problem based on the mathematical formulation.",
+        "result": "Coding Done! Now we can evaluate the code!"
+    }
+]

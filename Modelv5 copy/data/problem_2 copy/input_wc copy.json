@@ -1,0 +1,269 @@
+{
+    "problem_type": "MILP",
+    "description": "In the Vehicle Routing Problem with Time Windows (VRPTW), a logistics company must distribute goods from a single depot to six customers using three vehicles. Each vehicle has a limited capacity: Vehicle 1 has a capacity of 50 units, Vehicle 2 has a capacity of 60 units, and Vehicle 3 has a capacity of 55 units. Each customer has an associated demand that must be met within their specific time windows.\n\nThe demands for the six customers are as follows:\nCustomer 1 requires 10 units of goods and must be served between 8:00 AM and 10:00 AM.\nCustomer 2 requires 15 units of goods and must be served between 9:00 AM and 11:00 AM.\nCustomer 3 requires 20 units of goods and must be served between 10:00 AM and 12:00 PM.\nCustomer 4 requires 25 units of goods and must be served between 11:00 AM and 1:00 PM.\nCustomer 5 requires 30 units of goods and must be served between 12:00 PM and 2:00 PM.\nCustomer 6 requires 35 units of goods and must be served between 1:00 PM and 3:00 PM.\n\nThe locations (latitude and longitude) of the customers are as follows:\nCustomer 1: Latitude 40.712776, Longitude -74.005974\nCustomer 2: Latitude 40.730610, Longitude -73.935242\nCustomer 3: Latitude 40.749825, Longitude -73.987963\nCustomer 4: Latitude 40.758896, Longitude -73.985130\nCustomer 5: Latitude 40.748817, Longitude -73.985428\nCustomer 6: Latitude 40.741895, Longitude -73.989308\n\nEach customer also has a specific service time:\nCustomer 1 requires 15 minutes for service.\nCustomer 2 requires 20 minutes for service.\nCustomer 3 requires 25 minutes for service.\nCustomer 4 requires 30 minutes for service.\nCustomer 5 requires 35 minutes for service.\nCustomer 6 requires 40 minutes for service.\n\nThe goal is to determine the optimal routing of the vehicles such that all customer demands are met within their respective time windows, the total distance traveled is minimized, and the capacity constraints of each vehicle are not exceeded.",
+    "problem_info": "A logistics company needs to deliver goods to customers using vehicles with limited capacity and respecting time windows.",
+    "input_format": "The input data includes the vehicle capacities, customer demands, time windows, service times, and the locations (latitude and longitude) of the depot and each customer.",
+    "output_info": "The optimal routing plan for each vehicle, including the sequence of customers to visit and the time they are served.",
+    "output_format": "The output consists of the optimal route for each vehicle, including the sequence of customers visited and the arrival and departure times at each customer.",
+    "parameters": [
+        {
+            "definition": "Number of vehicles",
+            "symbol": "{V}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Capacity of vehicle v",
+            "symbol": "{Capacity}_v",
+            "value": "",
+            "shape": [
+                "V"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of customers",
+            "symbol": "{C}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Demand of customer c",
+            "symbol": "{Demand}_c",
+            "value": "",
+            "shape": [
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Earliest time window for customer c",
+            "symbol": "{EarliestTimeWindow}_c",
+            "value": "",
+            "shape": [
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latest time window for customer c",
+            "symbol": "{LatestTimeWindow}_c",
+            "value": "",
+            "shape": [
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Service time for customer c",
+            "symbol": "{ServiceTime}_c",
+            "value": "",
+            "shape": [
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of customer c",
+            "symbol": "{LatitudeCustomer}_c",
+            "value": "",
+            "shape": [
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of customer c",
+            "symbol": "{LongitudeCustomer}_c",
+            "value": "",
+            "shape": [
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between customer c1 and c2",
+            "symbol": "{Distance}_c1c2",
+            "value": "",
+            "shape": [
+                "C",
+                "C"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Binary variable indicating whether vehicle v visits customer c",
+            "symbol": "{Visit}_vc",
+            "type": "binary",
+            "shape": [
+                "V",
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Arrival time of vehicle v at customer c",
+            "symbol": "{ArrivalTime}_vc",
+            "type": "continuous",
+            "shape": [
+                "V",
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Order of visiting customer c by vehicle v",
+            "symbol": "{Order}_vc",
+            "type": "integer",
+            "shape": [
+                "V",
+                "C"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "data": [
+        {
+            "{V}": 3
+        },
+        {
+            "{Capacity}_v": [
+                50,
+                60,
+                55
+            ]
+        },
+        {
+            "{C}": 6
+        },
+        {
+            "{Demand}_c": [
+                10,
+                15,
+                20,
+                25,
+                30,
+                35
+            ]
+        },
+        {
+            "{EarliestTimeWindow}_c": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+            ]
+        },
+        {
+            "{LatestTimeWindow}_c": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+            ]
+        },
+        {
+            "{ServiceTime}_c": [
+                0.25,
+                0.33,
+                0.42,
+                0.5,
+                0.58,
+                0.67
+            ]
+        },
+        {
+            "{LatitudeCustomer}_c": [
+                40.712776,
+                40.73061,
+                40.749825,
+                40.758896,
+                40.748817,
+                40.741895
+            ]
+        },
+        {
+            "{LongitudeCustomer}_c": [
+                -74.005974,
+                -73.935242,
+                -73.987963,
+                -73.98513,
+                -73.985428,
+                -73.989308
+            ]
+        }
+    ],
+    "background": "A logistics company needs to distribute goods from a single depot to six customers using three vehicles with limited capacities. Each customer has a specific demand and time window for delivery. The objective is to find the optimal vehicle routes that minimize total distance traveled while satisfying all demands within time windows and respecting vehicle capacities.",
+    "objective": [
+        {
+            "description": "Minimize the total distance traveled by all vehicles.",
+            "status": "not_formulated"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "The total demand served by each vehicle must be less than or equal to its capacity.",
+            "formulation": "\\sum_{j \\in \\textup{CustomersServedByVehicle}_{k}} \\textup{Demand}_{j} \\leq \\textup{Capacity}_{k}, \\forall k \\in \\textup{Vehicles}",
+            "reasoning": "This constraint ensures that the total demand assigned to each vehicle does not exceed its capacity.",
+            "status": "formulated",
+            "relevant_section": "Each vehicle has a limited capacity: Vehicle 1 has a capacity of 50 units, Vehicle 2 has a capacity of 60 units, and Vehicle 3 has a capacity of 55 units. Each customer has an associated demand that must be met within their specific time windows."
+        },
+        {
+            "description": "Each customer must be visited exactly once.",
+            "formulation": "\\sum_{k \\in \\textup{Vehicles}} \\textup{Visit}_{jk} = 1, \\forall j \\in \\textup{Customers}",
+            "reasoning": "This constraint ensures that each customer is visited exactly once by any of the available vehicles.",
+            "status": "formulated",
+            "relevant_section": "The goal is to determine the optimal routing of the vehicles such that all customer demands are met within their respective time windows, the total distance traveled is minimized, and the capacity constraints of each vehicle are not exceeded."
+        },
+        {
+            "description": "Each customer must be visited within their specified time window.",
+            "formulation": "\\textup{ArrivalTime}_{j} \\geq \\textup{EarliestTimeWindow}_{j}, \\forall j \\in \\textup{Customers}",
+            "reasoning": "This constraint ensures that the vehicle arrives at each customer within their earliest time window.",
+            "status": "formulated",
+            "relevant_section": "Each customer has an associated demand that must be met within their specific time windows."
+        },
+        {
+            "description": "The total service time at each customer plus the travel time to the next customer must be within the customer's time window.",
+            "formulation": "\\textup{ArrivalTime}_{j} + \\textup{ServiceTime}_{j} + \\textup{TravelTime}_{j, j'} \\leq \\textup{LatestTimeWindow}_{j'}, \\forall j, j' \\in \\textup{Customers}, j \\neq j'",
+            "reasoning": "This constraint ensures that the vehicle leaves each customer within their latest time window considering the service time and travel time to the next customer.",
+            "status": "formulated",
+            "relevant_section": "Each customer has an associated demand that must be met within their specific time windows.  Each customer also has a specific service time: Customer 1 requires 15 minutes for service. Customer 2 requires 20 minutes for service. Customer 3 requires 25 minutes for service. Customer 4 requires 30 minutes for service. Customer 5 requires 35 minutes for service. Customer 6 requires 40 minutes for service."
+        },
+        {
+            "description": "The total time spent by each vehicle must be less than or equal to the maximum allowed time.",
+            "formulation": "not_formulated",
+            "reasoning": "The problem description does not specify a maximum allowed time for each vehicle. This is an additional constraint that needs to be defined.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        },
+        {
+            "description": "The number of vehicles used must be less than or equal to the total available vehicles.",
+            "formulation": "\\sum_{k \\in \\textup{Vehicles}} \\textup{Used}_{k} \\leq \\textup{AvailableVehicles}",
+            "reasoning": "This constraint ensures that the number of vehicles used does not exceed the total number of available vehicles.",
+            "status": "formulated",
+            "relevant_section": "A logistics company must distribute goods from a single depot to six customers using three vehicles."
+        },
+        {
+            "description": "The number of vehicles used is non-negative.",
+            "formulation": "\\textup{Used}_{k} \\geq 0, \\forall k \\in \\textup{Vehicles}",
+            "reasoning": "This constraint ensures that the number of vehicles used is non-negative. It is a trivial constraint as the number of vehicles can't be negative.",
+            "status": "formulated",
+            "relevant_section": "A logistics company must distribute goods from a single depot to six customers using three vehicles."
+        },
+        {
+            "description": "The number of trips each vehicle makes is non-negative.",
+            "formulation": "not_formulated",
+            "reasoning": "The problem description does not explicitly mention trips made by each vehicle. This is an additional constraint that needs to be defined.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        }
+    ]
+}

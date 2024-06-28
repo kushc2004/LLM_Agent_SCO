@@ -1,0 +1,13 @@
+{
+    "{MintUsed_D1}": 10,
+    "{ActiveIngredientUsed_D1}": 20,
+    "{MintyFoamMade_D1}": 25,
+    "{MintUsed_D2}": 12,
+    "{ActiveIngredientUsed_D2}": 15,
+    "{MintyFoamMade_D2}": 18,
+    "{BlackTarMade_D1}": 5,
+    "{BlackTarMade_D2}": 3,
+    "{MintAvailable}": 120,
+    "{ActiveIngredientAvailable}": 100,
+    "{BlackTarLimit}": 50
+}
