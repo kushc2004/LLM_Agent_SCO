@@ -1,0 +1,237 @@
+{
+    "problem_type": "MILP",
+    "description": "A science show preforms two different demonstrations, demonstration 1 and demonstration 2. In demonstration 1, \\param{MintUsed}_1 units of mint and \\param{ActiveIngredientUsed}_1 units of the active ingredient is used to make \\param{MintyFoamProduced}_1 units of minty foam. In demonstration 2, \\param{MintUsed}_2 units of mint and \\param{ActiveIngredientUsed}_2 units of the active ingredient is used to make \\param{MintyFoamProduced}_2 units of minty foam. In addition, demonstration 1 creates \\param{BlackTarProduced}_1 units of black tar while demonstration 2 creates \\param{BlackTarProduced}_2 units of black tar. The show has available \\param{MintAvailable} units of mint and \\param{ActiveIngredientAvailable} units of active ingredients. If at most \\param{BlackTarLimit} units of black tar can be produced, how many of each demonstration should be done to maximize the amount of minty foam produced?",
+    "problem_info": "A science show needs to decide how many of each demonstration to perform to maximize the amount of minty foam produced.",
+    "input_format": "Units of mint used in demonstration 1, units of active ingredient used in demonstration 1, units of minty foam produced by demonstration 1, units of black tar produced by demonstration 1, units of mint used in demonstration 2, units of active ingredient used in demonstration 2, units of minty foam produced by demonstration 2, units of black tar produced by demonstration 2, total available units of mint, total available units of active ingredient, maximum allowed units of black tar.",
+    "output_info": "Number of each demonstration to perform to maximize minty foam production.",
+    "output_format": "Optimal number of times each demonstration should be performed.",
+    "parameters": [
+        {
+            "definition": "Units of mint used in demonstration 1",
+            "symbol": "{MintUsed}_1",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Units of active ingredient used in demonstration 1",
+            "symbol": "{ActiveIngredientUsed}_1",
+            "value": 20,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Units of minty foam produced by demonstration 1",
+            "symbol": "{MintyFoamProduced}_1",
+            "value": 25,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Units of black tar produced by demonstration 1",
+            "symbol": "{BlackTarProduced}_1",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Units of mint used in demonstration 2",
+            "symbol": "{MintUsed}_2",
+            "value": 12,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Units of active ingredient used in demonstration 2",
+            "symbol": "{ActiveIngredientUsed}_2",
+            "value": 15,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Units of minty foam produced by demonstration 2",
+            "symbol": "{MintyFoamProduced}_2",
+            "value": 18,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Units of black tar produced by demonstration 2",
+            "symbol": "{BlackTarProduced}_2",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Total available units of mint",
+            "symbol": "{MintAvailable}",
+            "value": 120,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Total available units of active ingredient",
+            "symbol": "{ActiveIngredientAvailable}",
+            "value": 100,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum allowed units of black tar",
+            "symbol": "{BlackTarLimit}",
+            "value": 50,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Number of times demonstration 1 is performed",
+            "symbol": "{N}_1",
+            "type": "integer",
+            "shape": [],
+            "status": "coded",
+            "code": "N_1 = model.addVar(vtype=gp.GRB.INTEGER, name=\"N_1\")"
+        },
+        {
+            "definition": "Number of times demonstration 2 is performed",
+            "symbol": "{N}_2",
+            "type": "integer",
+            "shape": [],
+            "status": "coded",
+            "code": "N_2 = model.addVar(vtype=gp.GRB.INTEGER, name=\"N_2\")"
+        }
+    ],
+    "data": [
+        {
+            "{MintUsed}_1": 10
+        },
+        {
+            "{ActiveIngredientUsed}_1": 20
+        },
+        {
+            "{MintyFoamProduced}_1": 25
+        },
+        {
+            "{BlackTarProduced}_1": 5
+        },
+        {
+            "{MintUsed}_2": 12
+        },
+        {
+            "{ActiveIngredientUsed}_2": 15
+        },
+        {
+            "{MintyFoamProduced}_2": 18
+        },
+        {
+            "{BlackTarProduced}_2": 3
+        },
+        {
+            "{MintAvailable}": 120
+        },
+        {
+            "{ActiveIngredientAvailable}": 100
+        },
+        {
+            "{BlackTarLimit}": 50
+        }
+    ],
+    "path": "data/problem_3",
+    "background": "A science show performs two demonstrations, each using mint and active ingredients to produce minty foam and black tar. The goal is to maximize minty foam production while adhering to resource and black tar limitations.",
+    "objective": [
+        {
+            "description": "Maximize the total amount of minty foam produced.",
+            "status": "coded",
+            "formulation": "\\max \\quad {N}_1 \\cdot \\textup{MintyFoamProduced}_1 + {N}_2 \\cdot \\textup{MintyFoamProduced}_2",
+            "related_variables": [],
+            "related_parameters": [
+                "MintyFoamProduced",
+                "MintyFoamProduced"
+            ],
+            "code": "model.setObjective(N1 * MintyFoamProduced1 + N2 * MintyFoamProduced2, gp.GRB.MAXIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "The number of times demonstration 1 is performed is non-negative",
+            "formulation": "\\textup{N}_1 \\ge 0",
+            "reasoning": "This constraint is valid as the number of times any demonstration is performed cannot be negative.",
+            "status": "runtime_error",
+            "relevant_section": "The show has available \\textup{MintAvailable} units of mint and \\textup{ActiveIngredientAvailable} units of active ingredients. If at most \\textup{BlackTarLimit} units of black tar can be produced, how many of each demonstration should be done to maximize the amount of minty foam produced?",
+            "related_variables": [
+                "N"
+            ],
+            "related_parameters": [],
+            "code": "model.addConstr(gp.quicksum(N1) >= 0, name=\"Demonstration1_nonnegative\")"
+        },
+        {
+            "description": "The number of times demonstration 2 is performed is non-negative",
+            "formulation": "\\textup{N}_2 \\ge 0",
+            "reasoning": "This constraint is valid as the number of times any demonstration is performed cannot be negative.",
+            "status": "coded",
+            "relevant_section": "The show has available \\textup{MintAvailable} units of mint and \\textup{ActiveIngredientAvailable} units of active ingredients. If at most \\textup{BlackTarLimit} units of black tar can be produced, how many of each demonstration should be done to maximize the amount of minty foam produced?",
+            "related_variables": [
+                "N"
+            ],
+            "related_parameters": [],
+            "code": "model.addConstr(N[2] >= 0, name=\"N2_nonnegative\")"
+        },
+        {
+            "description": "The total mint used in both demonstrations cannot exceed the available mint",
+            "formulation": "\\textup{MintUsed}_1 * \\textup{N}_1 + \\textup{MintUsed}_2 * \\textup{N}_2 \\le \\textup{MintAvailable}",
+            "reasoning": "This constraint is valid as it ensures that the total amount of mint used in both demonstrations does not exceed the available amount.",
+            "status": "coded",
+            "relevant_section": "The show has available \\textup{MintAvailable} units of mint and \\textup{ActiveIngredientAvailable} units of active ingredients. If at most \\textup{BlackTarLimit} units of black tar can be produced, how many of each demonstration should be done to maximize the amount of minty foam produced?",
+            "related_variables": [
+                "N",
+                "N"
+            ],
+            "related_parameters": [
+                "MintUsed",
+                "MintUsed",
+                "MintAvailable"
+            ],
+            "code": "model.addConstr(MintUsed[1] * N[1] + MintUsed[2] * N[2] <= MintAvailable, name=\"mint_constraint\")"
+        },
+        {
+            "description": "The total active ingredient used in both demonstrations cannot exceed the available active ingredient",
+            "formulation": "\\textup{ActiveIngredientUsed}_1 * \\textup{N}_1 + \\textup{ActiveIngredientUsed}_2 * \\textup{N}_2 \\le \\textup{ActiveIngredientAvailable}",
+            "reasoning": "This constraint is valid as it ensures that the total amount of active ingredient used in both demonstrations does not exceed the available amount.",
+            "status": "coded",
+            "relevant_section": "The show has available \\textup{MintAvailable} units of mint and \\textup{ActiveIngredientAvailable} units of active ingredients. If at most \\textup{BlackTarLimit} units of black tar can be produced, how many of each demonstration should be done to maximize the amount of minty foam produced?",
+            "related_variables": [
+                "N",
+                "N"
+            ],
+            "related_parameters": [
+                "ActiveIngredientUsed",
+                "ActiveIngredientUsed",
+                "ActiveIngredientAvailable"
+            ],
+            "code": "model.addConstr(ActiveIngredientUsed[1] * N[1] + ActiveIngredientUsed[2] * N[2] <= ActiveIngredientAvailable, name=\"ActiveIngredientConstraint\")"
+        },
+        {
+            "description": "The total black tar produced by both demonstrations cannot exceed the allowed limit",
+            "formulation": "\\textup{BlackTarProduced}_1 * \\textup{N}_1 + \\textup{BlackTarProduced}_2 * \\textup{N}_2 \\le \\textup{BlackTarLimit}",
+            "reasoning": "This constraint is valid as it ensures that the total amount of black tar produced by both demonstrations does not exceed the limit.",
+            "status": "coded",
+            "relevant_section": "The show has available \\textup{MintAvailable} units of mint and \\textup{ActiveIngredientAvailable} units of active ingredients. If at most \\textup{BlackTarLimit} units of black tar can be produced, how many of each demonstration should be done to maximize the amount of minty foam produced?",
+            "related_variables": [
+                "N",
+                "N"
+            ],
+            "related_parameters": [
+                "BlackTarProduced",
+                "BlackTarProduced",
+                "BlackTarLimit"
+            ],
+            "code": "model.addConstr(BlackTarProduced[1] * N[1] + BlackTarProduced[2] * N[2] <= BlackTarLimit, name=\"BlackTarLimitConstraint\")"
+        }
+    ],
+    "log_folder": "data/problem_3/log",
+    "solution_status": "runtime_error",
+    "error_message": "Traceback (most recent call last):\n  File \"/Users/kush/Files/Intern/LLM/Modelv2/agents/evaluator.py\", line 141, in _run_code\n    exec(last_line, local_env, local_env)\n  File \"<string>\", line 1, in <module>\nNameError: name 'N1' is not defined\n",
+    "prep_code": "\nimport json\nimport numpy as np\nimport math\n\nimport gurobipy as gp\n\n # Define model\nmodel = gp.Model('model')\n\n\n\n",
+    "solver_output_status": "runtime_error"
+}
