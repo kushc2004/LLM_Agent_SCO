@@ -18,11 +18,9 @@ def generate_snop(path):
     generate_constraints(path)
 
 def run_formulator(self, path):
-    with open(path + "/input.json", "r") as f:
+    with open(path + "/input_wc.json", "r") as f:
             state = json.load(f)
     Formulator(client=None).generate_reply(task="formulate",state=state, sender=self)
-
-# run_formulator(self=Agent)
 
 def run_manager(self, path):
     
@@ -40,7 +38,7 @@ def run_manager(self, path):
             formulator,
             programmer,
             evaluator,
-            user
+            user,
         ],
     )
     manager.solve(state)
@@ -59,7 +57,7 @@ def run_evaluator(self, path):
     evaluate.generate_reply(state=state, sender=self ,task="Evaluate, Your responsibility is to run the code and evaluate the performance and correctness of the code.")
 
 def test():
-    with open("/home/g2021ume1126/LLM_Agent_SCO/LLM_Agent_SCO/Modelv5 copy/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv6/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY1"])
@@ -69,9 +67,11 @@ def test():
         print(output.text)
 
 
-# run_programmer(self=Agent)
-path="/home/g2021ume1126/LLM_Agent_SCO/LLM_Agent_SCO/Modelv5 copy/data/problem_4"
+
+path="/home/ckushj/LLM_Agent_SCO/Modelv6/data/problem_4"
 # generate_snop(path)
-run_manager(Agent, path)
-# run_evaluator(Agent, path)
+# run_manager(Agent, path)
+# run_formulator(Agent, path)
 # test()
+run_programmer(Agent, path)
+run_evaluator(Agent, path)

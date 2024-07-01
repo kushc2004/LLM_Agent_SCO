@@ -6,7 +6,7 @@ from vertexai.generative_models import GenerativeModel, Part
 import vertexai.preview.generative_models as generative_models
 
 def gemini_client():
-    with open("/home/g2021ume1126/LLM_Agent_SCO/LLM_Agent_SCO/Modelv5 copy/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv6/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY_ORIGINAL"])
@@ -14,7 +14,7 @@ def gemini_client():
     return model
 
 def gemini_client1():
-    with open("/home/g2021ume1126/LLM_Agent_SCO/LLM_Agent_SCO/Modelv5 copy/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv6/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY1"])
@@ -22,7 +22,7 @@ def gemini_client1():
     return model
 
 def gemini_client2():
-    with open("/home/g2021ume1126/LLM_Agent_SCO/LLM_Agent_SCO/Modelv5 copy/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv6/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY2"])
@@ -30,22 +30,30 @@ def gemini_client2():
     return model
 
 def gemini_client3():
-    with open("/home/g2021ume1126/LLM_Agent_SCO/LLM_Agent_SCO/Modelv5 copy/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv6/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY3"])
     model = genai.GenerativeModel('gemini-1.5-flash')
     return model
 
+def gemini_client4():
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv6/config.json") as f:
+        config = json.load(f)
+    
+    genai.configure(api_key = config["GEMINI_API_KEY4"])
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    return model
+
 def vertexai_client():
-    with open("/home/g2021ume1126/LLM_Agent_SCO/LLM_Agent_SCO/Modelv5 copy/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv6/config.json") as f:
         config = json.load(f)
     
     vertexai.init(project = config["PROJECT_ID"], location="us-central1") # Replace with your project ID and region 
     model = GenerativeModel(
         f"""projects/{config["PROJECT_ID"]}/locations/us-central1/endpoints/{config["ENDPOINT_ID"]}""", # Replace with your endpoint ID
     )
-    print(f"""projects/{config["PROJECT_ID"]}/locations/us-central1/endpoints/{config["ENDPOINT_ID"]}""")
+    # print(f"""projects/{config["PROJECT_ID"]}/locations/us-central1/endpoints/{config["ENDPOINT_ID"]}""")
 
     return model
 
@@ -72,6 +80,6 @@ def call_llm(prompt):
     output = responses.text
     return output
 
-call_llm("hello")
+
 
 

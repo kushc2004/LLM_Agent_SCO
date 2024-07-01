@@ -1,0 +1,314 @@
+{
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only 2 manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The cost of transportation per km is \\param{CostPerKm}. The distances are specified below.\n\nManufacturer to Warehouse Distances (km)\n\\param{ManufToWarehouseDist}\n\nWarehouse to Distributor Distances (km)\n\\param{WarehouseToDistDist}\n\nCount and add the number of each stakeholders that is Contract manufacturer, warehouse, distributor. Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.\nDo not consider the flow quantity while formulating the objective function. only consider the cost associated with distance.",
+    "problem_info": "A protein powder supply chain network optimization problem, where the objective is to minimize the transportation cost and select two best manufacturers to supply the warehouses, and warehouses to supply distributors.",
+    "input_format": "Number of contract manufacturers, number of warehouses, number of distributors, distance between each pair of manufacturers and warehouses, distance between each pair of warehouses and distributors, transportation cost per km.",
+    "output_info": "The optimal selection of two contract manufacturers, the flow of protein powder from each manufacturer to each warehouse, and the flow of protein powder from each warehouse to each distributor.",
+    "output_format": "Selected Contract Manufacturers, Assignment of each selected manufacturer to warehouses, Assignment of each warehouse to distributors",
+    "parameters": [
+        {
+            "definition": "Cost of transportation per km",
+            "symbol": "{CostPerKm}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Manufacturers",
+            "symbol": "{NumManuf}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Warehouses",
+            "symbol": "{NumWarehouses}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Distributors",
+            "symbol": "{NumDistributors}",
+            "value": 8,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance from Manufacturer m to Warehouse w",
+            "symbol": "{ManufToWarehouseDist}_mw",
+            "value": [
+                [
+                    501.9,
+                    1433.2,
+                    875.3
+                ],
+                [
+                    1758.4,
+                    327.4,
+                    2180.4
+                ],
+                [
+                    1942.4,
+                    1838.2,
+                    1481.8
+                ],
+                [
+                    580.2,
+                    839.2,
+                    1364.6
+                ],
+                [
+                    819.2,
+                    917.2,
+                    708.7
+                ]
+            ],
+            "shape": [
+                "NumManuf",
+                "NumWarehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance from Warehouse w to Distributor d",
+            "symbol": "{WarehouseToDistDist}_wd",
+            "value": [
+                [
+                    1153.7,
+                    1586.3,
+                    1428.5,
+                    692.3,
+                    1085.5,
+                    449.2,
+                    430.7,
+                    2086.9
+                ],
+                [
+                    1923.6,
+                    2356.2,
+                    578.9,
+                    1503.3,
+                    2006.4,
+                    1372.0,
+                    1298.4,
+                    654.3
+                ],
+                [
+                    216.2,
+                    339.5,
+                    1492.2,
+                    826.0,
+                    250.2,
+                    1120.5,
+                    977.7,
+                    2460.4
+                ]
+            ],
+            "shape": [
+                "NumWarehouses",
+                "NumDistributors"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Binary variable indicating if Manufacturer m is selected",
+            "symbol": "{SelectManuf}_m",
+            "type": "binary",
+            "shape": [
+                "NumManuf"
+            ],
+            "status": "coded",
+            "code": "SelectManuf = model.addVars(NumManuf, vtype=gp.GRB.BINARY, name=\"SelectManuf\")"
+        },
+        {
+            "definition": "Binary variable indicating if Manufacturer m is supplying to Warehouse w",
+            "symbol": "{ManufToWarehouseFlow}_mw",
+            "type": "binary",
+            "shape": [
+                "NumManuf",
+                "NumWarehouses"
+            ],
+            "status": "coded",
+            "code": "ManufToWarehouseFlow = model.addVars(NumManuf, NumWarehouses, vtype=gp.GRB.BINARY, name=\"ManufToWarehouseFlow\")"
+        },
+        {
+            "definition": "Binary variable indicating if Warehouse w is supplying to Distributor d",
+            "symbol": "{WarehouseToDistFlow}_wd",
+            "type": "binary",
+            "shape": [
+                "NumWarehouses",
+                "NumDistributors"
+            ],
+            "status": "coded",
+            "code": "WarehouseToDistFlow = model.addVars(NumWarehouses, NumDistributors, vtype=gp.GRB.BINARY, name=\"WarehouseToDistFlow\")"
+        }
+    ],
+    "data": [
+        {
+            "{NumManuf}": 5
+        },
+        {
+            "{NumWarehouses}": 3
+        },
+        {
+            "{NumDistributors}": 8
+        },
+        {
+            "{CostPerKm}": 6
+        },
+        {
+            "{ManufToWarehouseDist}_mw": [
+                [
+                    501.9,
+                    1433.2,
+                    875.3
+                ],
+                [
+                    1758.4,
+                    327.4,
+                    2180.4
+                ],
+                [
+                    1942.4,
+                    1838.2,
+                    1481.8
+                ],
+                [
+                    580.2,
+                    839.2,
+                    1364.6
+                ],
+                [
+                    819.2,
+                    917.2,
+                    708.7
+                ]
+            ]
+        },
+        {
+            "{WarehouseToDistDist}_wd": [
+                [
+                    1153.7,
+                    1586.3,
+                    1428.5,
+                    692.3,
+                    1085.5,
+                    449.2,
+                    430.7,
+                    2086.9
+                ],
+                [
+                    1923.6,
+                    2356.2,
+                    578.9,
+                    1503.3,
+                    2006.4,
+                    1372.0,
+                    1298.4,
+                    654.3
+                ],
+                [
+                    216.2,
+                    339.5,
+                    1492.2,
+                    826.0,
+                    250.2,
+                    1120.5,
+                    977.7,
+                    2460.4
+                ]
+            ]
+        }
+    ],
+    "path": "/home/ckushj/LLM_Agent_SCO/modelv8/data/problem_4",
+    "background": "A protein powder supply chain consists of Contract Manufacturers (CM), Warehouses (WH), and Distributors (Dist). The flow is from CM to WH to Dist. There are {NumManuf} potential CMs, {NumWarehouses} WHs, and {NumDistributors} Dist. Only 2 CMs will be selected. The objective is to minimize the total transportation cost. The cost of transportation per km is {CostPerKm}.  The distances between each CM and WH, and each WH and Dist are given in matrices {ManufToWarehouseDist} and {WarehouseToDistDist} respectively.",
+    "objective": [
+        {
+            "description": "Minimize the total transportation cost in the supply chain network",
+            "status": "coded",
+            "formulation": "\\sum_{m=1}^{\\textup{NumManuf}} \\sum_{w=1}^{\\textup{NumWarehouses}} \\textup{ManufToWarehouseFlow}_{mw} \\cdot \\textup{ManufToWarehouseDist}_{mw} \\cdot \\textup{CostPerKm} + \\sum_{w=1}^{\\textup{NumWarehouses}} \\sum_{d=1}^{\\textup{NumDistributors}} \\textup{WarehouseToDistFlow}_{wd} \\cdot \\textup{WarehouseToDistDist}_{wd} \\cdot \\textup{CostPerKm}",
+            "related_variables": [
+                "ManufToWarehouseFlow",
+                "WarehouseToDistFlow"
+            ],
+            "related_parameters": [
+                "NumManuf",
+                "NumWarehouses",
+                "ManufToWarehouseDist",
+                "CostPerKm",
+                "NumWarehouses",
+                "NumDistributors",
+                "WarehouseToDistDist",
+                "CostPerKm"
+            ],
+            "code": "model.setObjective(gp.quicksum(gp.quicksum(ManufToWarehouseFlow[m, w] * ManufToWarehouseDist[m][w] * CostPerKm for w in range(NumWarehouses)) for m in range(NumManuf)) + gp.quicksum(gp.quicksum(WarehouseToDistFlow[w, d] * WarehouseToDistDist[w][d] * CostPerKm for d in range(NumDistributors)) for w in range(NumWarehouses)), gp.GRB.MINIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "Only two manufacturers should be selected as contract manufacturers.",
+            "formulation": "\\sum_{m=1}^{\\textup{{NumManuf}}} \\textup{{SelectManuf}}_m = 2",
+            "reasoning": "This constraint enforces that we select exactly two manufacturers from the pool of available manufacturers.",
+            "status": "coded",
+            "relevant_section": "Only 2 manufactures would be selected from these.",
+            "related_variables": [
+                "SelectManuf"
+            ],
+            "related_parameters": [
+                "NumManuf"
+            ],
+            "code": "model.addConstr(gp.quicksum(SelectManuf[m] for m in range(NumManuf)) == 2, name='SelectTwoManufs')"
+        },
+        {
+            "description": "If a manufacturer is not selected, it cannot supply to any warehouse.",
+            "formulation": "\\textup{{ManufToWarehouseFlow}}_{mw} \\leq \\textup{{SelectManuf}}_m \\quad \\forall m \\in \\{1, 2, ..., \\textup{{NumManuf}}\\}, \\forall w \\in \\{1, 2, ..., \\textup{{NumWarehouses}}\\}",
+            "reasoning": " This constraint ensures that only selected manufacturers can ship products to warehouses. If a manufacturer is not selected (\\textup{{SelectManuf}}_m = 0), it cannot supply to any warehouse.",
+            "status": "coded",
+            "relevant_section": "Only 2 manufactures would be selected from these.",
+            "related_variables": [
+                "ManufToWarehouseFlow",
+                "SelectManuf"
+            ],
+            "related_parameters": [
+                "NumManuf",
+                "NumWarehouses"
+            ],
+            "code": "for m in range(NumManuf):\n    for w in range(NumWarehouses):\n        model.addConstr(ManufToWarehouseFlow[m, w] <= SelectManuf[m], name=\"ManufToWarehouseFlow_constraint\")"
+        },
+        {
+            "description": "Each warehouse should be supplied by exactly one manufacturer.",
+            "formulation": "\\sum_{m=1}^{\\textup{{NumManuf}}} \\textup{{ManufToWarehouseFlow}}_{mw} = 1 \\quad \\forall w \\in \\{1, 2, ..., \\textup{{NumWarehouses}}\\}",
+            "reasoning": "This constraint ensures that each warehouse receives products from only one manufacturer.",
+            "status": "coded",
+            "relevant_section": "Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.",
+            "related_variables": [
+                "ManufToWarehouseFlow"
+            ],
+            "related_parameters": [
+                "NumManuf",
+                "NumWarehouses"
+            ],
+            "code": "for w in range(NumWarehouses):\n    model.addConstr(gp.quicksum(ManufToWarehouseFlow[m, w] for m in range(NumManuf)) == 1, name=f\"Each_warehouse_one_manufacturer_{w+1}\")"
+        },
+        {
+            "description": "Each distributor should be supplied by exactly one warehouse.",
+            "formulation": "\\sum_{w=1}^{\\textup{{NumWarehouses}}} \\textup{{WarehouseToDistFlow}}_{wd} = 1 \\quad \\forall d \\in \\{1, 2, ..., \\textup{{NumDistributors}}\\}",
+            "reasoning": "This constraint makes sure that each distributor is served by exactly one warehouse.",
+            "status": "coded",
+            "relevant_section": "Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.",
+            "related_variables": [
+                "WarehouseToDistFlow"
+            ],
+            "related_parameters": [
+                "NumWarehouses",
+                "NumDistributors"
+            ],
+            "code": "for d in range(NumDistributors):\n    model.addConstr(gp.quicksum(WarehouseToDistFlow[w, d] for w in range(NumWarehouses)) == 1, name=\"DistSupplyConstraint_\" + str(d + 1))"
+        }
+    ],
+    "log_folder": "/home/ckushj/LLM_Agent_SCO/modelv8/data/problem_4/log",
+    "solution_status": null
+}

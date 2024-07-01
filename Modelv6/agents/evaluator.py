@@ -156,30 +156,30 @@ class Evaluator(Agent):
                 local_env,
             )
 
-            self.get_parameter_data(state=state)
-            param = state["parameters"]
-            for i in param:
-                print(i)
-                symb = re.search(r'\{(.*?)\}', i["symbol"])
-                print(symb)
-                symb = symb.group(1)
+            # self.get_parameter_data(state=state)
+            # param = state["parameters"]
+            # for i in param:
+            #     print(i)
+            #     symb = re.search(r'\{(.*?)\}', i["symbol"])
+            #     print(symb)
+            #     symb = symb.group(1)
 
-                last_line = f"""{symb} = {i["value"]}"""
-                code += last_line + "\n"
-                exec(last_line, local_env, local_env)
+            #     last_line = f"""{symb} = {i["value"]}"""
+            #     code += last_line + "\n"
+            #     exec(last_line, local_env, local_env)
 
 
 
             #GET PARAMETER DATA FROM DATA.JSON FILE
-            # with open(state["path"] + "/data.json", "r") as f:
-            #     data = f.read()
-            # data = json.loads(data)
-            # for i in data:
-            #     param = re.search(r'\{(.*?)\}', i)
-            #     param = param.group(1)
-            #     last_line = f"{param} = {data[i]}"
-            #     code += last_line + "\n"
-            #     exec(last_line, local_env, local_env)
+            with open(state["path"] + "/data.json", "r") as f:
+                data = f.read()
+            data = json.loads(data)
+            for i in data:
+                param = re.search(r'\{(.*?)\}', i)
+                param = param.group(1)
+                last_line = f"{param} = {data[i]}"
+                code += last_line + "\n"
+                exec(last_line, local_env, local_env)
 
             # for parameter in state["parameters"]:
             #     if not "code" in parameter:
@@ -188,9 +188,9 @@ class Evaluator(Agent):
             #     code += last_line + "\n"
             #     exec(last_line, local_env, local_env)
 
-            # last_line = f"\n# Define model\nmodel = gp.Model('model')\n"
-            # code += last_line + "\n"
-            # exec(last_line, local_env, local_env)
+            last_line = f"\n# Define model\nmodel = gp.Model('model')\n"
+            code += last_line + "\n"
+            exec(last_line, local_env, local_env)
 
             for variable in state["variables"]:
                 bogus_context = variable

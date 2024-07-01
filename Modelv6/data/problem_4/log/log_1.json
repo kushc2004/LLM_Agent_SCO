@@ -1,0 +1,542 @@
+{
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only \\param{NSelectedManufacturers} manufactures would be selected from these. Optimise the supply chain network and select the \\param{NSelectedManufacturers} best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The latitude and longitude of each location would be given. The cost of transportation per km is \\param{TransportationCostPerKm}. The distances are specified below.\n\nManufacturer to Warehouse Distances (km)\nManufacturer\\t\\t\\tBhiwandi\\t\\tBengaluru\\t\\tDelhi\nAhemdabad\\t\\t\\t\\param{Distance_AM_Bhiwandi}\\t\\t\\param{Distance_AM_Bangalore}\\t\\t\\param{Distance_AM_Delhi}\nChennai\\t\\t\\t\\param{Distance_CM_Bhiwandi}\\t\\t\\param{Distance_CM_Bangalore}\\t\\t\\param{Distance_CM_Delhi}\nKolkata\\t\\t\\t\\param{Distance_KM_Bhiwandi}\\t\\t\\param{Distance_KM_Bangalore}\\t\\t\\param{Distance_KM_Delhi}\nPune\\t\\t\\t\\param{Distance_PM_Bhiwandi}\\t\\t\\param{Distance_PM_Bangalore}\\t\\t\\param{Distance_PM_Delhi}\nBhopal\\t\\t\\t\\param{Distance_BM_Bhiwandi}\\t\\t\\param{Distance_BM_Bangalore}\\t\\t\\param{Distance_BM_Delhi}\n\nWarehouse to Distributor Distances (km)\nWarehouse\\t\\tAgra\\t\\tLudhiana\\t\\tHyderabad\\t\\tIndore\\t\\tJaipur\\t\\tSurat\\t\\tVadodara\\t\\tTirunelveli\nBhiwandi\\t\\t\\param{Distance_WB_Agra}\\t\\t\\param{Distance_WB_Ludhiana}\\t\\t\\param{Distance_WB_Hyderabad}\\t\\t\\param{Distance_WB_Indore}\\t\\t\\param{Distance_WB_Jaipur}\\t\\t\\param{Distance_WB_Surat}\\t\\t\\param{Distance_WB_Vadodara}\\t\\t\\param{Distance_WB_Tirunelveli}\nBengaluru\\t\\t\\param{Distance_BL_Agra}\\t\\t\\param{Distance_BL_Ludhiana}\\t\\t\\param{Distance_BL_Hyderabad}\\t\\t\\param{Distance_BL_Indore}\\t\\t\\param{Distance_BL_Jaipur}\\t\\t\\param{Distance_BL_Surat}\\t\\t\\param{Distance_BL_Vadodara}\\t\\t\\param{Distance_BL_Tirunelveli}\nDelhi\\t\\t\\param{Distance_DL_Agra}\\t\\t\\param{Distance_DL_Ludhiana}\\t\\t\\param{Distance_DL_Hyderabad}\\t\\t\\param{Distance_DL_Indore}\\t\\t\\param{Distance_DL_Jaipur}\\t\\t\\param{Distance_DL_Surat}\\t\\t\\param{Distance_DL_Vadodara}\\t\\t\\param{Distance_DL_Tirunelveli}\n\nCount and add the number of each stakeholders that is Contract manufacturer, warehouse, distributor. To calculate the distance between any stakeholders, add one constraint that would calculate the distance between each stakeholder using the latitude and longitude of respective locations.",
+    "problem_info": "A protein powder supply chain needs to optimize its network by selecting manufacturers, assigning them to warehouses and distributors, and minimizing transportation costs.",
+    "input_format": "Latitude and longitude of each manufacturer, warehouse, and distributor location. Distances between all manufacturers and warehouses, and distances between all warehouses and distributors. Transportation cost per km.",
+    "output_info": "The selection of manufacturers, the assignment of manufacturers to warehouses, the assignment of warehouses to distributors, and the total transportation cost.",
+    "output_format": "Which manufacturers are selected. The flow from each selected manufacturer to each warehouse, and the flow from each warehouse to each distributor.",
+    "parameters": [
+        {
+            "definition": "Number of selected manufacturers",
+            "symbol": "{NSelectedManufacturers}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation cost per km",
+            "symbol": "{TransportationCostPerKm}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Ahemdabad and Bhiwandi",
+            "symbol": "{Distance_AM_Bhiwandi}",
+            "value": 501.9,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Ahemdabad and Bangalore",
+            "symbol": "{Distance_AM_Bangalore}",
+            "value": 1433.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Ahemdabad and Delhi",
+            "symbol": "{Distance_AM_Delhi}",
+            "value": 875.3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Chennai and Bhiwandi",
+            "symbol": "{Distance_CM_Bhiwandi}",
+            "value": 1758.4,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Chennai and Bangalore",
+            "symbol": "{Distance_CM_Bangalore}",
+            "value": 327.4,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Chennai and Delhi",
+            "symbol": "{Distance_CM_Delhi}",
+            "value": 2180.4,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Kolkata and Bhiwandi",
+            "symbol": "{Distance_KM_Bhiwandi}",
+            "value": 1942.4,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Kolkata and Bangalore",
+            "symbol": "{Distance_KM_Bangalore}",
+            "value": 1838.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Kolkata and Delhi",
+            "symbol": "{Distance_KM_Delhi}",
+            "value": 1481.8,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Pune and Bhiwandi",
+            "symbol": "{Distance_PM_Bhiwandi}",
+            "value": 580.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Pune and Bangalore",
+            "symbol": "{Distance_PM_Bangalore}",
+            "value": 839.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Pune and Delhi",
+            "symbol": "{Distance_PM_Delhi}",
+            "value": 1364.6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhopal and Bhiwandi",
+            "symbol": "{Distance_BM_Bhiwandi}",
+            "value": 819.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhopal and Bangalore",
+            "symbol": "{Distance_BM_Bangalore}",
+            "value": 917.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhopal and Delhi",
+            "symbol": "{Distance_BM_Delhi}",
+            "value": 708.7,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhiwandi and Agra",
+            "symbol": "{Distance_WB_Agra}",
+            "value": 1153.7,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhiwandi and Ludhiana",
+            "symbol": "{Distance_WB_Ludhiana}",
+            "value": 1586.3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhiwandi and Hyderabad",
+            "symbol": "{Distance_WB_Hyderabad}",
+            "value": 1428.5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhiwandi and Indore",
+            "symbol": "{Distance_WB_Indore}",
+            "value": 692.3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhiwandi and Jaipur",
+            "symbol": "{Distance_WB_Jaipur}",
+            "value": 1085.5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhiwandi and Surat",
+            "symbol": "{Distance_WB_Surat}",
+            "value": 449.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhiwandi and Vadodara",
+            "symbol": "{Distance_WB_Vadodara}",
+            "value": 430.7,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bhiwandi and Tirunelveli",
+            "symbol": "{Distance_WB_Tirunelveli}",
+            "value": 2086.9,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bengaluru and Agra",
+            "symbol": "{Distance_BL_Agra}",
+            "value": 1923.6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bengaluru and Ludhiana",
+            "symbol": "{Distance_BL_Ludhiana}",
+            "value": 2356.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bengaluru and Hyderabad",
+            "symbol": "{Distance_BL_Hyderabad}",
+            "value": 578.9,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bengaluru and Indore",
+            "symbol": "{Distance_BL_Indore}",
+            "value": 1503.3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bengaluru and Jaipur",
+            "symbol": "{Distance_BL_Jaipur}",
+            "value": 2006.4,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bengaluru and Surat",
+            "symbol": "{Distance_BL_Surat}",
+            "value": 1372.0,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bengaluru and Vadodara",
+            "symbol": "{Distance_BL_Vadodara}",
+            "value": 1298.4,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bengaluru and Tirunelveli",
+            "symbol": "{Distance_BL_Tirunelveli}",
+            "value": 654.3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Delhi and Agra",
+            "symbol": "{Distance_DL_Agra}",
+            "value": 216.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Delhi and Ludhiana",
+            "symbol": "{Distance_DL_Ludhiana}",
+            "value": 339.5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Delhi and Hyderabad",
+            "symbol": "{Distance_DL_Hyderabad}",
+            "value": 1492.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Delhi and Indore",
+            "symbol": "{Distance_DL_Indore}",
+            "value": 826.0,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Delhi and Jaipur",
+            "symbol": "{Distance_DL_Jaipur}",
+            "value": 250.2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Delhi and Surat",
+            "symbol": "{Distance_DL_Surat}",
+            "value": 1120.5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Delhi and Vadodara",
+            "symbol": "{Distance_DL_Vadodara}",
+            "value": 977.7,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Delhi and Tirunelveli",
+            "symbol": "{Distance_DL_Tirunelveli}",
+            "value": 2460.4,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Binary variable indicating if manufacturer m is selected",
+            "symbol": "{SelectedManufacturer}_m",
+            "type": "binary",
+            "shape": [
+                "M"
+            ],
+            "status": "coded",
+            "code": "SelectedManufacturer = model.addVars(M, vtype=gp.GRB.BINARY, name=\"SelectedManufacturer\")"
+        },
+        {
+            "definition": "Flow from manufacturer m to warehouse w",
+            "symbol": "{Flow_MW}_mw",
+            "type": "continuous",
+            "shape": [
+                "M",
+                "W"
+            ],
+            "status": "coded",
+            "code": "Flow_MW = model.addVars(M, W, vtype=gp.GRB.CONTINUOUS, name=\"Flow_MW\")"
+        },
+        {
+            "definition": "Flow from warehouse w to distributor d",
+            "symbol": "{Flow_WD}_wd",
+            "type": "continuous",
+            "shape": [
+                "W",
+                "D"
+            ],
+            "status": "coded",
+            "code": "Flow_WD = model.addVars(W, D, vtype=gp.GRB.CONTINUOUS, name=\"Flow_WD\")"
+        },
+        {
+            "definition": "Distance between a manufacturer and a warehouse",
+            "symbol": "Distance_ManufacturerWarehouse",
+            "shape": [
+                "M",
+                "W"
+            ],
+            "status": "coded",
+            "code": "Distance_ManufacturerWarehouse = model.addVars(M, W, name=\"Distance_ManufacturerWarehouse\")"
+        },
+        {
+            "definition": "Distance between a warehouse and a distributor",
+            "symbol": "Distance_WarehouseDistributor",
+            "shape": [
+                "W",
+                "D"
+            ],
+            "status": "coded",
+            "code": "Distance_WarehouseDistributor = model.addVars(W, D, name=\"Distance_WarehouseDistributor\")"
+        }
+    ],
+    "data": [
+        {
+            "{NSelectedManufacturers}": 2
+        },
+        {
+            "{TransportationCostPerKm}": 6
+        },
+        {
+            "{Distance_AM_Bhiwandi}": 501.9
+        },
+        {
+            "{Distance_AM_Bangalore}": 1433.2
+        },
+        {
+            "{Distance_AM_Delhi}": 875.3
+        },
+        {
+            "{Distance_CM_Bhiwandi}": 1758.4
+        },
+        {
+            "{Distance_CM_Bangalore}": 327.4
+        },
+        {
+            "{Distance_CM_Delhi}": 2180.4
+        },
+        {
+            "{Distance_KM_Bhiwandi}": 1942.4
+        },
+        {
+            "{Distance_KM_Bangalore}": 1838.2
+        },
+        {
+            "{Distance_KM_Delhi}": 1481.8
+        },
+        {
+            "{Distance_PM_Bhiwandi}": 580.2
+        },
+        {
+            "{Distance_PM_Bangalore}": 839.2
+        },
+        {
+            "{Distance_PM_Delhi}": 1364.6
+        },
+        {
+            "{Distance_BM_Bhiwandi}": 819.2
+        },
+        {
+            "{Distance_BM_Bangalore}": 917.2
+        },
+        {
+            "{Distance_BM_Delhi}": 708.7
+        },
+        {
+            "{Distance_WB_Agra}": 1153.7
+        },
+        {
+            "{Distance_WB_Ludhiana}": 1586.3
+        },
+        {
+            "{Distance_WB_Hyderabad}": 1428.5
+        },
+        {
+            "{Distance_WB_Indore}": 692.3
+        },
+        {
+            "{Distance_WB_Jaipur}": 1085.5
+        },
+        {
+            "{Distance_WB_Surat}": 449.2
+        },
+        {
+            "{Distance_WB_Vadodara}": 430.7
+        },
+        {
+            "{Distance_WB_Tirunelveli}": 2086.9
+        },
+        {
+            "{Distance_BL_Agra}": 1923.6
+        },
+        {
+            "{Distance_BL_Ludhiana}": 2356.2
+        },
+        {
+            "{Distance_BL_Hyderabad}": 578.9
+        },
+        {
+            "{Distance_BL_Indore}": 1503.3
+        },
+        {
+            "{Distance_BL_Jaipur}": 2006.4
+        },
+        {
+            "{Distance_BL_Surat}": 1372.0
+        },
+        {
+            "{Distance_BL_Vadodara}": 1298.4
+        },
+        {
+            "{Distance_BL_Tirunelveli}": 654.3
+        },
+        {
+            "{Distance_DL_Agra}": 216.2
+        },
+        {
+            "{Distance_DL_Ludhiana}": 339.5
+        },
+        {
+            "{Distance_DL_Hyderabad}": 1492.2
+        },
+        {
+            "{Distance_DL_Indore}": 826.0
+        },
+        {
+            "{Distance_DL_Jaipur}": 250.2
+        },
+        {
+            "{Distance_DL_Surat}": 1120.5
+        },
+        {
+            "{Distance_DL_Vadodara}": 977.7
+        },
+        {
+            "{Distance_DL_Tirunelveli}": 2460.4
+        }
+    ],
+    "path": "/home/ckushj/LLM_Agent_SCO/Modelv6/data/problem_4",
+    "background": "A protein powder supply chain optimization problem involves selecting the best \\\\param{NSelectedManufacturers} contract manufacturers out of a pool of potential candidates located in Ahemdabad, Chennai, Kolkata, Pune, and Bhopal. These selected manufacturers will supply to warehouses in Bhiwandi, Bangalore, and Delhi, which in turn supply to distributors in Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara, and Tirunelveli. The objective is to minimize the total transportation cost, taking into account the distances between manufacturers, warehouses, and distributors.",
+    "objective": [
+        {
+            "description": "Minimize the total transportation cost across the entire supply chain",
+            "status": "coded",
+            "formulation": "\\sum_{m=1}^{\\textup{M}} \\sum_{w=1}^{\\textup{W}} \\textup{Flow_MW}_mw \\cdot \\textup{TransportationCostPerKm} \\cdot \\textup{Distance_ManufacturerWarehouse}_{mw} + \\sum_{w=1}^{\\textup{W}} \\sum_{d=1}^{\\textup{D}} \\textup{Flow_WD}_wd \\cdot \\textup{TransportationCostPerKm} \\cdot \\textup{Distance_WarehouseDistributor}_{wd}",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "model.setObjective(gp.quicksum(gp.quicksum(Flow_MW[m, w] * TransportationCostPerKm * Distance_ManufacturerWarehouse[m, w] for w in range(W) for m in range(M)) + gp.quicksum(gp.quicksum(Flow_WD[w, d] * TransportationCostPerKm * Distance_WarehouseDistributor[w, d] for d in range(D) for w in range(W))), gp.GRB.MINIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "The total number of selected manufacturers is equal to \\\\param{NSelectedManufacturers}",
+            "formulation": "\\sum_{m=1}^{M} \\textup{SelectedManufacturer}_m = \\textup{NSelectedManufacturers}",
+            "reasoning": "This constraint ensures that the number of selected manufacturers equals the specified value \\\\param{NSelectedManufacturers}.",
+            "status": "coded",
+            "relevant_section": "Only \\\\param{NSelectedManufacturers} manufactures would be selected from these. Optimise the supply chain network and select the \\\\param{NSelectedManufacturers} best manufacturers that would minimise the transportation cost.",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "model.addConstr(gp.quicksum(SelectedManufacturer[m] for m in range(M)) == NSelectedManufacturers, name='TotalSelectedManufacturers')"
+        },
+        {
+            "description": "Flow from manufacturer m to warehouse w is non-negative for all manufacturers m and warehouses w",
+            "formulation": "\\textup{Flow_MW}_mw \\ge 0 \\quad \\forall m \\in M, w \\in W",
+            "reasoning": "This constraint states that the flow from a manufacturer to a warehouse cannot be negative, making it a valid constraint.",
+            "status": "coded",
+            "relevant_section": "The flow is Contract Manufacturer to Warehouse to Distributor.",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "for m in M:\n    for w in W:\n        model.addConstr(Flow_MW[m, w] >= 0, name=f\"Flow_MW_nonnegative_{m}_{w}\")"
+        },
+        {
+            "description": "Flow from warehouse w to distributor d is non-negative for all warehouses w and distributors d",
+            "formulation": "\\textup{Flow_WD}_wd \\ge 0 \\quad \\forall w \\in W, d \\in D",
+            "reasoning": "This constraint ensures that the flow from a warehouse to a distributor is not negative.",
+            "status": "coded",
+            "relevant_section": "The flow is Contract Manufacturer to Warehouse to Distributor.",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "for w in W:\n    for d in D:\n        model.addConstr(Flow_WD[w, d] >= 0, name=\"non_negative_flow\")"
+        },
+        {
+            "description": "Sum of flow from all manufacturers to warehouse w is equal to the sum of flow from warehouse w to all distributors for all warehouses w",
+            "formulation": "\\sum_{m=1}^{M} \\textup{Flow_MW}_mw = \\sum_{d=1}^{D} \\textup{Flow_WD}_wd \\quad \\forall w \\in W",
+            "reasoning": "This constraint ensures that the total flow into a warehouse equals the total flow out of the warehouse, maintaining the balance in the supply chain.",
+            "status": "coded",
+            "relevant_section": "The flow is Contract Manufacturer to Warehouse to Distributor.",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "for w in range(W):\n    model.addConstr(gp.quicksum(Flow_MW[m, w] for m in range(M)) == gp.quicksum(Flow_WD[w, d] for d in range(D)), name=f\"flow_balance_{w}\")"
+        },
+        {
+            "description": "Sum of flow from manufacturer m to all warehouses is equal to zero if manufacturer m is not selected, otherwise it is non-negative for all manufacturers m",
+            "formulation": "\\sum_{w=1}^{W} \\textup{Flow_MW}_mw = 0 \\quad \\text{if} \\textup{SelectedManufacturer}_m = 0 \\\\ \\sum_{w=1}^{W} \\textup{Flow_MW}_mw \\ge 0 \\quad \\text{if} \\textup{SelectedManufacturer}_m = 1 \\quad \\forall m \\in M",
+            "reasoning": "This constraint ensures that a manufacturer only supplies to warehouses if it is selected, and the total supply from a selected manufacturer is non-negative.",
+            "status": "coded",
+            "relevant_section": "Only \\\\param{NSelectedManufacturers} manufactures would be selected from these. Optimise the supply chain network and select the \\\\param{NSelectedManufacturers} best manufacturers that would minimise the transportation cost.",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "for m in range(M):\n    model.addConstr(gp.quicksum(Flow_MW[m, w] for w in range(W)) == 0, name=\"flow_from_m_to_all_w_equal_zero\")\n    model.addConstr(gp.quicksum(Flow_MW[m, w] for w in range(W)) >= 0, name=\"flow_from_m_to_all_w_nonnegative\")\n    model.addConstr(gp.quicksum(Flow_MW[m, w] for w in range(W)) <= SelectedManufacturer[m] * gp.GRB.INFINITY, name=\"flow_from_m_to_all_w_upper_bound\")"
+        }
+    ],
+    "log_folder": "/home/ckushj/LLM_Agent_SCO/Modelv6/data/problem_4/log",
+    "solution_status": null
+}

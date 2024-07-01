@@ -8,9 +8,12 @@ variable_definition_prompt_templates = [
 You're an expert programmer in a team of optimization experts. The goal of the team is to solve an optimization problem. Your responsibility is to write Gurobi code for defining variables of the problem.
 
 Here's a variable we need you to write the code for defining:
-
 -----
 {variable}
+-----
+Below is the parameters. Use only the symbols mentioned in the symbols of parameters (Use the symbols of parameters only):
+-----
+{parameters}
 -----
 
 Assume the parameters are defined. Now generate a code accordingly and enclose it between "=====" lines. Only generate the code, and don't generate any other text. Here's an example:
@@ -45,6 +48,12 @@ Here's a constraint we need you to write the code for, along with the list of re
 -----
 {context}
 -----
+Below are the parameters & variables. (Use the symbols of parameters & variables only):
+-----
+Parameters: {parameters}
+
+Variables: {variables}
+-----
 **Instructions**
 - Assume the parameters and variables are defined, and gurobipy is imported as gp. Now generate a code accordingly and enclose it between "=====" lines.
 - When you code the constraints ensure that the constraints are not already included while defining the variables.
@@ -53,6 +62,9 @@ Here's a constraint we need you to write the code for, along with the list of re
 - If the constraint requires changing a variable's integralilty, generate the code for changing the variable's integrality rather than defining the variable again.
 - If there is no code needed, just generate the comment line (using # ) enclosed in ===== lines explaining why.
 - Variables should become before parameters when defining inequality constraints in gurobipy (because of the gurobi parsing order syntax)
+- While writing the constraint keep sure that the code is correct. While writing any loops ensure that it is correct. 
+    Example: If <parameter_name> is = [1,2,3] that is it is a list.
+    then for i in range(parameter_name) is wrong beacaue 'list' object cannot be interpreted as an integer, therefore you should use for i in <parameter_name>
 - If you are using a function that is not in the gurobipy module, then first import the respective module on a separate line and then use the function on the next line. 
           Example: 
           import math 
@@ -108,12 +120,18 @@ You're an expert programmer in a team of optimization experts. The goal of the t
 - Before conding any objective, first check the shape of the related variables and parameters then code the objective. After this you reverify if the variables/parameters included in the objective are correct or not. Then only you finalise the code of the objective.
 - If you are using a function that is not in the gurobipy module, then first import the respective module on a separate line and then use the function on the next line. 
           Example: 
-          import math 
-          model.setObjective(gp.quicksum(gp.quicksum(Visit[v, c] * math.sqrt((Latitude[c] - Latitude[c - 1])**2 + (Longitude[c] - Longitude[c - 1])**2) for c in range(1, N + 1)) for v in range(V)), gp.GRB.MINIMIZE) 
+          import math\\nmodel.setObjective(gp.quicksum(gp.quicksum(Visit[v, c] * math.sqrt((Latitude[c] - Latitude[c - 1])**2 + (Longitude[c] - Longitude[c - 1])**2) for c in range(1, N + 1)) for v in range(V)), gp.GRB.MINIMIZE) 
+
 Here's the objective function we need you to write the code for, along with the list of related variables and parameters:
 
 -----
 {context}
+-----
+Below are the parameters & variables. (Use the symbols of parameters & variables only):
+-----
+Parameters: {parameters}
+
+Variables: {variables}
 -----
 
 Assume the parameters and variables are defined, and gurobipy is imported as gp. Now generate a code accordingly and enclose it between "=====" lines. Only generate the code and the =====s, and don't generate any other text. Here's an example:
@@ -192,6 +210,12 @@ And here is the code for defining the related parameters and variables:
 -----
 {context}
 -----
+Below are the parameters & variables. (Use the symbols of parameters & variables only):
+-----
+Parameters: {parameters}
+
+Variables: {variables}
+-----
 
 And the error happened when running this line:
 
@@ -263,6 +287,13 @@ otherwise, fix the last part code and generate a json file with the following fo
     "fixed_code": "A sting representing the fixed {target} modeling code to be replaced with the last part code"
 }}
 
+Below are the parameters & variables. (Use the symbols of parameters & variables only):
+-----
+Parameters: {parameters}
+
+Variables: {variables}
+-----
+
 - Note that the fixed code should be the fixed version of the last part code, not the whole code snippet. Only fix the part that is for modeling the {target}.
 - Do not generate any text after the json file.
 - Variables should become before parameters when defining inequality constraints in gurobipy (because of the gurobi parsing order syntax)
@@ -292,6 +323,13 @@ We know that the code for importing packages and defining parameters and variabl
 
 -----
 {error_line}
+-----
+
+Below are the parameters & variables. (Use the symbols of parameters & variables only):
+-----
+Parameters: {parameters}
+
+Variables: {variables}
 -----
 
 First reason about the source of the error. Then, if the code is correct and the problem is likely to be in the formulation, generate a json in this format (the reason is why you think the problem is in the formulation):
@@ -406,6 +444,8 @@ class Programmer(Agent):
                 prep_code=prep_code,
                 error_line=error_line,
                 error_message=error_message,
+                parameters=state["parameters"],
+                variables=state["variables"]
             )
 
         elif "definition" in bogus_context:
@@ -417,6 +457,8 @@ class Programmer(Agent):
                 prep_code=prep_code,
                 error_line=error_line,
                 error_message=error_message,
+                parameters=state["parameters"],
+                variables=state["variables"]
             )
 
         else:
@@ -430,7 +472,7 @@ class Programmer(Agent):
             try:
                 print("%^%^%")
                 print(prompt)
-                response = self.llm_call_vertexai(prompt=prompt)
+                response = self.llm_call2(prompt=prompt)
                 print(response)
                 print("%^%^%")
                 response = response[response.find("```json") + 7 :]
@@ -467,13 +509,16 @@ class Programmer(Agent):
                 context["symbol"] = variable["symbol"]
                 context["shape"] = variable["shape"]
 
+                # print(state["parameters"])
+
                 prompt = variable_definition_prompt_templates[0].format(
-                            variable=context)
+                            variable=context,
+                            parameters= state["parameters"])
 
                 cnt = 3
                 while cnt > 0:
                     try:
-                        response = self.llm_call_vertexai(prompt=prompt)
+                        response = self.llm_call3(prompt=prompt)
                         print(response)
                         code = [
                             r.strip()
@@ -544,13 +589,15 @@ class Programmer(Agent):
                             )
 
                     prompt = main_prompt_templates[target][0].format(
-                                context=json.dumps(context, indent=4))
+                                context=json.dumps(context, indent=4),
+                                parameters=state["parameters"],
+                                variables=state["variables"])
 
                     cnt = 3
 
                     while cnt > 0:
                         try:
-                            response = self.llm_call_vertexai(prompt=prompt)
+                            response = self.llm_call4(prompt=prompt)
                             print(response)
                             code = [
                                 r.strip()

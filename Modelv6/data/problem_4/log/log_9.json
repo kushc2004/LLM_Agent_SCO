@@ -1,0 +1,472 @@
+{
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only \\param{NManufacturers} manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The latitude and longitude of each location would be given. The cost of transportation per km is \\param{CostPerKM}. The latitude and longitude are specified below.\nBhiwandi-\\param{BhiwandiLatitude},\\param{BhiwandiLongitude}\nBengaluru-\\param{BangaloreLatitude},\\param{BangaloreLongitude}\nDelhi-\\param{DelhiLatitude},\\param{DelhiLongitude}\nKolkata-\\param{KolkataLatitude},\\param{KolkataLongitude}\nSurat-\\param{SuratLatitude},\\param{SuratLongitude}\nPune-\\param{PuneLatitude},\\param{PuneLongitude}\nJaipur-\\param{JaipurLatitude},\\param{JaipurLongitude}\nBhopal-\\param{BhopalLatitude},\\param{BhopalLongitude}\nAgra-\\param{AgraLatitude},\\param{AgraLongitude}\nLudhiana-\\param{LudhianaLatitude},\\param{LudhianaLongitude}\nHyderabad-\\param{HyderabadLatitude},\\param{HyderabadLongitude}\nIndore-\\param{IndoreLatitude},\\param{IndoreLongitude}\nVarodara-\\param{VarodaraLatitude},\\param{VarodaraLongitude}\nTirunelveli-\\param{TirunelveliLatitude},\\param{TirunelveliLongitude}\nAhemdabad-\\param{AhemdabadLatitude},\\param{AhemdabadLongitude}\nChennai-\\param{ChennaiLatitude},\\param{ChennaiLongitude}\nCount and add the number of each stakeholders that is Contract manufacturer, warehouse, distributor. To calculate the distance between any stakeholders, use the latitude and longitude of respective locations.",
+    "problem_info": "This problem aims to optimize a protein powder supply chain by selecting the best manufacturers, minimizing transportation costs, and determining the optimal flow of goods between manufacturers, warehouses, and distributors.",
+    "input_format": "The input data consists of the number of manufacturers to be selected ({NManufacturers}), the cost of transportation per kilometer ({CostPerKM}), and the latitude and longitude of each manufacturer, warehouse, and distributor location.",
+    "output_info": "The output includes the selection of two best manufacturers, the flow of goods from manufacturers to warehouses and warehouses to distributors, and the minimized transportation cost.",
+    "output_format": "The output should specify the two selected manufacturers, the allocation of manufacturers to warehouses, and the allocation of warehouses to distributors, along with the corresponding transportation costs.",
+    "parameters": [
+        {
+            "definition": "Number of Contract Manufacturers to be selected",
+            "symbol": "{NManufacturers}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Cost of transportation per kilometer",
+            "symbol": "{CostPerKM}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Bhiwandi",
+            "symbol": "{BhiwandiLatitude}",
+            "value": 19.333111,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Bhiwandi",
+            "symbol": "{BhiwandiLongitude}",
+            "value": 73.111504,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Bangalore",
+            "symbol": "{BangaloreLatitude}",
+            "value": 12.97675,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Bangalore",
+            "symbol": "{BangaloreLongitude}",
+            "value": 77.575279,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Delhi",
+            "symbol": "{DelhiLatitude}",
+            "value": 28.70406,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Delhi",
+            "symbol": "{DelhiLongitude}",
+            "value": 77.102493,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Kolkata",
+            "symbol": "{KolkataLatitude}",
+            "value": 22.565571,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Kolkata",
+            "symbol": "{KolkataLongitude}",
+            "value": 88.370209,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Surat",
+            "symbol": "{SuratLatitude}",
+            "value": 21.20351,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Surat",
+            "symbol": "{SuratLongitude}",
+            "value": 72.839233,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Pune",
+            "symbol": "{PuneLatitude}",
+            "value": 18.52076,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Pune",
+            "symbol": "{PuneLongitude}",
+            "value": 73.855408,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Jaipur",
+            "symbol": "{JaipurLatitude}",
+            "value": 26.92098,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Jaipur",
+            "symbol": "{JaipurLongitude}",
+            "value": 75.79422,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Bhopal",
+            "symbol": "{BhopalLatitude}",
+            "value": 23.252319,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Bhopal",
+            "symbol": "{BhopalLongitude}",
+            "value": 77.431091,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Agra",
+            "symbol": "{AgraLatitude}",
+            "value": 27.167641,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Agra",
+            "symbol": "{AgraLongitude}",
+            "value": 78.035873,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Ludhiana",
+            "symbol": "{LudhianaLatitude}",
+            "value": 30.91317,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Ludhiana",
+            "symbol": "{LudhianaLongitude}",
+            "value": 75.849541,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Hyderabad",
+            "symbol": "{HyderabadLatitude}",
+            "value": 17.361719,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Hyderabad",
+            "symbol": "{HyderabadLongitude}",
+            "value": 78.475166,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Indore",
+            "symbol": "{IndoreLatitude}",
+            "value": 22.71867,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Indore",
+            "symbol": "{IndoreLongitude}",
+            "value": 75.855713,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Vadodara",
+            "symbol": "{VarodaraLatitude}",
+            "value": 22.42055,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Vadodara",
+            "symbol": "{VarodaraLongitude}",
+            "value": 73.16569,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Tirunelveli",
+            "symbol": "{TirunelveliLatitude}",
+            "value": 8.715,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Tirunelveli",
+            "symbol": "{TirunelveliLongitude}",
+            "value": 77.7656,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Ahemdabad",
+            "symbol": "{AhemdabadLatitude}",
+            "value": 23.0225,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Ahemdabad",
+            "symbol": "{AhemdabadLongitude}",
+            "value": 72.5714,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Latitude of Chennai",
+            "symbol": "{ChennaiLatitude}",
+            "value": 13.0843,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Longitude of Chennai",
+            "symbol": "{ChennaiLongitude}",
+            "value": 80.2705,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Warehouses",
+            "symbol": "{NWarehouses}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Distributors",
+            "symbol": "{NDistributors}",
+            "value": 8,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Manufacturers",
+            "symbol": "{NManufacturers}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Binary variable indicating whether manufacturer m is selected",
+            "symbol": "{SelectManufacturer}_m",
+            "type": "binary",
+            "shape": [
+                "{NManufacturers}"
+            ],
+            "status": "coded",
+            "code": "SelectManufacturer = model.addVars(NManufacturers, vtype=gp.GRB.BINARY, name=\"SelectManufacturer\")"
+        },
+        {
+            "definition": "Flow of protein powder from manufacturer m to warehouse w",
+            "symbol": "{FlowManufacturerWarehouse}_mw",
+            "type": "continuous",
+            "shape": [
+                "{NManufacturers}",
+                "{NWarehouses}"
+            ],
+            "status": "coded",
+            "code": "FlowManufacturerWarehouse = model.addVars(NManufacturers, NWarehouses, vtype=gp.GRB.CONTINUOUS, name=\"FlowManufacturerWarehouse\")"
+        },
+        {
+            "definition": "Flow of protein powder from warehouse w to distributor d",
+            "symbol": "{FlowWarehouseDistributor}_wd",
+            "type": "continuous",
+            "shape": [
+                "{NWarehouses}",
+                "{NDistributors}"
+            ],
+            "status": "coded",
+            "code": "FlowWarehouseDistributor = model.addVars(NWarehouses, NDistributors, vtype=gp.GRB.CONTINUOUS, name=\"FlowWarehouseDistributor\")"
+        }
+    ],
+    "data": [
+        {
+            "{NManufacturers}": 5
+        },
+        {
+            "{NWarehouses}": 3
+        },
+        {
+            "{NDistributors}": 8
+        },
+        {
+            "{CostPerKM}": 6
+        },
+        {
+            "{BhiwandiLatitude}": 19.333111
+        },
+        {
+            "{BhiwandiLongitude}": 73.111504
+        },
+        {
+            "{BangaloreLatitude}": 12.97675
+        },
+        {
+            "{BangaloreLongitude}": 77.575279
+        },
+        {
+            "{DelhiLatitude}": 28.70406
+        },
+        {
+            "{DelhiLongitude}": 77.102493
+        },
+        {
+            "{KolkataLatitude}": 22.565571
+        },
+        {
+            "{KolkataLongitude}": 88.370209
+        },
+        {
+            "{SuratLatitude}": 21.20351
+        },
+        {
+            "{SuratLongitude}": 72.839233
+        },
+        {
+            "{PuneLatitude}": 18.52076
+        },
+        {
+            "{PuneLongitude}": 73.855408
+        },
+        {
+            "{JaipurLatitude}": 26.92098
+        },
+        {
+            "{JaipurLongitude}": 75.79422
+        },
+        {
+            "{BhopalLatitude}": 23.252319
+        },
+        {
+            "{BhopalLongitude}": 77.431091
+        },
+        {
+            "{AgraLatitude}": 27.167641
+        },
+        {
+            "{AgraLongitude}": 78.035873
+        },
+        {
+            "{LudhianaLatitude}": 30.91317
+        },
+        {
+            "{LudhianaLongitude}": 75.849541
+        },
+        {
+            "{HyderabadLatitude}": 17.361719
+        },
+        {
+            "{HyderabadLongitude}": 78.475166
+        },
+        {
+            "{IndoreLatitude}": 22.71867
+        },
+        {
+            "{IndoreLongitude}": 75.855713
+        },
+        {
+            "{VarodaraLatitude}": 22.42055
+        },
+        {
+            "{VarodaraLongitude}": 73.16569
+        },
+        {
+            "{TirunelveliLatitude}": 8.715
+        },
+        {
+            "{TirunelveliLongitude}": 77.7656
+        },
+        {
+            "{AhemdabadLatitude}": 23.0225
+        },
+        {
+            "{AhemdabadLongitude}": 72.5714
+        },
+        {
+            "{ChennaiLatitude}": 13.0843
+        },
+        {
+            "{ChennaiLongitude}": 80.2705
+        }
+    ],
+    "path": "/home/ckushj/LLM_Agent_SCO/Modelv6/data/problem_4",
+    "background": "A protein powder supply chain consists of Contract Manufacturers, Warehouses, and Distributors. The objective is to minimize the transportation cost by selecting the optimal two manufacturers, allocating them to warehouses, and then distributing from warehouses to distributors.",
+    "objective": [
+        {
+            "description": "Minimize the total transportation cost in the supply chain network",
+            "status": "coded",
+            "formulation": "Min\\sum_{m\\in {Manufacturers}}\\sum_{w\\in {Warehouses}} Distance_{mw}\\cdot CostPerKM\\cdot FlowManufacturerWarehouse_{mw} + \\sum_{w\\in {Warehouses}}\\sum_{d\\in {Distributors}} Distance_{wd}\\cdot CostPerKM\\cdot FlowWarehouseDistributor_{wd}",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "model.setObjective(gp.quicksum(Distance[m, w] * CostPerKM * FlowManufacturerWarehouse[m, w] for m in range(M) for w in range(W)) + gp.quicksum(Distance[w, d] * CostPerKM * FlowWarehouseDistributor[w, d] for w in range(W) for d in range(D)), GRB.MINIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "The sum of binary variables indicating selected manufacturers is equal to the number of manufacturers to be selected.",
+            "formulation": "\\sum_{m=1}^{\\textup{NManufacturers}} \\textup{SelectManufacturer}_m = \\textup{NManufacturers}",
+            "reasoning": "This constraint ensures that the total number of selected manufacturers is equal to the specified number of manufacturers to be selected.",
+            "status": "coded",
+            "relevant_section": "Only \\\\param{NManufacturers} manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost.",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "model.addConstr(gp.quicksum(SelectManufacturer[m] for m in range(NManufacturers)) == NManufacturers, name=\"Number_of_Manufacturers\")"
+        },
+        {
+            "description": "The flow of protein powder from each manufacturer to each warehouse is non-negative.",
+            "formulation": "\\textup{FlowManufacturerWarehouse}_mw >= 0 \\textup{ for all } m \\textup{ in } \\{1,...,\\textup{NManufacturers}\\} \\textup{ and } w \\textup{ in } \\{1,...,\\textup{NWarehouses}\\}",
+            "reasoning": "This constraint ensures that the flow of protein powder from a manufacturer to a warehouse cannot be negative.",
+            "status": "coded",
+            "relevant_section": "The flow is Contract Manufacturer to Warehouse to Distributor.",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "for m in range(NManufacturers):\n    for w in range(NWarehouses):\n        model.addConstr(FlowManufacturerWarehouse[m, w] >= 0, name=\"non_negative_flow_manufacturer_warehouse\")"
+        },
+        {
+            "description": "The flow of protein powder from each warehouse to each distributor is non-negative.",
+            "formulation": "\\textup{FlowWarehouseDistributor}_wd >= 0 \\textup{ for all } w \\textup{ in } \\{1,...,\\textup{NWarehouses}\\} \\textup{ and } d \\textup{ in } \\{1,...,\\textup{NDistributors}\\}",
+            "reasoning": "This constraint ensures that the flow of protein powder from a warehouse to a distributor cannot be negative.",
+            "status": "coded",
+            "relevant_section": "The flow is Contract Manufacturer to Warehouse to Distributor.",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "for w in range(NWarehouses):\n    for d in range(NDistributors):\n        model.addConstr(FlowWarehouseDistributor[w, d] >= 0, name=\"FlowWarehouseDistributor_nonnegative\")"
+        },
+        {
+            "description": "The total flow of protein powder from each manufacturer to all warehouses is equal to the sum of flows from each warehouse to all distributors.",
+            "formulation": "\\sum_{w=1}^{\\textup{NWarehouses}} \\textup{FlowManufacturerWarehouse}_mw = \\sum_{d=1}^{\\textup{NDistributors}} \\textup{FlowWarehouseDistributor}_wd \\textup{ for all } m \\textup{ in } \\{1,...,\\textup{NManufacturers}\\}",
+            "reasoning": "This constraint ensures that the total flow of protein powder from each manufacturer is equal to the total flow of protein powder to all distributors.",
+            "status": "coded",
+            "relevant_section": "The flow is Contract Manufacturer to Warehouse to Distributor.",
+            "related_variables": "",
+            "related_parameters": "",
+            "code": "for m in range(NManufacturers):\n    model.addConstr(gp.quicksum(FlowManufacturerWarehouse[m, w] for w in range(NWarehouses)) == gp.quicksum(FlowWarehouseDistributor[w, d] for w in range(NWarehouses) for d in range(NDistributors)), name=f\"flow_balance_{m}\")"
+        }
+    ],
+    "log_folder": "/home/ckushj/LLM_Agent_SCO/Modelv6/data/problem_4/log",
+    "solution_status": "runtime_error",
+    "error_message": "Traceback (most recent call last):\n  File \"/home/ckushj/LLM_Agent_SCO/Modelv6/agents/evaluator.py\", line 219, in _run_code\n    exec(last_line, local_env, local_env)\n  File \"<string>\", line 1, in <module>\nNameError: name 'M' is not defined\n",
+    "prep_code": "\nimport json\nimport numpy as np\nimport math\n\nimport gurobipy as gp\nfrom gurobipy import GRB\n\n # Define model\nmodel = gp.Model('model')\n\n\n\n",
+    "solver_output_status": "runtime_error"
+}

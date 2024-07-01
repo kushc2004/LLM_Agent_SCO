@@ -1,17 +1,17 @@
-A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only 2 manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The latitude and longitude of each location would be given. The cost of transportation per km is Rs. 6. The latitude and longitude are specified below.
-Bhiwandi-19.333111,73.111504
-Bengaluru-12.976750,77.575279
-Delhi-28.704060,77.102493
-Kolkata-22.565571,88.370209
-Surat-21.203510,72.839233
-Pune-18.520760,73.855408
-Jaipur-26.920980,75.794220
-Bhopal-23.252319,77.431091
-Agra-27.167641,78.035873
-Ludhiana-30.913170,75.849541
-Hyderabad-17.361719,78.475166
-Indore-22.718670,75.855713
-Varodara-22.420550,73.165690
-Tirunelveli-8.7150,77.7656
-Ahemdabad-23.0225,72.5714
-Chennai-13.0843,80.2705
+A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only 2 manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The latitude and longitude of each location would be given. The cost of transportation per km is Rs. 6. The distances are specified below.
+
+Manufacturer to Warehouse Distances (km)
+Manufacturer	Bhiwandi	Bengaluru	Delhi
+Ahmedabad	501.9	1433.2	875.3
+Chennai	1758.4	327.4	2180.4
+Kolkata	1942.4	1838.2	1481.8
+Pune	580.2	839.2	1364.6
+Bhopal	819.2	917.2	708.7
+
+Warehouse to Distributor Distances (km)
+Warehouse	Agra	Ludhiana	Hyderabad	Indore	Jaipur	Surat	Vadodara	Tirunelveli
+Bhiwandi	1153.7	1586.3	1428.5	692.3	1085.5	449.2	430.7	2086.9
+Bengaluru	1923.6	2356.2	578.9	1503.3	2006.4	1372.0	1298.4	654.3
+Delhi	216.2	339.5	1492.2	826.0	250.2	1120.5	977.7	2460.4
+
+Count and add the number of each stakeholders that is Contract manufacturer, warehouse, distributor. To calculate the distance between any stakeholders, add one constraint that would calculate the distance between each stakeholder using the latitude and longitude of respective locations.

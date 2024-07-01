@@ -5,7 +5,7 @@ from agents.agent import Agent
 prompt_template = """
 
 You're a manager in a team of optimization experts. The goal of the team is to solve an optimization problem. Your task is to choose the next expert to work on the problem based on the current situation.
-- The user has already given us the problem description, the objective function, and the parameters. Only call the user proxy if there is a problem or something ambiguous or missing.
+- The user has already given us the problem description, the objective function, and the parameters. Only call the user proxy if there is a problem or something ambiguous or missing. After checking history, if it is empty which means the problem is not formulated then first call the Formulator for the formulation of objective and constraints. After that call the Programmer to code and then the Evaluator to execute the code. Then if there is any error, you should analyse the history and then decide which agent to call.
 
 Here's the list of agents in your team:
 -----
@@ -18,7 +18,9 @@ And here's the history of the conversation so far:
 -----
 
 
-Considering the history, if you think the problem is solved, type DONE. **Important Instruction** If there is history is empty that is if history == [], then it means the problem is not formulated, then you should first call the formulator, then the programmer for coding, then the evaluator for execution. After that check the history then decide.
+Considering the history, if you think the problem is solved, type DONE. 
+**Important Instruction** 
+If there is history is empty that is if history == [], then it means the problem is not formulated, then you should first call the formulator, then the programmer for coding, then the evaluator for execution. After that check the history then decide.
 Otherwise, generate a json file with the following format:
 {{
     "agent_name": "Name of the agent you want to call next",
@@ -77,7 +79,8 @@ class GroupChatManager(Agent):
             cnt = 3
             while True and cnt > 0:
                 try:
-                    response = self.llm_call_vertexai(prompt=prompt)
+                    response = self.llm_call1(prompt=prompt)
+                    # print(prompt)
 
                     decision = response.strip()
                     if "```json" in decision:

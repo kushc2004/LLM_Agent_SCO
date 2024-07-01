@@ -49,70 +49,6 @@ The current JSON is
 
 """
 
-# prompt_template = """
-# You are an expert mathematical formulator and an optimization professor at a top university. Your task is to model {targetType} of the problem in the standard LP or MILP form. 
-
-# Here is a {targetType} we need you to model:
-# -----
-# {targetDescription}
-# -----
-
-# Here is some context on the problem:
-# -----
-# {background}
-# -----
-
-# Here is the list of available variables:
-# -----
-# {variables}
-# -----
-
-# And finally, here is list of input parameters:
-# -----
-# {parameters}
-# -----
-
-# First, take a deep breath and explain how we should define the {targetType}. Feel free to define new variables if you think it is necessary. Then, generate a json file accordingly with the following format (STICK TO THIS FORMAT!):
-
-
-# {{
-#     "{targetType}": {{
-#       "description": "The description of the {targetType}",
-#       "formulation": "The LaTeX mathematical expression representing the formulation of the {targetType}"
-#     }},
-#     "auxiliary_constraints": [
-#         {{
-#             "description": "The description of the auxiliary constraint",
-#             "formulation": "The LaTeX mathematical expression representing the formulation of the auxiliary constraint"
-#         }}
-#     ]
-#     "new_variables": [
-#         {{
-#             "definition": "The definition of the variable",
-#             "symbol": "The symbol for the variable as LateX expression",
-#             "shape": [ "symbol1", "symbol2", ... ],
-#             "status": "formulated"
-#         }}
-#     ],
-    
-# }}
-
-# - Your formulation should be in LaTeX mathematical format (do not include the $ symbols). 
-# - Note that I'm going to use python json.loads() function to parse the json file, so please make sure the format is correct (don't add ',' before enclosing '}}' or ']' characters.
-# - Generate the complete json file and don't omit anything.
-# - Use '```json' and '```' to enclose the json file.
-# - Important: You can not define new parameters. You can only define new variables.Use CamelCase and full words for new variable symbols, and do not include indices in the symbol (e.g. ItemsSold instead of itemsSold or items_sold or ItemsSold_i)
-# - Use \\textup{{}} when writing variable and parameter names. For example (\\sum_{{i=1}}^{{N}} \\textup{{ItemsSold}}_{{i}} instead of \\sum_{{i=1}}^{{N}} ItemsSold_{{i}})
-# - Use \\quad for spaces.
-# - Use empty list ([]) if no new variables are defined.
-# - Always use non-strict inequalities (e.g. \\leq instead of <), even if the constraint is strict.
-# - Define auxiliary constraints when necessary. Set it to an empty list ([]) if no auxiliary constraints are needed. If new auxiliary constraints need new variables, add them to the "new_variables" list too.
-# - Write the symbol of new variables  as LaTeX expression. Example: Symbol: "{{Price}}_j"
-
-# Take a deep breath and solve the problem step by step.
-
-# """
-
 
 prompt_template="""
 You are an expert mathematical formulator and an optimization professor at a top university. Your task is to model {targetType} of the problem in the standard LP or MILP form.
@@ -136,9 +72,12 @@ And finally, here is the list of input parameters:
 -----
 {parameters}
 -----
+**Instruction**
+1. Ensure that you only use the variables and parameters provided. You can define new variables if you think it is necessary. 
+2. If any of the variable mentioned in your formulations is not defined then mention it under new_variables. 
+First, take a deep breath and explain how we should define the {targetType}.Then, generate a json file and ensure that it is in correct format with " used correctly. Generate the file accordingly with the following format (STICK TO THIS FORMAT!): 
 
-First, take a deep breath and explain how we should define the {targetType}. Ensure that you only use the variables and parameters provided. You can define new variables if you think it is necessary. If any of the variable mentioned in your formulations is not defined then mention it under new_variables. Then, generate a json file and ensure that it is in correct format with " used correctly. Generate the file accordingly with the following format (STICK TO THIS FORMAT!): 
-
+```json
 {{
     "{targetType}": {{
       "description": "The description of the {targetType}",
@@ -152,17 +91,21 @@ First, take a deep breath and explain how we should define the {targetType}. Ens
     ],
     "new_variables": [
         {{
-            "definition": "The definition of the variable",
+            "definition": "The definition of the new variable that is defined in objective or auxiliary_constraints",
             "symbol": "The symbol for the variable as LaTeX expression, while defining the symbol ensure that the syntax is according to the one mentioned in the variables.",
             "shape": [ "symbol1", "symbol2", ... ],
             "status": "formulated"
         }}
-    ],
+    ]
 }}
+```
 
 **Instructions**
 
 - Your formulation should be in LaTeX mathematical format (do not include the $ symbols).
+- Ensure when defining objective, don't define a variable for the objective function. Write only the formulation value. Do not write objective variable = min/max of some formulation. Example: "description": finished product transportation between Warehouses and Distributors.",
+        "formulation": "\\\\textup{{TotalTransportationCost}} = \\\\textup{{Min}} \\\\quad \\\\sum_{{i \\\\in \\\\textup{{CM}}}} \\\\textup{{IsSelectedCM}}_i \\\sum_{{j \\\\in \\\\textup{{Warehouse}}}} \\\\textup{{Distance}}_{{ij}} \\\\textup{{Quantity}}_{{ij}} \\\\textup{{TransportationCost}} \\\\textup{{IsAssignedCMWarehouse}}_ijk \\\\quad \\\\forall k \\\\in \\\\textup{{Distributor}}" This is incorrect. inished product transportation between Warehouses and Distributors.",
+        "formulation": "\\\\sum_{{i \\\\in \\\\textup{{CM}}}} \\\\textup{{IsSelectedCM}}_i \\\\sum_{{j \\\\in \\\\textup{{Warehouse}}}} \\\\textup{{Distance}}_{{ij}} \\\\textup{{Quantity}}_{{ij}} \\\\textup{{TransportationCost}} \\\\textup{{IsAssignedCMWarehouse}}_ijk \\\\quad \\\\forall k \\\\in \\\\textup{{Distributor}}"". This is correct. This example is just for your reference and understanding.
 - Ensure that you are not adding a constraint which has already being included in the any variable.
 - While defining the symbol ensure that the syntax is according to the one mentioned in the variables, don't inlclude the indices in \\textup. Example: \\textup{{IsAssignedCMWarehouse}}_ijk '(double slash textup{{IsAssignedCMWarehouse}})'
 - Ensure that if you can write combined constraints then you do it.
@@ -171,14 +114,41 @@ First, take a deep breath and explain how we should define the {targetType}. Ens
 - Generate the complete json file and don't omit anything.
 - Use '```json' and '```' to enclose the json file.
 - Important: You cannot define new parameters. You can only define new variables. Use CamelCase and full words for new variable symbols, and do not include indices in the symbol (e.g. ItemsSold instead of itemsSold or items_sold or ItemsSold_i).
-- Use \\textup{{}} '(double slash textup{{}})' when writing variable and parameter names. For example (\\sum_{{i=1}}^{{N}} \\textup{{ItemsSold}}_{{i}} instead of \\sum_{{i=1}}^{{N}} ItemsSold_{{i}}).
-- Use \\quad for spaces.
+- Use \\\\textup{{}} '(double slash textup{{}})' when writing variable and parameter names. For example (\\\\sum_{{i=1}}^{{N}} \\\\textup{{ItemsSold}}_{{i}} instead of \\\\sum_{{i=1}}^{{N}} ItemsSold_{{i}}).
+- Use \\\\quad for spaces.
 - Use an empty list ([]) if no new variables are defined.
 - Always use non-strict inequalities (e.g. \\leq instead of <), even if the constraint is strict.
 - Define auxiliary constraints when necessary. Set it to an empty list ([]) if no auxiliary constraints are needed. If new auxiliary constraints need new variables, add them to the "new_variables" list too.
+- If there is a variable or parameter used in the formulation of objective which is not defined then mention it under new variables. If there is a formula needed to calculate the value of the variable then add it in auxiliary constraints. 
+- Use slash n for new line character.
+- To write symbols in "shape" only use the symbols of parameters. Do not define a symbol on your own and use it.
+
+This is one Example for your reference only: 
+```json
+{{
+    "objective": {{
+      "description": "Minimize the transportation cost",
+      "formulation": "\\\\min \\\\quad \\\\sum_{{p=1}}^{{\\\\textup{{P}}}} \\\\sum_{{w=1}}^{{\\\\textup{{N}}}} \\\\textup{{FlowManufacturerWarehouse}}_{{pw}} \\\\cdot \\\\textup{{Distance}}_{{pw}} \\\\cdot \\\\textup{{TransportationCostPerKm}} + \\\\sum_{{w=1}}^{{\\\\textup{{N}}}} \\\\sum_{{m=1}}^{{\\\\textup{{M}}}} \\\\\textup{{FlowWarehouseDistributor}}_{{wm}} \\\\cdot \\\\textup{{DistanceWarehouseDistributor}}_{{wm}} \\\\cdot \\\\textup{{TransportationCostPerKm}}"
+    }},
+    "auxiliary_constraints": [
+        {{
+            "description": "Formula to calculate the distance",
+            "formulation": "import math\\n\\\\textup{{Distance}}_pw \\\\eq math.sqrt(\\\\textup{{Latitude}}_p -  \\\\textup{{Latitude}}_w)^2 - (\\\\textup{{Longitude}}_p -  \\\\textup{{Longitude}}_w)^2)" 
+        }}
+    ],
+    "new_variables": [
+        {{
+            "definition": "Distance between two points",
+            "symbol": "Distance",
+            "shape": ["P", "W"],
+            "status": "formulated"
+        }}
+    ]
+}}
+```
 - Write the symbol of new variables as a LaTeX expression. Example: Symbol: "{{Price}}_j".
 
-Take a deep breath and solve the problem step by step.
+Take a deep breath and solve the problem step by step. You should use single slash only when you want to use the new line character.
 
 """
 
@@ -270,7 +240,12 @@ class Formulator(Agent):
         while cnt > 0:
             cnt -= 1
             try:
-                response = self.llm_call_vertexai(prompt=prompt)
+
+
+                # response = self.llm_call_vertexai(prompt=prompt)
+                response = self.llm_call(prompt)
+
+
                 print("=" * 10)
                 print(response)
                 print("=" * 10)
@@ -281,9 +256,15 @@ class Formulator(Agent):
                 output = response
 
                 # delete until the first '```json'
-                if "```json" in output:
-                    output = output[output.find("```json") + 7 :]
-                    output = output[: output.rfind("```")]
+                # if "```json" in output:
+                #     output = output[output.find("```json") + 7 :]
+                #     output = output[: output.rfind("```")]
+
+                pattern = r"```json(.*?)```"
+                match = re.search(pattern, output, re.DOTALL)
+
+                if match:
+                    output = match.group(1).strip()
 
                 # go back until the last character is a }
                 while output[-1] != "}":
@@ -318,6 +299,10 @@ class Formulator(Agent):
                     + output[auxiliary_constraints_start:]
                 )
 
+                # print("#" * 10)
+                # print(formulation)
+                # print("#" * 10)
+
                 formulation = formulation.replace("\\\\", "\\")
                 output = output.replace("\\", "\\\\")
                 output = output.replace("\\", "\\\\")
@@ -336,9 +321,11 @@ class Formulator(Agent):
 
                 update[target_type]["formulation"] = formulation
 
-                related_stuff = self.get_related_stuff(
-                    state, formulation, update.get("new_variables", [])
-                )
+                # related_stuff = self.get_related_stuff(
+                #     state, formulation, update.get("new_variables", [])
+                # )
+
+                related_stuff = {"variables_mentioned": "", "parameters_mentioned": ""}
                 update["variables_mentioned"] = related_stuff["variables_mentioned"]
                 update["parameters_mentioned"] = related_stuff["parameters_mentioned"]
 
@@ -371,18 +358,10 @@ class Formulator(Agent):
         for variable in update.get("new_variables", []):
             print("="*10)
             print(variable)
-            if variable["symbol"] in all_variable_symbols:
-                # raise Exception(f"Variable {variable['symbol']} already exists!")
-                variable["status"] = "formulated"
-                continue
-            else:
 
-                variable["status"] = "formulated"
-                
-                state["variables"].append(variable)
-
-                if variable["symbol"] not in update["variables_mentioned"]:
-                    update["variables_mentioned"].append(variable["symbol"])
+            variable["status"] = "formulated"
+            
+            state["variables"].append(variable)
 
         target["formulation"] = update[target_type]["formulation"]
         target["status"] = "formulated"
@@ -408,7 +387,7 @@ class Formulator(Agent):
                 #     state, constraint["formulation"], []
                 # )
                 # constraint["related_variables"] = related_stuff["variables_mentioned"]
-                # print("="*20)
+                # print("="*20) 
                 # print("RELATED CONS")
                 # print(constraint["related_variables"])
                 # constraint["related_parameters"] = related_stuff["parameters_mentioned"]
@@ -419,11 +398,13 @@ class Formulator(Agent):
         
 
         for constraint in state["constraints"]:
-            related_stuff = self.get_related_stuff(
-                    state, constraint["formulation"], []
-                )
+            # related_stuff = self.get_related_stuff(
+            #         state, constraint["formulation"], []
+            #     )
+            related_stuff = {"variables_mentioned": "", "parameters_mentioned": ""}
             print("*"*10)
-            print(related_stuff)
+            # print(related_stuff)
+
             constraint["related_variables"] = related_stuff["variables_mentioned"]
             constraint["related_parameters"] = related_stuff["parameters_mentioned"]
 
@@ -433,10 +414,11 @@ class Formulator(Agent):
 
         for constraint in state["constraints"]:
             
-            related_stuff = self.get_related_stuff(
-                    state, constraint["formulation"], []
-                )
-            print(related_stuff)
+            # related_stuff = self.get_related_stuff(
+            #         state, constraint["formulation"], []
+            #     )
+            # print(related_stuff)
+            related_stuff = {"variables_mentioned": "", "parameters_mentioned": ""}
 
         # with open('{data/}input_formulated.json', "w") as f:
         #     json.dump(state, f, indent=4)
@@ -473,9 +455,15 @@ class Formulator(Agent):
             try:
                 output = self.llm_call_vertexai(prompt=prompt)
                 # delete until the first '```json'
-                output = output[output.find("```json") + 7 :]
-                # delete until the last '```'
-                output = output[: output.rfind("```")]
+                # output = output[output.find("```json") + 7 :]
+                # # delete until the last '```'
+                # output = output[: output.rfind("```")]
+
+                pattern = r"```json(.*?)```"
+                match = re.search(pattern, output, re.DOTALL)
+
+                if match:
+                    output = match.group(1).strip()
 
                 output = output.replace(" \\", " \\\\")
                 update = json.loads(output)
@@ -507,27 +495,30 @@ class Formulator(Agent):
         self._formulate("constraints", state)
         self._formulate("objective", state)
 
+        with open(state["path"] + "/input_formulated.json", "w") as f:
+            json.dump(state, f, indent=4)
+
         return "Formulation Done! Now we can write the code.", state
+
 
     def get_related_stuff(self, state, formulation, new_variables):
 
-
         def extract_between_braces(s):
-            match = re.search(r'\{(.*?)\}', s)
-            if match:
-                return match.group(1)
-            else:
-                return s
-        
+                match = re.search(r'\{(.*?)\}', s)
+                if match:
+                    return match.group(1)
+                else:
+                    return s
+
         def extract_between_textup(s):
-            l=[]
-            for i in range(len(s)):
-                if s[i : i + 8] == "\\textup{":
-                    j = i + 8
-                    while s[j] != "}":
-                        j += 1
-                    l.append(s[i + 8 : j])
-            return s
+                l=[]
+                for i in range(len(s)):
+                    if s[i : i + 8] == "\\\\textup{":
+                        j = i + 8
+                        while s[j] != "}":
+                            j += 1
+                        l.append(s[i + 8 : j])
+                return s
     
         ret = {}
         ret["variables_mentioned"] = []
@@ -555,11 +546,15 @@ class Formulator(Agent):
             extract_between_braces(variable["symbol"])
             for variable in state["variables"]
         ]
+        # print(f"## {all_variable_symbols} ##")
+        # print(f"## {all_parameter_symbols} ##")
+        # print("-"*10)
         
         # all_variable_symbols += [variable["symbol"] for variable in new_variables]
 
 
         for symbol in symbols_mentioned:
+            # print(f"## {symbol} ##")
             try: 
                 if symbol in all_parameter_symbols:
                     ret["parameters_mentioned"].append(symbol)
@@ -595,5 +590,6 @@ class Formulator(Agent):
             except:
                 return symbol
 
+        print(ret)
         return ret
     

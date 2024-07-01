@@ -1,93 +1,126 @@
 {
-    "problem_type": "LP",
-    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only 2 manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The latitude and longitude of each location would be given. The cost of transportation per km is Rs. 6. The latitude and longitude are specified below.\\nBhiwandi-19.333111,73.111504\\nBengaluru-12.976750,77.575279\\nDelhi-28.704060,77.102493\\nKolkata-22.565571,88.370209\\nSurat-21.203510,72.839233\\nPune-18.520760,73.855408\\nJaipur-26.920980,75.794220\\nBhopal-23.252319,77.431091\\nAgra-27.167641,78.035873\\nLudhiana-30.913170,75.849541\\nHyderabad-17.361719,78.475166\\nIndore-22.718670,75.855713\\nVarodara-22.420550,73.165690\\nTirunelveli-8.7150,77.7656\\nAhemdabad-23.0225,72.5714\\nChennai-13.0843,80.2705",
-    "problem_info": "A protein powder supply chain network.",
-    "input_format": "Latitude and longitude of each location, cost of transportation per km.",
-    "output_info": "Selected Contract Manufacturers, allocation of Manufacturers to Warehouses, and allocation of Warehouses to Distributors.",
-    "output_format": "List of selected Contract Manufacturers, and allocation of Manufacturers to Warehouses, and allocation of Warehouses to Distributors.",
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only \\param{NumContractManufacturers} manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The latitude and longitude of each location would be given. The cost of transportation per km is Rs. \\param{CostPerKm}. The distances are specified below. \n\n Manufacturer to Warehouse Distances (km) \n Manufacturer\tBhiwandi\tBengaluru\tDelhi \n Ahmedabad\t\\param{Dist_MW_AhemdabadBhiwandi}\t\\param{Dist_MW_AhemdabadBangalore}\t\\param{Dist_MW_AhemdabadDelhi} \n Chennai\t\\param{Dist_MW_ChennaiBhiwandi}\t\\param{Dist_MW_ChennaiBangalore}\t\\param{Dist_MW_ChennaiDelhi} \n Kolkata\t\\param{Dist_MW_KolkataBhiwandi}\t\\param{Dist_MW_KolkataBangalore}\t\\param{Dist_MW_KolkataDelhi} \n Pune\t\\param{Dist_MW_PuneBhiwandi}\t\\param{Dist_MW_PuneBangalore}\t\\param{Dist_MW_PuneDelhi} \n Bhopal\t\\param{Dist_MW_BhopalBhiwandi}\t\\param{Dist_MW_BhopalBangalore}\t\\param{Dist_MW_BhopalDelhi} \n\n Warehouse to Distributor Distances (km) \n Warehouse\tAgra\tLudhiana\tHyderabad\tIndore\tJaipur\tSurat\tVadodara\tTirunelveli \n Bhiwandi\t\\param{Dist_WD_BhiwandiAgra}\t\\param{Dist_WD_BhiwandiLudhiana}\t\\param{Dist_WD_BhiwandiHyderabad}\t\\param{Dist_WD_BhiwandiIndore}\t\\param{Dist_WD_BhiwandiJaipur}\t\\param{Dist_WD_BhiwandiSurat}\t\\param{Dist_WD_BhiwandiVadodara}\t\\param{Dist_WD_BhiwandiTirunelveli} \n Bengaluru\t\\param{Dist_WD_BangaloreAgra}\t\\param{Dist_WD_BangaloreLudhiana}\t\\param{Dist_WD_BangaloreHyderabad}\t\\param{Dist_WD_BangaloreIndore}\t\\param{Dist_WD_BangaloreJaipur}\t\\param{Dist_WD_BangaloreSurat}\t\\param{Dist_WD_BangaloreVadodara}\t\\param{Dist_WD_BangaloreTirunelveli} \n Delhi\t\\param{Dist_WD_DelhiAgra}\t\\param{Dist_WD_DelhiLudhiana}\t\\param{Dist_WD_DelhiHyderabad}\t\\param{Dist_WD_DelhiIndore}\t\\param{Dist_WD_DelhiJaipur}\t\\param{Dist_WD_DelhiSurat}\t\\param{Dist_WD_DelhiVadodara}\t\\param{Dist_WD_DelhiTirunelveli} \n\n Count and add the number of each stakeholders that is Contract manufacturer, warehouse, distributor. To calculate the distance between any stakeholders, add one constraint that would calculate the distance between each stakeholder using the latitude and longitude of respective locations.",
+    "problem_info": "A supply chain network with contract manufacturers, warehouses, and distributors, where the goal is to select the best manufacturers, minimize transportation costs, and determine the supply routes.",
+    "input_format": "Distances between manufacturers and warehouses, distances between warehouses and distributors, cost per kilometer, latitude and longitude of all locations.",
+    "output_info": "The two selected manufacturers, the supply route from each manufacturer to each warehouse and the supply route from each warehouse to each distributor, and the total transportation cost.",
+    "output_format": "A list of two manufacturers, a matrix showing the supply routes from manufacturers to warehouses, a matrix showing the supply routes from warehouses to distributors, and the total transportation cost.",
     "parameters": [
         {
-            "definition": "Latitude of Contract Manufacturer i",
-            "symbol": "{LatitudeCM}_i",
-            "value": 23.0225,
-            "shape": ["NumCM"],
+            "definition": "Number of Contract Manufacturers",
+            "symbol": "{NumContractManufacturers}",
+            "value": 2,
+            "shape": [],
             "status": "formulated"
         },
         {
-            "definition": "Longitude of Contract Manufacturer i",
-            "symbol": "{LongitudeCM}_i",
-            "value": 72.5714,
-            "shape": ["NumCM"],
-            "status": "formulated"
-        },
-        {
-            "definition": "Latitude of Warehouse j",
-            "symbol": "{LatitudeWarehouse}_j",
-            "value": 19.333111,
-            "shape": ["NumWarehouse"],
-            "status": "formulated"
-        },
-        {
-            "definition": "Longitude of Warehouse j",
-            "symbol": "{LongitudeWarehouse}_j",
-            "value": 73.111504,
-            "shape": ["NumWarehouse"],
-            "status": "formulated"
-        },
-        {
-            "definition": "Latitude of Distributor k",
-            "symbol": "{LatitudeDistributor}_k",
-            "value": 27.167641,
-            "shape": ["NumDistributor"],
-            "status": "formulated"
-        },
-        {
-            "definition": "Longitude of Distributor k",
-            "symbol": "{LongitudeDistributor}_k",
-            "value": 78.035873,
-            "shape": ["NumDistributor"],
-            "status": "formulated"
-        },
-        {
-            "definition": "Transportation cost per km",
-            "symbol": "{TransportationCost}",
+            "definition": "Cost per kilometer of transportation",
+            "symbol": "{CostPerKm}",
             "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Manufacturer M and Warehouse W",
+            "symbol": "{Dist_MW}_{MW}",
+            "value": [
+                [501.9, 1433.2, 875.3],
+                [1758.4, 327.4, 2180.4],
+                [1942.4, 1838.2, 1481.8],
+                [580.2, 839.2, 1364.6],
+                [819.2, 917.2, 708.7]
+            ],
+            "shape": ["{NumManufacturers}", "{NumWarehouses}"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Warehouse W and Distributor D",
+            "symbol": "{Dist_WD}_{WD}",
+            "value": [
+                [1153.7, 1586.3, 1428.5, 692.3, 1085.5, 449.2, 430.7, 2086.9],
+                [1923.6, 2356.2, 578.9, 1503.3, 2006.4, 1372.0, 1298.4, 654.3],
+                [216.2, 339.5, 1492.2, 826.0, 250.2, 1120.5, 977.7, 2460.4]
+            ],
+            "shape": ["{NumWarehouses}", "{NumDistributors}"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Manufacturers",
+            "symbol": "{NumManufacturers}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Warehouses",
+            "symbol": "{NumWarehouses}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Distributors",
+            "symbol": "{NumDistributors}",
+            "value": 8,
             "shape": [],
             "status": "formulated"
         }
     ],
     "variables": [
         {
-            "definition": "Is Contract Manufacturer i selected?",
-            "symbol": "{IsSelectedCM}_i",
+            "definition": "Binary variable indicating if manufacturer M is selected",
+            "symbol": "{SelectManufacturer}_M",
             "type": "binary",
-            "shape": ["NumCM"],
+            "shape": ["{NumManufacturers}"],
             "status": "formulated"
         },
         {
-            "definition": "Is Manufacturer i assigned to Warehouse j?",
-            "symbol": "{IsAssignedCMWarehouse}_ijk",
-            "type": "binary",
-            "shape": ["NumCM", "NumWarehouse"],
+            "definition": "Amount of product shipped from manufacturer M to warehouse W",
+            "symbol": "{Amount_MW}_{MW}",
+            "type": "continuous",
+            "shape": ["{NumManufacturers}", "{NumWarehouses}"],
             "status": "formulated"
         },
         {
-            "definition": "Is Warehouse j assigned to Distributor k?",
-            "symbol": "{IsAssignedWarehouseDistributor}_jk",
-            "type": "binary",
-            "shape": ["NumWarehouse", "NumDistributor"],
+            "definition": "Amount of product shipped from warehouse W to distributor D",
+            "symbol": "{Amount_WD}_{WD}",
+            "type": "continuous",
+            "shape": ["{NumWarehouses}", "{NumDistributors}"],
             "status": "formulated"
         }
     ],
     "data": [
         {
-            "{LatitudeCM}_i": [23.0225, 13.0843, 22.565571, 18.520760, 23.252319],
-            "{LongitudeCM}_i": [72.5714, 80.2705, 88.370209, 73.855408, 77.431091],
-            "{LatitudeWarehouse}_j": [19.333111, 12.976750, 28.704060],
-            "{LongitudeWarehouse}_j": [73.111504, 77.575279, 77.102493],
-            "{LatitudeDistributor}_k": [27.167641, 30.913170, 17.361719, 22.718670, 26.920980, 21.203510, 22.420550, 8.7150],
-            "{LongitudeDistributor}_k": [78.035873, 75.849541, 78.475166, 75.855713, 75.794220, 72.839233, 73.165690, 77.7656],
-            "{TransportationCost}": 6
+            "{NumContractManufacturers}": 2
+        },
+        {
+            "{CostPerKm}": 6
+        },
+        {
+            "{Dist_MW}_{MW}": [
+                [501.9, 1433.2, 875.3],
+                [1758.4, 327.4, 2180.4],
+                [1942.4, 1838.2, 1481.8],
+                [580.2, 839.2, 1364.6],
+                [819.2, 917.2, 708.7]
+            ]
+        },
+        {
+            "{Dist_WD}_{WD}": [
+                [1153.7, 1586.3, 1428.5, 692.3, 1085.5, 449.2, 430.7, 2086.9],
+                [1923.6, 2356.2, 578.9, 1503.3, 2006.4, 1372.0, 1298.4, 654.3],
+                [216.2, 339.5, 1492.2, 826.0, 250.2, 1120.5, 977.7, 2460.4]
+            ]
+        },
+        {
+            "{NumManufacturers}": 5
+        },
+        {
+            "{NumWarehouses}": 3
+        },
+        {
+            "{NumDistributors}": 8
         }
-    ]
+    ],
+    "path": "/home/ckushj/LLM_Agent_SCO/Modelv6/data/problem_4"
 }
