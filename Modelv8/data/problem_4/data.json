@@ -1,9 +1,5 @@
 {
-    "{NumManuf}": 5,
-    "{NumWarehouses}": 3,
-    "{NumDistributors}": 8,
-    "{CostPerKm}": 6,
-    "{ManufToWarehouseDist}_mw": [
+    "{DistManufWare}_{mw}": [
         [
             501.9,
             1433.2,
@@ -30,7 +26,7 @@
             708.7
         ]
     ],
-    "{WarehouseToDistDist}_wd": [
+    "{DistWareDist}_{wd}": [
         [
             1153.7,
             1586.3,

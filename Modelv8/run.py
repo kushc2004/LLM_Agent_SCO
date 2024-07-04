@@ -57,7 +57,7 @@ def run_evaluator(self, path):
     evaluate.generate_reply(state=state, sender=self ,task="Evaluate, Your responsibility is to run the code and evaluate the performance and correctness of the code.")
 
 def test():
-    with open("/home/ckushj/LLM_Agent_SCO/modelv8/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv8/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY1"])
@@ -68,7 +68,7 @@ def test():
 
 
 
-path="/home/ckushj/LLM_Agent_SCO/modelv8/data/problem_4"
+path="/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_4"
 generate_snop(path)
 run_manager(Agent, path)
 # run_formulator(Agent, path)

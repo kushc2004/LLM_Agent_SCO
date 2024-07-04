@@ -120,7 +120,8 @@
             "shape": [
                 "NumManuf"
             ],
-            "status": "formulated"
+            "status": "coded",
+            "code": "SelectManuf = model.addVars(NumManuf, vtype=gp.GRB.BINARY, name=\"SelectManuf\")"
         },
         {
             "definition": "Binary variable indicating if Manufacturer m is supplying to Warehouse w",
@@ -130,7 +131,8 @@
                 "NumManuf",
                 "NumWarehouses"
             ],
-            "status": "formulated"
+            "status": "coded",
+            "code": "ManufToWarehouseFlow = model.addVars(NumManuf, NumWarehouses, vtype=gp.GRB.BINARY, name=\"ManufToWarehouseFlow\")"
         },
         {
             "definition": "Binary variable indicating if Warehouse w is supplying to Distributor d",
@@ -140,7 +142,8 @@
                 "NumWarehouses",
                 "NumDistributors"
             ],
-            "status": "formulated"
+            "status": "coded",
+            "code": "WarehouseToDistFlow = model.addVars(NumWarehouses, NumDistributors, vtype=gp.GRB.BINARY, name=\"WarehouseToDistFlow\")"
         }
     ],
     "data": [
@@ -225,7 +228,7 @@
     "objective": [
         {
             "description": "Minimize the total transportation cost in the supply chain network",
-            "status": "formulated",
+            "status": "coded",
             "formulation": "\\sum_{m=1}^{\\textup{NumManuf}} \\sum_{w=1}^{\\textup{NumWarehouses}} \\textup{ManufToWarehouseFlow}_{mw} \\cdot \\textup{ManufToWarehouseDist}_{mw} \\cdot \\textup{CostPerKm} + \\sum_{w=1}^{\\textup{NumWarehouses}} \\sum_{d=1}^{\\textup{NumDistributors}} \\textup{WarehouseToDistFlow}_{wd} \\cdot \\textup{WarehouseToDistDist}_{wd} \\cdot \\textup{CostPerKm}",
             "related_variables": [
                 "ManufToWarehouseFlow",
@@ -240,29 +243,31 @@
                 "NumDistributors",
                 "WarehouseToDistDist",
                 "CostPerKm"
-            ]
+            ],
+            "code": "model.setObjective(gp.quicksum(gp.quicksum(ManufToWarehouseFlow[m, w] * ManufToWarehouseDist[m][w] * CostPerKm for w in range(NumWarehouses)) for m in range(NumManuf)) + gp.quicksum(gp.quicksum(WarehouseToDistFlow[w, d] * WarehouseToDistDist[w][d] * CostPerKm for d in range(NumDistributors)) for w in range(NumWarehouses)), gp.GRB.MINIMIZE)"
         }
     ],
     "constraints": [
         {
-            "description": "Exactly two contract manufacturers should be selected",
-            "formulation": "\\sum_{m=1}^{\\textup{{NumManuf}}} \\textup{{SelectManuf}}_{m} = 2",
-            "reasoning": "Valid constraint. This constraint ensures that we select only two manufacturers as mentioned in the problem description.",
-            "status": "formulated",
+            "description": "Only two manufacturers should be selected as contract manufacturers.",
+            "formulation": "\\sum_{m=1}^{\\textup{{NumManuf}}} \\textup{{SelectManuf}}_m = 2",
+            "reasoning": "This constraint enforces that we select exactly two manufacturers from the pool of available manufacturers.",
+            "status": "coded",
             "relevant_section": "Only 2 manufactures would be selected from these.",
             "related_variables": [
                 "SelectManuf"
             ],
             "related_parameters": [
                 "NumManuf"
-            ]
+            ],
+            "code": "model.addConstr(gp.quicksum(SelectManuf[m] for m in range(NumManuf)) == 2, name='SelectTwoManufs')"
         },
         {
-            "description": "If a manufacturer is supplying to any warehouse, then that manufacturer should be selected",
-            "formulation": "\\textup{{ManufToWarehouseFlow}}_{mw} \\leq \\textup{{SelectManuf}}_{m}, \\forall m \\in \\{1, 2, ..., \\textup{{NumManuf}}\\}, \\forall w \\in \\{1, 2, ..., \\textup{{NumWarehouses}}\\}",
-            "reasoning": "Valid constraint. This constraint makes sure that if a manufacturer is supplying to a warehouse, then it should be selected.",
-            "status": "formulated",
-            "relevant_section": "Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.",
+            "description": "If a manufacturer is not selected, it cannot supply to any warehouse.",
+            "formulation": "\\textup{{ManufToWarehouseFlow}}_{mw} \\leq \\textup{{SelectManuf}}_m \\quad \\forall m \\in \\{1, 2, ..., \\textup{{NumManuf}}\\}, \\forall w \\in \\{1, 2, ..., \\textup{{NumWarehouses}}\\}",
+            "reasoning": " This constraint ensures that only selected manufacturers can ship products to warehouses. If a manufacturer is not selected (\\textup{{SelectManuf}}_m = 0), it cannot supply to any warehouse.",
+            "status": "coded",
+            "relevant_section": "Only 2 manufactures would be selected from these.",
             "related_variables": [
                 "ManufToWarehouseFlow",
                 "SelectManuf"
@@ -270,44 +275,29 @@
             "related_parameters": [
                 "NumManuf",
                 "NumWarehouses"
-            ]
-        },
-        {
-            "description": "If a manufacturer is selected, then it should supply to at least one warehouse",
-            "formulation": "\\textup{{SelectManuf}}_{m} \\leq \\sum_{w=1}^{\\textup{{NumWarehouses}}} \\textup{{ManufToWarehouseFlow}}_{mw}, \\forall m \\in \\{1, 2, ..., \\textup{{NumManuf}}\\}",
-            "reasoning": "Valid constraint. This constraint makes sure that if a manufacturer is selected, then it should supply to at least one warehouse.",
-            "status": "formulated",
-            "relevant_section": "Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.",
-            "related_variables": [
-                "SelectManuf",
-                "ManufToWarehouseFlow"
             ],
-            "related_parameters": [
-                "NumWarehouses",
-                "NumManuf"
-            ]
+            "code": "for m in range(NumManuf):\n    for w in range(NumWarehouses):\n        model.addConstr(ManufToWarehouseFlow[m, w] <= SelectManuf[m], name=\"ManufToWarehouseFlow_constraint\")"
         },
         {
-            "description": "If a warehouse is supplying to any distributor, then at least one manufacturer should supply to that warehouse",
-            "formulation": "\\textup{{WarehouseToDistFlow}}_{wd} \\leq \\sum_{m=1}^{\\textup{{NumManuf}}} \\textup{{ManufToWarehouseFlow}}_{mw}, \\forall w \\in \\{1, 2, ..., \\textup{{NumWarehouses}}\\}, \\forall d \\in \\{1, 2, ..., \\textup{{NumDistributors}}\\}",
-            "reasoning": "Valid Constraint. This constraint ensures that if a warehouse is supplying to any distributor, then there should be at least one manufacturer supplying to that warehouse. ",
-            "status": "formulated",
+            "description": "Each warehouse should be supplied by exactly one manufacturer.",
+            "formulation": "\\sum_{m=1}^{\\textup{{NumManuf}}} \\textup{{ManufToWarehouseFlow}}_{mw} = 1 \\quad \\forall w \\in \\{1, 2, ..., \\textup{{NumWarehouses}}\\}",
+            "reasoning": "This constraint ensures that each warehouse receives products from only one manufacturer.",
+            "status": "coded",
             "relevant_section": "Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.",
             "related_variables": [
-                "WarehouseToDistFlow",
                 "ManufToWarehouseFlow"
             ],
             "related_parameters": [
                 "NumManuf",
-                "NumWarehouses",
-                "NumDistributors"
-            ]
+                "NumWarehouses"
+            ],
+            "code": "for w in range(NumWarehouses):\n    model.addConstr(gp.quicksum(ManufToWarehouseFlow[m, w] for m in range(NumManuf)) == 1, name=f\"Each_warehouse_one_manufacturer_{w+1}\")"
         },
         {
-            "description": "Each distributor should be supplied by exactly one warehouse",
-            "formulation": "\\sum_{w=1}^{\\textup{{NumWarehouses}}} \\textup{{WarehouseToDistFlow}}_{wd} = 1, \\forall d \\in \\{1, 2, ..., \\textup{{NumDistributors}}\\}",
-            "reasoning": "Valid Constraint. This constraints ensures that each distributor is supplied by exactly one warehouse.",
-            "status": "formulated",
+            "description": "Each distributor should be supplied by exactly one warehouse.",
+            "formulation": "\\sum_{w=1}^{\\textup{{NumWarehouses}}} \\textup{{WarehouseToDistFlow}}_{wd} = 1 \\quad \\forall d \\in \\{1, 2, ..., \\textup{{NumDistributors}}\\}",
+            "reasoning": "This constraint makes sure that each distributor is served by exactly one warehouse.",
+            "status": "coded",
             "relevant_section": "Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.",
             "related_variables": [
                 "WarehouseToDistFlow"
@@ -315,8 +305,10 @@
             "related_parameters": [
                 "NumWarehouses",
                 "NumDistributors"
-            ]
+            ],
+            "code": "for d in range(NumDistributors):\n    model.addConstr(gp.quicksum(WarehouseToDistFlow[w, d] for w in range(NumWarehouses)) == 1, name=\"DistSupplyConstraint_\" + str(d + 1))"
         }
     ],
-    "log_folder": "/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_4/log"
+    "log_folder": "/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_4/log",
+    "solution_status": null
 }

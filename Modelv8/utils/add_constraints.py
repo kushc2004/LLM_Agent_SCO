@@ -158,7 +158,7 @@ def generate_constraints(folder_dir: str):
     """
     # Read input.json
     with open(folder_dir + "/input.json", "r") as f:
-        input_json = json.load(f)
+        input_json = json.load(f, strict=False)
 
     desc = input_json.get("description", "")
     # if not description:
@@ -191,7 +191,7 @@ def generate_constraints(folder_dir: str):
         output = match.group(1).strip()
 
     # Update the input_json with new parameters from the output
-    output_data = json.loads(output)
+    output_data = json.loads(output, strict=False)
     input_json["background"] = output_data.get("background", "")
     input_json["objective"] = output_data.get("objective", "")
     input_json["input_format"] = output_data.get("input_format", "")
@@ -230,14 +230,14 @@ def generate_constraints(folder_dir: str):
         output = match.group(1).strip()
 
     
-    output_data = json.loads(output)
+    output_data = json.loads(output, strict=False)
 
     constraints = output_data.get("constraints", [])
     input_json["constraints"] = constraints
 
     print(output)
 
-    # checked_update = json.loads(output)
+    # checked_update = json.loads(output, strict=False)
 
     # # Update constraints in input_json
     # valid_constraints = [

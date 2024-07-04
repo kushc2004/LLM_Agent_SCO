@@ -91,7 +91,7 @@ class GroupChatManager(Agent):
 
                     if decision == "DONE":
                         print("DONE")
-                        return "The problem is solved.", state
+                        # return "The problem is solved.", state
                     decision = json.loads(decision)
                     break
 
@@ -106,6 +106,11 @@ class GroupChatManager(Agent):
 
                         err = traceback.format_exc()
                         print(err)
+
+            if decision['agent_name'] == 'DONE':
+                print("DONE")
+                print("PROBLEM SOLVED")
+                break
 
             print(
                 "---- History:\n",

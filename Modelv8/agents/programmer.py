@@ -34,7 +34,8 @@ buy = model.addVars(I, M, vtype=gp.GRB.CONTINUOUS, name="buy")
 
 
 - Note that the indices in symbol (what comes after _ ) are not a part of the variable name in code.
-- Use model.addVar instead of model.addVars if the variable is a scalar.
+- Use model.addVar instead of model.addVars only if the variable is a scalar.
+- While programming, if yo are using paramter or varibale symbols then do not use the brackets {{ or }}, the brackets are only for your understanding that anything mentioned inside the bracket is a symbol.
 
 """
 ]
@@ -69,6 +70,7 @@ Variables: {variables}
           Example: 
           import math 
           model.setObjective(gp.quicksum(gp.quicksum(Visit[v, c] * math.sqrt((Latitude[c] - Latitude[c - 1])**2 + (Longitude[c] - Longitude[c - 1])**2) for c in range(1, N + 1)) for v in range(V)), gp.GRB.MINIMIZE) 
+- While programming, if yo are using paramter or varibale symbols then do not use the brackets {{ or }}, the brackets are only for your understanding that anything mentioned inside the bracket is a symbol.
 
 Here's an example:
 **input**:
@@ -126,6 +128,9 @@ You're an expert programmer in a team of optimization experts. The goal of the t
 - When you are coding the parameters use the matrix form for writing it. Example: Dist[m][w]
 - The tuple form for writing is different. Example: Dist[m,w]
 - You should identify correctly how to represent it and then code. For simplicity, use matrix form for parameters and always use tuple form for variables.
+- While programming, if yo are using paramter or varibale symbols then do not use the brackets {{ or }}, the brackets are only for your understanding that anything mentioned inside the bracket is a symbol.
+- Ensure that you are not using gp.quicksum on an expression that already represents a single linear expression. Don't write quicksum for every sum, first understand what the expression means then write it accordingly.
+- Ensure that you put all the brackets correctly, and are not missing any.
 
 Here's the objective function we need you to write the code for, along with the list of related variables and parameters:
 
@@ -139,7 +144,8 @@ Parameters: {parameters}
 Variables: {variables}
 -----
 
-Assume the parameters and variables are defined, and gurobipy is imported as gp. Now generate a code accordingly and enclose it between "=====" lines. Only generate the code and the =====s, and don't generate any other text. Here's an example:
+Assume the parameters and variables are defined, and gurobipy is imported as gp. Now generate a code accordingly and enclose it between "=====" lines. Only generate the code and the =====s, and don't generate any other text. 
+Here's an example only for your reference, code it in a way which is in correct syntax and that you feel is correct:
 
 **input**:
 
@@ -180,6 +186,27 @@ Assume the parameters and variables are defined, and gurobipy is imported as gp.
             "definition": "price of storing one unit of product",
             "shape": []
         }}
+    ],
+    "objective": [
+        {{
+            "description": "Minimize the total transportation cost in the supply chain network",
+            "status": "formulated",
+            "formulation": "\\sum_{{m=1}}^\\textup{{Manufacturers}} \\sum_{{w=1}}^\\textup{{Warehouses}} \\textup{{TransportCost}} \\cdot \\textup{{Distance}}_{{m,w}} \\cdot \\textup{{Flow}}_{{m,w}} + \\sum_{{w=1}}^\\textup{{Warehouses}} \\sum_{{d=1}}^\\textup{{Distributors}} \\textup{{TransportCost}} \\cdot \\textup{{Distance1}}_{{w,d}} \\cdot \\textup{{Flow1}}_{{w,d}}",
+            "related_variables": [
+                "Flow",
+                "Flow1"
+            ],
+            "related_parameters": [
+                "Manufacturers",
+                "Warehouses",
+                "TransportCost",
+                "Distance",
+                "Warehouses",
+                "Distributors",
+                "TransportCost",
+                "Distance1"
+            ]
+        }}
     ]
 }}
 
@@ -188,8 +215,10 @@ Assume the parameters and variables are defined, and gurobipy is imported as gp.
 
 =====
 # Set objective
-m.setObjective(gp.quicksum(profit[k] * x[k, i] - storeCost * s[k, i] for k in range(K) for i in range(I)), gp.GRB.MAXIMIZE)
+model.setObjective(gp.quicksum(gp.quicksum(TransportCost * Distance[m][w] * Flow[m, w] for w in range(Warehouses)) for m in range(Manufacturers)) + gp.quicksum(gp.quicksum(TransportCost * Distance1[w][d] * Flow1[w, d] for d in range(Distributors)) for w in range(Warehouses)), gp.GRB.MINIMIZE)
 =====
+
+
 
 Take a deep breath and approach this task methodically, step by step.
 
@@ -481,7 +510,7 @@ class Programmer(Agent):
                 response = response[response.find("```json") + 7 :]
                 response = response[: response.rfind("```")]
 
-                update = json.loads(response)
+                update = json.loads(response, strict=False)
 
                 if update["status"] == "correct":
                     bogus_context["status"] = "formulation_error"

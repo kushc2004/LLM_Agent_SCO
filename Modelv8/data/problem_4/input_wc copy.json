@@ -220,7 +220,7 @@
             ]
         }
     ],
-    "path": "/home/ckushj/LLM_Agent_SCO/modelv8/data/problem_4",
+    "path": "/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_4",
     "background": "A protein powder supply chain consists of Contract Manufacturers (CM), Warehouses (WH), and Distributors (Dist). The flow is from CM to WH to Dist. There are {NumManuf} potential CMs, {NumWarehouses} WHs, and {NumDistributors} Dist. Only 2 CMs will be selected. The objective is to minimize the total transportation cost. The cost of transportation per km is {CostPerKm}.  The distances between each CM and WH, and each WH and Dist are given in matrices {ManufToWarehouseDist} and {WarehouseToDistDist} respectively.",
     "objective": [
         {

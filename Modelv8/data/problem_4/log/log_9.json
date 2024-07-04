@@ -166,7 +166,7 @@
             ]
         }
     ],
-    "path": "/home/ckushj/LLM_Agent_SCO/modelv8/data/problem_4",
+    "path": "/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_4",
     "background": "A protein powder supply chain consists of Contract Manufacturers (CM), Warehouses (WH), and Distributors (Dist). The flow is from CM to WH to Dist. There are {NumManufacturers} potential CMs, {NumWarehouses} WHs, and {NumDistributors} Dist. Only 2 CMs will be selected. The objective is to minimize the total transportation cost. The cost of transportation per km is {CostPerKm}.  The distances between each CM and WH, and each WH and Dist are given in matrices {Distance_MW}_mw and {Distance_WD}_wd respectively.",
     "objective": [
         {
@@ -368,9 +368,9 @@
             "code": "for w in range(NumWarehouses):\n    for d in range(NumDistributors):\n        model.addConstr(Flow_WD[w, d] >= 0, name=\"Flow_WD_non_negative\")\n        model.addConstr(Flow_WD[w, d] <= gp.GRB.INFINITY, name=\"Flow_WD_integer\")"
         }
     ],
-    "log_folder": "/home/ckushj/LLM_Agent_SCO/modelv8/data/problem_4/log",
+    "log_folder": "/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_4/log",
     "solution_status": "runtime_error",
-    "error_message": "Traceback (most recent call last):\n  File \"/home/ckushj/LLM_Agent_SCO/modelv8/agents/evaluator.py\", line 216, in _run_code\n    exec(last_line, local_env, local_env)\n  File \"<string>\", line 4, in <module>\nTypeError: unsupported operand type(s) for %: 'Var' and 'int'\n",
+    "error_message": "Traceback (most recent call last):\n  File \"/home/ckushj/LLM_Agent_SCO/Modelv8/agents/evaluator.py\", line 216, in _run_code\n    exec(last_line, local_env, local_env)\n  File \"<string>\", line 4, in <module>\nTypeError: unsupported operand type(s) for %: 'Var' and 'int'\n",
     "prep_code": "\nimport json\nimport numpy as np\nimport math\n\nimport gurobipy as gp\nfrom gurobipy import GRB\n\n # Define model\nmodel = gp.Model('model')\n\n\n\n",
     "solver_output_status": "runtime_error"
 }

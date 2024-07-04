@@ -225,7 +225,7 @@ class Formulator(Agent):
                 print(response)
                 print("=" * 10)
                 # with open("/Users/kush/Files/Intern/LLM/Model/agents/test.json", "r") as f:
-                #     output = json.load(f)
+                #     output = json.load(f, strict=False)
                 # output = json.dumps(output)
                 
                 output = response
@@ -287,7 +287,7 @@ class Formulator(Agent):
                 print(output)
                 print("*" * 10)
                 
-                update = json.loads(output)
+                update = json.loads(output, strict=False)
                 
                 if "variables_mentioned" not in update:
                     update["variables_mentioned"] = []
@@ -433,7 +433,7 @@ class Formulator(Agent):
                     output = match.group(1).strip()
 
                 output = output.replace(" \\", " \\\\")
-                update = json.loads(output)
+                update = json.loads(output, strict=False)
 
                 break
             except Exception as e:

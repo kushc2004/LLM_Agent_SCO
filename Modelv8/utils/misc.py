@@ -6,15 +6,15 @@ from vertexai.generative_models import GenerativeModel, Part
 import vertexai.preview.generative_models as generative_models
 
 def gemini_client():
-    with open("/home/ckushj/LLM_Agent_SCO/modelv8/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv8/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY_ORIGINAL"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-1.5-pro')
     return model
 
 def gemini_client1():
-    with open("/home/ckushj/LLM_Agent_SCO/modelv8/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv8/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY1"])
@@ -22,7 +22,7 @@ def gemini_client1():
     return model
 
 def gemini_client2():
-    with open("/home/ckushj/LLM_Agent_SCO/modelv8/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv8/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY2"])
@@ -30,7 +30,7 @@ def gemini_client2():
     return model
 
 def gemini_client3():
-    with open("/home/ckushj/LLM_Agent_SCO/modelv8/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv8/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY3"])
@@ -38,7 +38,7 @@ def gemini_client3():
     return model
 
 def gemini_client4():
-    with open("/home/ckushj/LLM_Agent_SCO/modelv8/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv8/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY4"])
@@ -46,7 +46,7 @@ def gemini_client4():
     return model
 
 def vertexai_client():
-    with open("/home/ckushj/LLM_Agent_SCO/modelv8/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv8/config.json") as f:
         config = json.load(f)
     
     vertexai.init(project = config["PROJECT_ID"], location="us-central1") # Replace with your project ID and region 
@@ -81,7 +81,7 @@ def vertex_ai_llm_call(prompt):
     return output
 
 def gemini_client_pro():
-    with open("/home/ckushj/LLM_Agent_SCO/modelv8/config.json") as f:
+    with open("/home/ckushj/LLM_Agent_SCO/Modelv8/config.json") as f:
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY_PRO"])

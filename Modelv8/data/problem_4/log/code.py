@@ -12,33 +12,39 @@ model = gp.Model('model')
 
 
 
-NumManuf = 5
-NumWarehouses = 3
-NumDistributors = 8
-CostPerKm = 6
-ManufToWarehouseDist = [[501.9, 1433.2, 875.3], [1758.4, 327.4, 2180.4], [1942.4, 1838.2, 1481.8], [580.2, 839.2, 1364.6], [819.2, 917.2, 708.7]]
-WarehouseToDistDist = [[1153.7, 1586.3, 1428.5, 692.3, 1085.5, 449.2, 430.7, 2086.9], [1923.6, 2356.2, 578.9, 1503.3, 2006.4, 1372.0, 1298.4, 654.3], [216.2, 339.5, 1492.2, 826.0, 250.2, 1120.5, 977.7, 2460.4]]
+Manuf = 5
+Warehouses = 3
+Distributor = 8
+DistManufWare = [[501.9, 1433.2, 875.3], [1758.4, 327.4, 2180.4], [1942.4, 1838.2, 1481.8], [580.2, 839.2, 1364.6], [819.2, 917.2, 708.7]]
+DistWareDist = [[1153.7, 1586.3, 1428.5, 692.3, 1085.5, 449.2, 430.7, 2086.9], [1923.6, 2356.2, 578.9, 1503.3, 2006.4, 1372.0, 1298.4, 654.3], [216.2, 339.5, 1492.2, 826.0, 250.2, 1120.5, 977.7, 2460.4]]
+TransportCost = 6
+ManuSelected = 2
 
 # Define model
 model = gp.Model('model')
 
-SelectManuf = model.addVars(NumManuf, vtype=gp.GRB.BINARY, name="SelectManuf")
-ManufToWarehouseFlow = model.addVars(NumManuf, NumWarehouses, vtype=gp.GRB.BINARY, name="ManufToWarehouseFlow")
-WarehouseToDistFlow = model.addVars(NumWarehouses, NumDistributors, vtype=gp.GRB.BINARY, name="WarehouseToDistFlow")
+Z = model.addVars(Manuf, vtype=gp.GRB.BINARY, name="Z")
+X = model.addVars(Manuf, Warehouses, vtype=gp.GRB.BINARY, name="X")
+Y = model.addVars(Warehouses, Distributor, vtype=gp.GRB.BINARY, name="Y")
 
-model.addConstr(gp.quicksum(SelectManuf[m] for m in range(NumManuf)) == 2, name='SelectTwoManufs')
+model.addConstr(gp.quicksum(Z[m] for m in range(Manuf)) == ManuSelected, name="manu_selected")
 
-for m in range(NumManuf):
-    for w in range(NumWarehouses):
-        model.addConstr(ManufToWarehouseFlow[m, w] <= SelectManuf[m], name="ManufToWarehouseFlow_constraint")
+for m in range(Manuf):
+    for w in range(Warehouses):
+        model.addConstr(X[m, w] <= Z[m], name="constraint_manufacturer_supply")
 
-for w in range(NumWarehouses):
-    model.addConstr(gp.quicksum(ManufToWarehouseFlow[m, w] for m in range(NumManuf)) == 1, name=f"Each_warehouse_one_manufacturer_{w+1}")
+for w in range(Warehouses):
+    model.addConstr(gp.quicksum(X[m, w] for m in range(Manuf)) >= 1, name="Each_Warehouse_supplied_by_atleast_one_Manufacturer")
 
-for d in range(NumDistributors):
-    model.addConstr(gp.quicksum(WarehouseToDistFlow[w, d] for w in range(NumWarehouses)) == 1, name="DistSupplyConstraint_" + str(d + 1))
+for d in range(Distributor):
+    model.addConstr(gp.quicksum(Y[w, d] for w in range(Warehouses)) >= 1, name=f"Distributor_Supplied_{d}")
 
-model.setObjective(gp.quicksum(gp.quicksum(ManufToWarehouseFlow[m, w] * ManufToWarehouseDist[m][w] * CostPerKm for w in range(NumWarehouses)) for m in range(NumManuf)) + gp.quicksum(gp.quicksum(WarehouseToDistFlow[w, d] * WarehouseToDistDist[w][d] * CostPerKm for d in range(NumDistributors)) for w in range(NumWarehouses)), gp.GRB.MINIMIZE)
+for m in range(Manuf):
+    model.addConstr(gp.quicksum(X[m, w] for w in range(Warehouses)) <= Manuf * Z[m], name="manuf_to_warehouses")
+
+model.addConstr(gp.quicksum(Z[m] for m in range(Manuf)) == ManuSelected, name="selected_manufacturers")
+
+model.setObjective(gp.quicksum(gp.quicksum(TransportCost * DistManufWare[m][w] * X[m, w] for w in range(Warehouses)) for m in range(Manuf)) + gp.quicksum(gp.quicksum(TransportCost * DistWareDist[w][d] * Y[w, d] for d in range(Distributor)) for w in range(Warehouses)), gp.GRB.MINIMIZE)
 
 # Optimize model
 model.optimize()
