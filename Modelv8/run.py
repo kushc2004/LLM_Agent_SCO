@@ -14,7 +14,7 @@ from agents.user_proxy import UserProxy
 
 
 def generate_snop(path):
-    transform_problem(path)
+    # transform_problem(path)
     generate_constraints(path)
 
 def run_formulator(self, path):
@@ -68,10 +68,10 @@ def test():
 
 
 
-path="/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_4"
-generate_snop(path)
-run_manager(Agent, path)
-# run_formulator(Agent, path)
+path="/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_6"
+# generate_snop(path)
+# run_manager(Agent, path)
+run_formulator(Agent, path)
 # test()
 # run_programmer(Agent, path)
 # run_evaluator(Agent, path)

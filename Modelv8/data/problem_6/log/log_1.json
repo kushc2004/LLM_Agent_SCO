@@ -1,0 +1,509 @@
+{
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at 3 different locations. The Distributors are located at 10 different locations. The Manufactures who have applied to be selected as Contract Manufacturers are total 3 in number. Only 2 manufactures would be selected from these. The supply chain also has supplier which are 5 in number.Goods goes from one supplier to one bonded warehouse only and the bonded warehouses are 2 in number.Goods can either go from bonded warehouse to manufacturer or from bonded warehouse to warehouse only.The goods can go from only one bonded warehouse to only one warehouse if it choose to go that route.Also one distributor can take goods from only one warehouse only.Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The cost of transportation per km is Rs. \\param{TransportationCostPerKM}.\\nAlso we are including carbon emission in total cost such that the amount of distance travelled from one facility to another which is multilped by emission cost per km which is \\param{CarbonEmissionCostPerKM} which is then multiplied by carbon tax equal to \\param{CarbonTax}.Also fixed carbon emission cost which is equal to \\param{FixedCarbonEmissionCost} multiplied by carbon tax equal to \\param{CarbonTax}.Sum of all the carbon emission the fixed carbon taxes should be less than the carbon credits which the user will input.\\nThe distances are specified below.\\ndistance  matrix tells the distance between supplier and bonded warehouse\\ndistance1 matrix tells the distance between manufacturer and warehouse\\ndistance2 matrix tells the distance between warehouse and distributor\\ndistance3 matrix tells the distance between bonded warehouse and warehouse\\ndistance4 matrix tells the distance between bonded warehouse and manufacturer",
+    "problem_info": "This problem is about optimizing a protein powder supply chain to minimize transportation costs and carbon emissions. The supply chain involves selecting two contract manufacturers out of three, determining the flow of goods from five suppliers through two bonded warehouses to the manufacturers and then to three warehouses, and finally distributing to ten different distributor locations. The objective is to find the optimal supply chain network that minimizes the total cost, including transportation costs and carbon emissions, while staying within a specified carbon credit limit.",
+    "input_format": "Number of suppliers, number of bonded warehouses, number of potential manufacturers, number of warehouses, number of distributors, distance between each pair of suppliers and bonded warehouses, distance between each pair of potential manufacturers and warehouses, distance between each pair of warehouses and distributors, distance between each pair of bonded warehouse and warehouse, distance between each pair of bonded warehouse and potential manufacturer, transportation cost per KM, Carbon Emission Cost Per KM, Carbon Tax, Fixed Carbon Emission Cost, Carbon Credits.",
+    "output_info": "The output should provide the following information:\\n1. The two selected Contract Manufacturers.\\n2. The flow of goods from each Supplier to Bonded Warehouse.\\n3. The flow of goods from each Bonded Warehouse to Manufacturer or Warehouse.\\n4. The flow of goods from each Manufacturer to Warehouse.\\n5. The flow of goods from each Warehouse to Distributor.\\n6. The total transportation cost.\\n7. Total carbon emission cost.",
+    "output_format": "Selected Contract Manufacturers, Assignment of each selected manufacturer to warehouses, Assignment of each warehouse to distributors, Assignment of each supplier to bonded warehouses, Assignment of each bonded warehouse to manufacturer or warehouse",
+    "parameters": [
+        {
+            "definition": "Number of suppliers",
+            "symbol": "{Suppliers}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of bonded warehouses",
+            "symbol": "{BondedWarehouses}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of potential manufacturers",
+            "symbol": "{PotentialManufacturers}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of warehouses",
+            "symbol": "{Warehouses}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of distributors",
+            "symbol": "{Distributors}",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between supplier s and bonded warehouse b",
+            "symbol": "{DistanceSB}_{sb}",
+            "value": "",
+            "shape": [
+                "Suppliers",
+                "BondedWarehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between potential manufacturer m and warehouse w",
+            "symbol": "{DistanceMW}_{mw}",
+            "value": "",
+            "shape": [
+                "PotentialManufacturers",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between warehouse w and distributor d",
+            "symbol": "{DistanceWD}_{wd}",
+            "value": "",
+            "shape": [
+                "Warehouses",
+                "Distributors"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between bonded warehouse b and warehouse w",
+            "symbol": "{DistanceBW}_{bw}",
+            "value": "",
+            "shape": [
+                "BondedWarehouses",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between bonded warehouse b and potential manufacturer m",
+            "symbol": "{DistanceBM}_{bm}",
+            "value": "",
+            "shape": [
+                "BondedWarehouses",
+                "PotentialManufacturers"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation cost per KM",
+            "symbol": "{TransportationCostPerKM}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Carbon Emission Cost Per KM",
+            "symbol": "{CarbonEmissionCostPerKM}",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Carbon Tax",
+            "symbol": "{CarbonTax}",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Fixed Carbon Emission Cost",
+            "symbol": "{FixedCarbonEmissionCost}",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Carbon Credits",
+            "symbol": "{CarbonCredits}",
+            "value": 1000,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Cost per quantity",
+            "symbol": "{CostPerQuantity}",
+            "value": 20,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of manufacturers to be selected",
+            "symbol": "{SelectedManufacturers}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Flow of goods from supplier s to bonded warehouse b (1 if flow exists, 0 otherwise)",
+            "symbol": "{FlowSB}_{sb}",
+            "type": "binary",
+            "shape": [
+                "Suppliers",
+                "BondedWarehouses"
+            ],
+            "status": "coded",
+            "code": "FlowSB = model.addVars(Suppliers, BondedWarehouses, vtype=gp.GRB.BINARY, name=\"FlowSB\")"
+        },
+        {
+            "definition": "Flow of goods from potential manufacturer m to warehouse w (1 if flow exists, 0 otherwise)",
+            "symbol": "{FlowMW}_{mw}",
+            "type": "binary",
+            "shape": [
+                "PotentialManufacturers",
+                "Warehouses"
+            ],
+            "status": "coded",
+            "code": "FlowMW = model.addVars(PotentialManufacturers, Warehouses, vtype=gp.GRB.BINARY, name=\"FlowMW\")"
+        },
+        {
+            "definition": "Flow of goods from warehouse w to distributor d (1 if flow exists, 0 otherwise)",
+            "symbol": "{FlowWD}_{wd}",
+            "type": "binary",
+            "shape": [
+                "Warehouses",
+                "Distributors"
+            ],
+            "status": "coded",
+            "code": "FlowWD = model.addVars(Warehouses, Distributors, vtype=gp.GRB.BINARY, name=\"FlowWD\")"
+        },
+        {
+            "definition": "Flow of goods from bonded warehouse b to warehouse w (1 if flow exists, 0 otherwise)",
+            "symbol": "{FlowBW}_{bw}",
+            "type": "binary",
+            "shape": [
+                "BondedWarehouses",
+                "Warehouses"
+            ],
+            "status": "coded",
+            "code": "FlowBW = model.addVars(BondedWarehouses, Warehouses, vtype=gp.GRB.BINARY, name=\"FlowBW\")"
+        },
+        {
+            "definition": "Flow of goods from bonded warehouse b to potential manufacturer m (1 if flow exists, 0 otherwise)",
+            "symbol": "{FlowBM}_{bm}",
+            "type": "binary",
+            "shape": [
+                "BondedWarehouses",
+                "PotentialManufacturers"
+            ],
+            "status": "coded",
+            "code": "FlowBM = model.addVars(BondedWarehouses, PotentialManufacturers, vtype=GRB.BINARY, name=\"FlowBM\")"
+        },
+        {
+            "definition": "1 if potential manufacturer m is selected, 0 otherwise",
+            "symbol": "{ManufacturerSelected}_{m}",
+            "type": "binary",
+            "shape": [
+                "PotentialManufacturers"
+            ],
+            "status": "coded",
+            "code": "ManufacturerSelected = model.addVars(PotentialManufacturers, vtype=gp.GRB.BINARY, name=\"ManufacturerSelected\")"
+        }
+    ],
+    "data": [
+        {
+            "{DistanceSB}_{sb}": [
+                [
+                    1942.4,
+                    1838.2
+                ],
+                [
+                    580.2,
+                    839.2
+                ],
+                [
+                    501.9,
+                    1433.2
+                ],
+                [
+                    1758.4,
+                    327.4
+                ],
+                [
+                    819.2,
+                    917.2
+                ]
+            ]
+        },
+        {
+            "{DistanceBM}_{bm}": [
+                [
+                    2000.0,
+                    15.0,
+                    20.0
+                ],
+                [
+                    25.0,
+                    30.0,
+                    2000.0
+                ]
+            ]
+        },
+        {
+            "{DistanceMW}_{mw}": [
+                [
+                    1942.4,
+                    1838.2,
+                    1481.8
+                ],
+                [
+                    839.2,
+                    1364.6,
+                    580.2
+                ],
+                [
+                    1433.2,
+                    875.3,
+                    501.9
+                ]
+            ]
+        },
+        {
+            "{DistanceWD}_{wd}": [
+                [
+                    1153.7,
+                    1586.3,
+                    1428.5,
+                    692.3,
+                    1085.5,
+                    449.2,
+                    430.7,
+                    2086.9,
+                    1923.6,
+                    2356.2
+                ],
+                [
+                    578.9,
+                    1503.3,
+                    2006.4,
+                    1372.0,
+                    1298.4,
+                    654.3,
+                    216.2,
+                    339.5,
+                    1492.2,
+                    826.0
+                ],
+                [
+                    250.2,
+                    1120.5,
+                    977.7,
+                    2460.4,
+                    15.0,
+                    2000.0,
+                    20.0,
+                    25.0,
+                    30.0,
+                    2000.0
+                ]
+            ]
+        },
+        {
+            "{DistanceBW}_{bw}": [
+                [
+                    1000,
+                    10,
+                    20
+                ],
+                [
+                    10,
+                    1000,
+                    20
+                ]
+            ]
+        }
+    ],
+    "path": "/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_6",
+    "background": "A protein powder supply chain network optimization problem that involves selecting two contract manufacturers out of three potential manufacturers. The supply chain includes suppliers, bonded warehouses, manufacturers, warehouses, and distributors. The flow of goods starts from suppliers to bonded warehouses. From bonded warehouses, goods can go either to manufacturers or directly to warehouses. Finally, the goods flow from warehouses to distributors.  The objective is to minimize the total transportation cost, considering distances between facilities and carbon emissions.",
+    "objective": [
+        {
+            "description": "Minimize the total transportation cost of the supply chain network considering transportation and emission costs.",
+            "status": "coded",
+            "formulation": "\\sum_{s=1}^{\\textup{Suppliers}} \\sum_{b=1}^{\\textup{BondedWarehouses}} \\textup{FlowSB}_{sb} \\cdot \\textup{DistanceSB}_{sb} \\cdot (\\textup{TransportationCostPerKM} + \\textup{CarbonEmissionCostPerKM} \\cdot \\textup{CarbonTax}) + \\sum_{b=1}^{\\textup{BondedWarehouses}} \\sum_{m=1}^{\\textup{PotentialManufacturers}} \\textup{FlowBM}_{bm} \\cdot \\textup{DistanceBM}_{bm} \\cdot (\\textup{TransportationCostPerKM} + \\textup{CarbonEmissionCostPerKM} \\cdot \\textup{CarbonTax}) + \\sum_{b=1}^{\\textup{BondedWarehouses}} \\sum_{w=1}^{\\textup{Warehouses}} \\textup{FlowBW}_{bw} \\cdot \\textup{DistanceBW}_{bw} \\cdot (\\textup{TransportationCostPerKM} + \\textup{CarbonEmissionCostPerKM} \\cdot \\textup{CarbonTax}) + \\sum_{m=1}^{\\textup{PotentialManufacturers}} \\sum_{w=1}^{\\textup{Warehouses}} \\textup{FlowMW}_{mw} \\cdot \\textup{DistanceMW}_{mw} \\cdot (\\textup{TransportationCostPerKM} + \\textup{CarbonEmissionCostPerKM} \\cdot \\textup{CarbonTax}) + \\sum_{w=1}^{\\textup{Warehouses}} \\sum_{d=1}^{\\textup{Distributors}} \\textup{FlowWD}_{wd} \\cdot \\textup{DistanceWD}_{wd} \\cdot (\\textup{TransportationCostPerKM} + \\textup{CarbonEmissionCostPerKM} \\cdot \\textup{CarbonTax})",
+            "related_variables": [
+                "FlowSB",
+                "FlowBM",
+                "FlowBW",
+                "FlowMW",
+                "FlowWD"
+            ],
+            "related_parameters": [
+                "Suppliers",
+                "BondedWarehouses",
+                "DistanceSB",
+                "TransportationCostPerKM",
+                "CarbonEmissionCostPerKM",
+                "CarbonTax",
+                "BondedWarehouses",
+                "PotentialManufacturers",
+                "DistanceBM",
+                "TransportationCostPerKM",
+                "CarbonEmissionCostPerKM",
+                "CarbonTax",
+                "BondedWarehouses",
+                "Warehouses",
+                "DistanceBW",
+                "TransportationCostPerKM",
+                "CarbonEmissionCostPerKM",
+                "CarbonTax",
+                "PotentialManufacturers",
+                "Warehouses",
+                "DistanceMW",
+                "TransportationCostPerKM",
+                "CarbonEmissionCostPerKM",
+                "CarbonTax",
+                "Warehouses",
+                "Distributors",
+                "DistanceWD",
+                "TransportationCostPerKM",
+                "CarbonEmissionCostPerKM",
+                "CarbonTax"
+            ],
+            "code": "model.setObjective(gp.quicksum(gp.quicksum(FlowSB[s][b] * DistanceSB[s][b] * (TransportationCostPerKM + CarbonEmissionCostPerKM * CarbonTax) for b in range(BondedWarehouses)) for s in range(Suppliers)) + gp.quicksum(gp.quicksum(FlowBM[b][m] * DistanceBM[b][m] * (TransportationCostPerKM + CarbonEmissionCostPerKM * CarbonTax) for m in range(PotentialManufacturers)) for b in range(BondedWarehouses)) + gp.quicksum(gp.quicksum(FlowBW[b][w] * DistanceBW[b][w] * (TransportationCostPerKM + CarbonEmissionCostPerKM * CarbonTax) for w in range(Warehouses)) for b in range(BondedWarehouses)) + gp.quicksum(gp.quicksum(FlowMW[m][w] * DistanceMW[m][w] * (TransportationCostPerKM + CarbonEmissionCostPerKM * CarbonTax) for w in range(Warehouses)) for m in range(PotentialManufacturers)) + gp.quicksum(gp.quicksum(FlowWD[w][d] * DistanceWD[w][d] * (TransportationCostPerKM + CarbonEmissionCostPerKM * CarbonTax) for d in range(Distributors)) for w in range(Warehouses)), gp.GRB.MINIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "Each supplier can supply to only one bonded warehouse.",
+            "formulation": "\\sum_{b=1}^{\\textup{{BondedWarehouses}}} \\textup{{FlowSB}}_{sb} \\le 1 \\quad \\forall s \\in \\{1, 2, ..., \\textup{{Suppliers}}\\}",
+            "reasoning": "This is a valid constraint ensuring each supplier sends goods to at most one bonded warehouse.",
+            "status": "coded",
+            "relevant_section": "The supply chain also has supplier which are 5 in number.Goods goes from one supplier to one bonded warehouse only and the bonded warehouses are 2 in number.",
+            "related_variables": [
+                "FlowSB"
+            ],
+            "related_parameters": [
+                "BondedWarehouses",
+                "Suppliers"
+            ],
+            "code": "for s in range(Suppliers):\n    model.addConstr(gp.quicksum(FlowSB[s, b] for b in range(BondedWarehouses)) <= 1, name=\"SupplierToBondedWarehouse\")"
+        },
+        {
+            "description": "Each bonded warehouse can supply to only one manufacturer or one warehouse.",
+            "formulation": "\\sum_{m=1}^{\\textup{{PotentialManufacturers}}} \\textup{{FlowBM}}_{bm} + \\sum_{w=1}^{\\textup{{Warehouses}}} \\textup{{FlowBW}}_{bw} \\le 1 \\quad \\forall b \\in \\{1, 2, ..., \\textup{{BondedWarehouses}}\\}",
+            "reasoning": "This is a valid constraint. It ensures that each bonded warehouse can only send goods to either a single manufacturer or a single warehouse, but not both.",
+            "status": "coded",
+            "relevant_section": "Goods can either go from bonded warehouse to manufacturer or from bonded warehouse to warehouse only.The goods can go from only one bonded warehouse to only one warehouse if it choose to go that route.",
+            "related_variables": [
+                "FlowBM",
+                "FlowBW"
+            ],
+            "related_parameters": [
+                "PotentialManufacturers",
+                "Warehouses",
+                "BondedWarehouses"
+            ],
+            "code": "for b in range(BondedWarehouses):\n    model.addConstr(gp.quicksum(FlowBM[b, m] for m in range(PotentialManufacturers)) + gp.quicksum(FlowBW[b, w] for w in range(Warehouses)) <= 1, name=\"BondedWarehouseSupply\")"
+        },
+        {
+            "description": "Each manufacturer can supply to any number of warehouses.",
+            "formulation": "\\sum_{w=1}^{\\textup{Warehouses}} \\textup{FlowMW}_{mw} \\leq \\textup{ManufacturerSelected}_{m} \\quad \\forall m \\in \\{1, 2, 3\\}",
+            "reasoning": "Invalid",
+            "status": "coded",
+            "relevant_section": "none",
+            "related_variables": [
+                "FlowMW",
+                "ManufacturerSelected"
+            ],
+            "related_parameters": [
+                "Warehouses"
+            ],
+            "code": "for m in range(PotentialManufacturers):\n    model.addConstr(gp.quicksum(FlowMW[m, w] for w in range(Warehouses)) <= ManufacturerSelected[m], name=\"Manufacturer_Warehouses\")"
+        },
+        {
+            "description": "Each warehouse can supply to only one distributor.",
+            "formulation": "\\sum_{d=1}^{\\textup{{Distributors}}} \\textup{{FlowWD}}_{wd} \\le 1 \\quad \\forall w \\in \\{1, 2, ..., \\textup{{Warehouses}}\\}",
+            "reasoning": "This is a valid constraint ensuring each warehouse supplies at most one distributor.",
+            "status": "coded",
+            "relevant_section": "Also one distributor can take goods from only one warehouse only.",
+            "related_variables": [
+                "FlowWD"
+            ],
+            "related_parameters": [
+                "Distributors",
+                "Warehouses"
+            ],
+            "code": "for w in range(Warehouses):\n    model.addConstr(gp.quicksum(FlowWD[w, d] for d in range(Distributors)) <= 1, name=\"Warehouse_one_distributor\")"
+        },
+        {
+            "description": "Each distributor can be supplied by only one warehouse.",
+            "formulation": "\\sum_{w=1}^{\\textup{{Warehouses}}} \\textup{{FlowWD}}_{wd} = 1 \\quad \\forall d \\in \\{1, 2, ..., \\textup{{Distributors}}\\}",
+            "reasoning": "This is a valid constraint as each distributor must be supplied by exactly one warehouse.",
+            "status": "coded",
+            "relevant_section": "Also one distributor can take goods from only one warehouse only.",
+            "related_variables": [
+                "FlowWD"
+            ],
+            "related_parameters": [
+                "Warehouses",
+                "Distributors"
+            ],
+            "code": "for d in range(Distributors):\n    model.addConstr(gp.quicksum(FlowWD[w, d] for w in range(Warehouses)) == 1, name=f'each_distributor_one_warehouse_{d}')"
+        },
+        {
+            "description": "Exactly two manufacturers should be selected.",
+            "formulation": "\\sum_{m=1}^{\\textup{{PotentialManufacturers}}} \\textup{{ManufacturerSelected}}_{m} = \\textup{{SelectedManufacturers}}",
+            "reasoning": "This is a valid constraint to enforce the selection of two manufacturers.",
+            "status": "coded",
+            "relevant_section": "Only 2 manufactures would be selected from these.",
+            "related_variables": [
+                "ManufacturerSelected"
+            ],
+            "related_parameters": [
+                "PotentialManufacturers",
+                "SelectedManufacturers"
+            ],
+            "code": "model.addConstr(gp.quicksum(ManufacturerSelected[m] for m in range(PotentialManufacturers)) == SelectedManufacturers, name=\"ManufacturerSelection\")"
+        },
+        {
+            "description": "Sum of distances multiplied by emission cost per km, multiplied by carbon tax plus fixed carbon emission cost multiplied by carbon tax should be less than the carbon credits.",
+            "formulation": "\\textup{{CarbonTax}} \\times (\\textup{{FixedCarbonEmissionCost}} + \\sum_{s=1}^{\\textup{{Suppliers}}} \\sum_{b=1}^{\\textup{{BondedWarehouses}}} \\textup{{FlowSB}}_{sb} \\times \\textup{{DistanceSB}}_{sb} \\times \\textup{{CarbonEmissionCostPerKM}} + \\sum_{b=1}^{\\textup{{BondedWarehouses}}} \\sum_{m=1}^{\\textup{{PotentialManufacturers}}} \\textup{{FlowBM}}_{bm} \\times \\textup{{DistanceBM}}_{bm} \\times \\textup{{CarbonEmissionCostPerKM}} + \\sum_{b=1}^{\\textup{{BondedWarehouses}}} \\sum_{w=1}^{\\textup{{Warehouses}}} \\textup{{FlowBW}}_{bw} \\times \\textup{{DistanceBW}}_{bw} \\times \\textup{{CarbonEmissionCostPerKM}} + \\sum_{m=1}^{\\textup{{PotentialManufacturers}}} \\sum_{w=1}^{\\textup{{Warehouses}}} \\textup{{FlowMW}}_{mw} \\times \\textup{{DistanceMW}}_{mw} \\times \\textup{{CarbonEmissionCostPerKM}} + \\sum_{w=1}^{\\textup{{Warehouses}}} \\sum_{d=1}^{\\textup{{Distributors}}} \\textup{{FlowWD}}_{wd} \\times \\textup{{DistanceWD}}_{wd} \\times \\textup{{CarbonEmissionCostPerKM}}) \\le \\textup{{CarbonCredits}}",
+            "reasoning": "This is a valid constraint. It calculates the total carbon emission cost, including both variable and fixed costs, and ensures it's within the carbon credit limit.",
+            "status": "coded",
+            "relevant_section": "Also we are including carbon emission in total cost such that the amount of distance travelled from one facility to another which is multilped by emission cost per km which is \\\\param{CarbonEmissionCostPerKM} which is then multiplied by carbon tax equal to \\\\param{CarbonTax}.Also fixed carbon emission cost which is equal to \\\\param{FixedCarbonEmissionCost} multiplied by carbon tax equal to \\\\param{CarbonTax}.Sum of all the carbon emission the fixed carbon taxes should be less than the carbon credits which the user will input.",
+            "related_variables": [
+                "FlowSB",
+                "FlowBM",
+                "FlowBW",
+                "FlowMW",
+                "FlowWD"
+            ],
+            "related_parameters": [
+                "CarbonTax",
+                "FixedCarbonEmissionCost",
+                "Suppliers",
+                "BondedWarehouses",
+                "DistanceSB",
+                "CarbonEmissionCostPerKM",
+                "BondedWarehouses",
+                "PotentialManufacturers",
+                "DistanceBM",
+                "CarbonEmissionCostPerKM",
+                "BondedWarehouses",
+                "Warehouses",
+                "DistanceBW",
+                "CarbonEmissionCostPerKM",
+                "PotentialManufacturers",
+                "Warehouses",
+                "DistanceMW",
+                "CarbonEmissionCostPerKM",
+                "Warehouses",
+                "Distributors",
+                "DistanceWD",
+                "CarbonEmissionCostPerKM",
+                "CarbonCredits"
+            ],
+            "code": "model.addConstr(CarbonTax * (FixedCarbonEmissionCost + gp.quicksum(gp.quicksum(FlowSB[s, b] * DistanceSB[s, b] * CarbonEmissionCostPerKM for s in range(Suppliers) for b in range(BondedWarehouses)) + gp.quicksum(gp.quicksum(FlowBM[b, m] * DistanceBM[b, m] * CarbonEmissionCostPerKM for b in range(BondedWarehouses) for m in range(PotentialManufacturers)) + gp.quicksum(gp.quicksum(FlowBW[b, w] * DistanceBW[b, w] * CarbonEmissionCostPerKM for b in range(BondedWarehouses) for w in range(Warehouses)) + gp.quicksum(gp.quicksum(FlowMW[m, w] * DistanceMW[m, w] * CarbonEmissionCostPerKM for m in range(PotentialManufacturers) for w in range(Warehouses)) + gp.quicksum(gp.quicksum(FlowWD[w, d] * DistanceWD[w, d] * CarbonEmissionCostPerKM for w in range(Warehouses) for d in range(Distributors)))) <= CarbonCredits, name=\"CarbonEmissionConstraint\")"
+        }
+    ],
+    "log_folder": "/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_6/log",
+    "solution_status": null
+}

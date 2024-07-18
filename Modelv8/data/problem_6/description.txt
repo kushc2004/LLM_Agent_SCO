@@ -1,0 +1,32 @@
+A protein powder supply chain consists of Supplier,Bonded Warehouse, Manufacturer, Warehouse and Distributor. The flow of goods is from Supplier to Bonded Warehouse,from Bonded Warehouse goods can either go to Manufacturer or to Warehouse,then the goods from the Manufacturer move to Warehouse to then to Distributor. Warehouses are at 2 diffrent locations. The Distributors are located at 4 diffrent locations. The Manufactures is 1 in number.The supply chain also has Supplier which are 3 in number loacted at diffrent locations.In the supply chain we have 2 Bonded Warehouses from where the goods goes from one Supplier to one Bonded Warehouse only .Goods originating from a Bonded Warehouse have the option to be transferred directly to a single Warehouse.Each distributor sources goods from exclusively one warehouse, while warehouses can supply multiple distributors.This task involves optimizing a supply chain network with a transportation cost of Rs. 6 per kilometer. The optimization model should use binary flow variables (0 or 1) to indicate whether goods are transported between facilities, where 1 represents flow and 0 represents no flow. The quantity of goods transported is represented by continuous variables, allowing for a range of values.
+ 
+
+The distances are specified below.
+distance  matrix tell the distance between Supplier and Bonded Warehouse
+distance1 matrix tell the distance between Manufacturer and Warehouse
+distance2 matrix tell the distance between Warehouse and Distributor
+distance3 matrix tell the distance between Bonded Warehouse and Warehouse
+distance4 matrix tell the distance between Bonded Warehouse and Manufacturer
+
+distance = [
+    [1942.4, 1838.2],
+    [580.2, 839.2],
+    [501.9, 1433.2]
+]
+distance1 = [
+    [839, 1365]
+]
+distance2= [
+    [1153.7, 1586.3, 1428.5, 692.3, 1085.5, 449.2, 430.7, 2086.9, 1923.6, 2356.2],
+    [578.9, 1503.3, 2006.4, 1372.0, 1298.4, 654.3, 216.2, 339.5, 1492.2, 826.0],
+    [250.2, 1120.5, 977.7, 2460.4, 15.0, 2000.0, 20.0, 25.0, 30.0, 2000.0]
+]
+distance3 = [
+    [1000, 10, 20, 30, 40, 50],
+    [10, 1000, 20, 50, 1000, 20]
+]
+distance4 = [
+    [2000.0, 15.0, 20.0],
+    [25.0, 30.0, 2000.0]
+]
+Manufacturers can distribute products to any number of warehouses, and those warehouses, in turn, can supply any number of distributors.  The objective is to minimize the total transportation cost, which is calculated by multiplying the quantity shipped across each link in the network (Manufacturer-to-Warehouse and Warehouse-to-Distributor) by a fixed cost per unit of 20. The goal is to determine the optimal flow of goods through the network that minimizes the total cost while meeting the demand of the distributors.

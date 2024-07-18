@@ -1,0 +1,404 @@
+{
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Supplier, Bonded Warehouse, Manufacturer, Warehouse and Distributor. The flow of goods is from Supplier to Bonded Warehouse, from Bonded Warehouse goods can either go to Manufacturer or to Warehouse, then the goods from the Manufacturer move to Warehouse to then to Distributor. Warehouses are at \\param{Warehouses} different locations. The Distributors are located at \\param{Distributors} different locations. The Manufactures is \\param{Manufacturers} in number. The supply chain also has Supplier which are \\param{Suppliers} in number located at different locations. In the supply chain we have \\param{BondedWarehouses} Bonded Warehouses from where the goods goes from one Supplier to one Bonded Warehouse only. Goods originating from a Bonded Warehouse have the option to be transferred directly to a single Warehouse. Each distributor sources goods from exclusively one warehouse, while warehouses can supply multiple distributors. This task involves optimizing a supply chain network with a transportation cost of Rs. \\param{TranportationCost} per kilometer. The optimization model should use binary flow variables (0 or 1) to indicate whether goods are transported between facilities, where 1 represents flow and 0 represents no flow. The quantity of goods transported is represented by continuous variables, allowing for a range of values. The objective is to minimize the total transportation cost, which is calculated by multiplying the quantity shipped across each link in the network (Manufacturer-to-Warehouse and Warehouse-to-Distributor) by a fixed cost per unit of \\param{FixedCost}. The goal is to determine the optimal flow of goods through the network that minimizes the total cost while meeting the demand of the distributors.",
+    "problem_info": "Minimize the transportation cost of protein powder supply chain.",
+    "input_format": "Number of suppliers, number of bonded warehouses, number of manufacturers, number of warehouses, number of distributors, distance between each pair of facilities, transportation cost per kilometer, fixed cost per unit.",
+    "output_info": "Optimal flow of goods and minimum transportation cost.",
+    "output_format": "Optimal flow of goods between each pair of facilities, indicating whether goods are transported (1) or not (0), and the quantity of goods transported.",
+    "parameters": [
+        {
+            "definition": "Number of Suppliers",
+            "symbol": "{Suppliers}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Bonded Warehouses",
+            "symbol": "{BondedWarehouses}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Manufacturers",
+            "symbol": "{Manufacturers}",
+            "value": 1,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Warehouses",
+            "symbol": "{Warehouses}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Distributors",
+            "symbol": "{Distributors}",
+            "value": 4,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Supplier s and Bonded Warehouse b",
+            "symbol": "{DistanceSB}_{sb}",
+            "value": "",
+            "shape": [
+                "Suppliers",
+                "BondedWarehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Manufacturer m and Warehouse w",
+            "symbol": "{DistanceMW}_{mw}",
+            "value": "",
+            "shape": [
+                "Manufacturers",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Warehouse w and Distributor d",
+            "symbol": "{DistanceWD}_{wd}",
+            "value": "",
+            "shape": [
+                "Warehouses",
+                "Distributors"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bonded Warehouse b and Warehouse w",
+            "symbol": "{DistanceBW}_{bw}",
+            "value": "",
+            "shape": [
+                "BondedWarehouses",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bonded Warehouse b and Manufacturer m",
+            "symbol": "{DistanceBM}_{bm}",
+            "value": "",
+            "shape": [
+                "BondedWarehouses",
+                "Manufacturers"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation cost per kilometer",
+            "symbol": "{TranportationCost}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Fixed cost per unit",
+            "symbol": "{FixedCost}",
+            "value": 20,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Flow of goods from Supplier s to Bonded Warehouse b (1 if flow, 0 otherwise)",
+            "symbol": "{FlowSB}_{sb}",
+            "type": "binary",
+            "shape": [
+                "Suppliers",
+                "BondedWarehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Flow of goods from Bonded Warehouse b to Manufacturer m (1 if flow, 0 otherwise)",
+            "symbol": "{FlowBM}_{bm}",
+            "type": "binary",
+            "shape": [
+                "BondedWarehouses",
+                "Manufacturers"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Flow of goods from Bonded Warehouse b to Warehouse w (1 if flow, 0 otherwise)",
+            "symbol": "{FlowBW}_{bw}",
+            "type": "binary",
+            "shape": [
+                "BondedWarehouses",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Flow of goods from Manufacturer m to Warehouse w (1 if flow, 0 otherwise)",
+            "symbol": "{FlowMW}_{mw}",
+            "type": "binary",
+            "shape": [
+                "Manufacturers",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Flow of goods from Warehouse w to Distributor d (1 if flow, 0 otherwise)",
+            "symbol": "{FlowWD}_{wd}",
+            "type": "binary",
+            "shape": [
+                "Warehouses",
+                "Distributors"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Supplier s to Bonded Warehouse b",
+            "symbol": "{QuantitySB}_{sb}",
+            "type": "continuous",
+            "shape": [
+                "Suppliers",
+                "BondedWarehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Bonded Warehouse b to Manufacturer m",
+            "symbol": "{QuantityBM}_{bm}",
+            "type": "continuous",
+            "shape": [
+                "BondedWarehouses",
+                "Manufacturers"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Bonded Warehouse b to Warehouse w",
+            "symbol": "{QuantityBW}_{bw}",
+            "type": "continuous",
+            "shape": [
+                "BondedWarehouses",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Manufacturer m to Warehouse w",
+            "symbol": "{QuantityMW}_{mw}",
+            "type": "continuous",
+            "shape": [
+                "Manufacturers",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Warehouse w to Distributor d",
+            "symbol": "{QuantityWD}_{wd}",
+            "type": "continuous",
+            "shape": [
+                "Warehouses",
+                "Distributors"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "data": [
+        {
+            "{DistanceSB}_{sb}": [
+                [
+                    1942.4,
+                    1838.2
+                ],
+                [
+                    580.2,
+                    839.2
+                ],
+                [
+                    501.9,
+                    1433.2
+                ]
+            ]
+        },
+        {
+            "{DistanceMW}_{mw}": [
+                [
+                    839,
+                    1365
+                ]
+            ]
+        },
+        {
+            "{DistanceWD}_{wd}": [
+                [
+                    1153.7,
+                    1586.3,
+                    1428.5,
+                    692.3
+                ],
+                [
+                    1085.5,
+                    449.2,
+                    430.7,
+                    2086.9
+                ]
+            ]
+        },
+        {
+            "{DistanceBW}_{bw}": [
+                [
+                    1000,
+                    10
+                ],
+                [
+                    10,
+                    1000
+                ]
+            ]
+        },
+        {
+            "{DistanceBM}_{bm}": [
+                [
+                    2000.0
+                ],
+                [
+                    25.0
+                ]
+            ]
+        }
+    ],
+    "path": "/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_6",
+    "background": "This problem tackles supply chain optimization for protein powder distribution. The supply chain starts with multiple Suppliers sending goods to Bonded Warehouses. From there, goods can either go directly to a Warehouse or through a Manufacturer before reaching the Warehouse. Finally, Warehouses distribute the goods to various Distributors. The objective is to minimize the total transportation cost, which includes a fixed cost per unit and a cost proportional to the distance traveled.",
+    "objective": [
+        {
+            "description": "Minimize the total transportation cost, which includes a fixed cost per unit and a cost proportional to the distance traveled.",
+            "status": "not_formulated"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "Each supplier can only send goods to one bonded warehouse.",
+            "formulation": "\\sum_{b=1}^{|{BondedWarehouses}|} \\textup{FlowSB}_{sb} \\le 1 \\quad \\forall s \\in \\{1, 2, ..., |{Suppliers}|\\}",
+            "reasoning": "This is a valid constraint as it restricts the flow from suppliers to a single bonded warehouse.",
+            "status": "formulated",
+            "relevant_section": "In the supply chain we have |{BondedWarehouses}| Bonded Warehouses from where the goods goes from one Supplier to one Bonded Warehouse only."
+        },
+        {
+            "description": "Each bonded warehouse can only send goods to one manufacturer.",
+            "formulation": "\\sum_{m=1}^{|{Manufacturers}|} \\textup{FlowBM}_{bm} \\le 1 \\quad \\forall b \\in \\{1, 2, ..., |{BondedWarehouses}|\\}",
+            "reasoning": "This is a valid constraint as it restricts the flow from each bonded warehouse to a single manufacturer.",
+            "status": "formulated",
+            "relevant_section": "In the supply chain we have |{BondedWarehouses}| Bonded Warehouses from where the goods goes from one Supplier to one Bonded Warehouse only."
+        },
+        {
+            "description": "Each bonded warehouse can only send goods to one warehouse.",
+            "formulation": "\\sum_{w=1}^{|{Warehouses}|} \\textup{FlowBW}_{bw} \\le 1 \\quad \\forall b \\in \\{1, 2, ..., |{BondedWarehouses}|\\}",
+            "reasoning": "This is a valid constraint as it restricts the flow from each bonded warehouse to a single warehouse.",
+            "status": "formulated",
+            "relevant_section": "Goods originating from a Bonded Warehouse have the option to be transferred directly to a single Warehouse."
+        },
+        {
+            "description": "Each manufacturer can only send goods to warehouses.",
+            "formulation": "This statement describes the structure of the supply chain but doesn't introduce a mathematical constraint on the flow variables. ",
+            "reasoning": "Invalid. This is not a constraint, but rather a description of the allowed flow.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        },
+        {
+            "description": "Each warehouse can only receive goods from manufacturers and/or bonded warehouses.",
+            "formulation": "This statement describes the structure of the supply chain but doesn't introduce a mathematical constraint on the flow variables. ",
+            "reasoning": "Invalid. This is not a constraint, but rather a description of the allowed flow.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        },
+        {
+            "description": "Each warehouse can supply to multiple distributors.",
+            "formulation": "This statement describes the structure of the supply chain but doesn't introduce a mathematical constraint on the flow variables. ",
+            "reasoning": "Invalid. This is not a constraint, but rather a description of the allowed flow.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        },
+        {
+            "description": "Each distributor can only receive goods from one warehouse.",
+            "formulation": "\\sum_{w=1}^{|{Warehouses}|} \\textup{FlowWD}_{wd} = 1 \\quad \\forall d \\in \\{1, 2, ..., |{Distributors}|\\}",
+            "reasoning": "This is a valid constraint as it restricts the flow from warehouses to a single distributor per distributor.",
+            "status": "formulated",
+            "relevant_section": "Each distributor sources goods from exclusively one warehouse, while warehouses can supply multiple distributors."
+        },
+        {
+            "description": "Flow of goods from Supplier s to Bonded Warehouse b is 0 if |{FlowSB}_{sb}| is 0",
+            "formulation": "\\textup{QuantitySB}_{sb} \\le M \\cdot \\textup{FlowSB}_{sb}  \\quad \\forall s \\in \\{1, 2, ..., |{Suppliers}|\\}, b \\in \\{1, 2, ..., |{BondedWarehouses}|\\}",
+            "reasoning": "This is a valid constraint as it ensures the quantity transported is 0 if there's no flow between the supplier and the bonded warehouse.  Note: M represents a sufficiently large number to avoid restricting the quantity when there is flow.",
+            "status": "formulated",
+            "relevant_section": "The optimization model should use binary flow variables (0 or 1) to indicate whether goods are transported between facilities, where 1 represents flow and 0 represents no flow. The quantity of goods transported is represented by continuous variables, allowing for a range of values."
+        },
+        {
+            "description": "Flow of goods from Supplier s to Bonded Warehouse b is unrestricted if |{FlowSB}_{sb}| is 1",
+            "formulation": "This constraint is implicitly satisfied by the previous constraint and doesn't require a separate formulation.",
+            "reasoning": "Redundant. This constraint is already covered by the previous one.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        },
+        {
+            "description": "Flow of goods from Bonded Warehouse b to Manufacturer m is 0 if |{FlowBM}_{bm}| is 0",
+            "formulation": "\\textup{QuantityBM}_{bm} \\le M \\cdot \\textup{FlowBM}_{bm} \\quad \\forall b \\in \\{1, 2, ..., |{BondedWarehouses}|\\}, m \\in \\{1, 2, ..., |{Manufacturers}|\\}",
+            "reasoning": "This is a valid constraint as it ensures the quantity transported is 0 if there's no flow between the bonded warehouse and the manufacturer. Note: M represents a sufficiently large number to avoid restricting the quantity when there is flow.",
+            "status": "formulated",
+            "relevant_section": "The optimization model should use binary flow variables (0 or 1) to indicate whether goods are transported between facilities, where 1 represents flow and 0 represents no flow. The quantity of goods transported is represented by continuous variables, allowing for a range of values."
+        },
+        {
+            "description": "Flow of goods from Bonded Warehouse b to Manufacturer m is unrestricted if |{FlowBM}_{bm}| is 1",
+            "formulation": "This constraint is implicitly satisfied by the previous constraint and doesn't require a separate formulation.",
+            "reasoning": "Redundant. This constraint is already covered by the previous one.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        },
+        {
+            "description": "Flow of goods from Bonded Warehouse b to Warehouse w is 0 if |{FlowBW}_{bw}| is 0",
+            "formulation": "\\textup{QuantityBW}_{bw} \\le M \\cdot \\textup{FlowBW}_{bw} \\quad \\forall b \\in \\{1, 2, ..., |{BondedWarehouses}|\\}, w \\in \\{1, 2, ..., |{Warehouses}|\\}",
+            "reasoning": "This is a valid constraint as it ensures the quantity transported is 0 if there's no flow between the bonded warehouse and the warehouse. Note: M represents a sufficiently large number to avoid restricting the quantity when there is flow.",
+            "status": "formulated",
+            "relevant_section": "The optimization model should use binary flow variables (0 or 1) to indicate whether goods are transported between facilities, where 1 represents flow and 0 represents no flow. The quantity of goods transported is represented by continuous variables, allowing for a range of values."
+        },
+        {
+            "description": "Flow of goods from Bonded Warehouse b to Warehouse w is unrestricted if |{FlowBW}_{bw}| is 1",
+            "formulation": "This constraint is implicitly satisfied by the previous constraint and doesn't require a separate formulation.",
+            "reasoning": "Redundant. This constraint is already covered by the previous one.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        },
+        {
+            "description": "Flow of goods from Manufacturer m to Warehouse w is 0 if |{FlowMW}_{mw}| is 0",
+            "formulation": "\\textup{QuantityMW}_{mw} \\le M \\cdot \\textup{FlowMW}_{mw} \\quad \\forall m \\in \\{1, 2, ..., |{Manufacturers}|\\}, w \\in \\{1, 2, ..., |{Warehouses}|\\}",
+            "reasoning": "This is a valid constraint as it ensures the quantity transported is 0 if there's no flow between the manufacturer and the warehouse. Note: M represents a sufficiently large number to avoid restricting the quantity when there is flow.",
+            "status": "formulated",
+            "relevant_section": "The optimization model should use binary flow variables (0 or 1) to indicate whether goods are transported between facilities, where 1 represents flow and 0 represents no flow. The quantity of goods transported is represented by continuous variables, allowing for a range of values."
+        },
+        {
+            "description": "Flow of goods from Manufacturer m to Warehouse w is unrestricted if |{FlowMW}_{mw}| is 1",
+            "formulation": "This constraint is implicitly satisfied by the previous constraint and doesn't require a separate formulation.",
+            "reasoning": "Redundant. This constraint is already covered by the previous one.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        },
+        {
+            "description": "Flow of goods from Warehouse w to Distributor d is 0 if |{FlowWD}_{wd}| is 0",
+            "formulation": "\\textup{QuantityWD}_{wd} \\le M \\cdot \\textup{FlowWD}_{wd} \\quad \\forall w \\in \\{1, 2, ..., |{Warehouses}|\\}, d \\in \\{1, 2, ..., |{Distributors}|\\}",
+            "reasoning": "This is a valid constraint as it ensures the quantity transported is 0 if there's no flow between the warehouse and the distributor. Note: M represents a sufficiently large number to avoid restricting the quantity when there is flow.",
+            "status": "formulated",
+            "relevant_section": "The optimization model should use binary flow variables (0 or 1) to indicate whether goods are transported between facilities, where 1 represents flow and 0 represents no flow. The quantity of goods transported is represented by continuous variables, allowing for a range of values."
+        },
+        {
+            "description": "Flow of goods from Warehouse w to Distributor d is unrestricted if |{FlowWD}_{wd}| is 1",
+            "formulation": "This constraint is implicitly satisfied by the previous constraint and doesn't require a separate formulation.",
+            "reasoning": "Redundant. This constraint is already covered by the previous one.",
+            "status": "not_formulated",
+            "relevant_section": "none"
+        }
+    ]
+}

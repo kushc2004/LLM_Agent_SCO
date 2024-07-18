@@ -71,6 +71,8 @@ Variables: {variables}
           import math 
           model.setObjective(gp.quicksum(gp.quicksum(Visit[v, c] * math.sqrt((Latitude[c] - Latitude[c - 1])**2 + (Longitude[c] - Longitude[c - 1])**2) for c in range(1, N + 1)) for v in range(V)), gp.GRB.MINIMIZE) 
 - While programming, if yo are using paramter or varibale symbols then do not use the brackets {{ or }}, the brackets are only for your understanding that anything mentioned inside the bracket is a symbol.
+- Ensure that you are not using gp.quicksum on an expression that already represents a single linear expression. Don't write quicksum for every sum, first understand what the expression means then write it accordingly.
+- Ensure that you put all the brackets correctly, and are not missing any.
 
 Here's an example:
 **input**:

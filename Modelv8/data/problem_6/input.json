@@ -1,0 +1,199 @@
+{
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Supplier, Bonded Warehouse, Manufacturer, Warehouse and Distributor. The flow of goods is from Supplier to Bonded Warehouse, from Bonded Warehouse goods can either go to Manufacturer or to Warehouse, then the goods from the Manufacturer move to Warehouse to then to Distributor. Warehouses are at \\param{Warehouses} different locations. The Distributors are located at \\param{Distributors} different locations. The Manufactures is \\param{Manufacturers} in number. The supply chain also has Supplier which are \\param{Suppliers} in number located at different locations. In the supply chain we have \\param{BondedWarehouses} Bonded Warehouses from where the goods goes from one Supplier to one Bonded Warehouse only. Goods originating from a Bonded Warehouse have the option to be transferred directly to a single Warehouse. Each distributor sources goods from exclusively one warehouse, while warehouses can supply multiple distributors. This task involves optimizing a supply chain network with a transportation cost of Rs. \\param{TranportationCost} per kilometer. The optimization model should use binary flow variables (0 or 1) to indicate whether goods are transported between facilities, where 1 represents flow and 0 represents no flow. The quantity of goods transported is represented by continuous variables, allowing for a range of values. The objective is to minimize the total transportation cost, which is calculated by multiplying the quantity shipped across each link in the network (Manufacturer-to-Warehouse and Warehouse-to-Distributor) by a fixed cost per unit of \\param{FixedCost}. The goal is to determine the optimal flow of goods through the network that minimizes the total cost while meeting the demand of the distributors.",
+    "problem_info": "Minimize the transportation cost of protein powder supply chain.",
+    "input_format": "Number of Suppliers, Bonded Warehouses, Manufacturers, Warehouses, Distributors, distances between facilities, transportation cost per KM, fixed cost per unit.",
+    "output_info": "Optimal flow of goods and minimum transportation cost.",
+    "output_format": "Binary variables indicating flow between facilities and continuous variables for quantity of goods.",
+    "parameters": [
+        {
+            "definition": "Number of Suppliers",
+            "symbol": "{Suppliers}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Bonded Warehouses",
+            "symbol": "{BondedWarehouses}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Manufacturers",
+            "symbol": "{Manufacturers}",
+            "value": 1,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Warehouses",
+            "symbol": "{Warehouses}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Distributors",
+            "symbol": "{Distributors}",
+            "value": 4,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Supplier s and Bonded Warehouse b",
+            "symbol": "{DistanceSB}_{sb}",
+            "value": "",
+            "shape": ["Suppliers", "BondedWarehouses"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Manufacturer m and Warehouse w",
+            "symbol": "{DistanceMW}_{mw}",
+            "value": "",
+            "shape": ["Manufacturers", "Warehouses"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Warehouse w and Distributor d",
+            "symbol": "{DistanceWD}_{wd}",
+            "value": "",
+            "shape": ["Warehouses", "Distributors"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bonded Warehouse b and Warehouse w",
+            "symbol": "{DistanceBW}_{bw}",
+            "value": "",
+            "shape": ["BondedWarehouses", "Warehouses"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Bonded Warehouse b and Manufacturer m",
+            "symbol": "{DistanceBM}_{bm}",
+            "value": "",
+            "shape": ["BondedWarehouses", "Manufacturers"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation cost per kilometer",
+            "symbol": "{TranportationCost}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Fixed cost per unit",
+            "symbol": "{FixedCost}",
+            "value": 20,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Flow of goods from Supplier s to Bonded Warehouse b (1 if flow, 0 otherwise)",
+            "symbol": "{FlowSB}_{sb}",
+            "type": "binary",
+            "shape": ["Suppliers", "BondedWarehouses"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Flow of goods from Bonded Warehouse b to Manufacturer m (1 if flow, 0 otherwise)",
+            "symbol": "{FlowBM}_{bm}",
+            "type": "binary",
+            "shape": ["BondedWarehouses", "Manufacturers"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Flow of goods from Bonded Warehouse b to Warehouse w (1 if flow, 0 otherwise)",
+            "symbol": "{FlowBW}_{bw}",
+            "type": "binary",
+            "shape": ["BondedWarehouses", "Warehouses"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Flow of goods from Manufacturer m to Warehouse w (1 if flow, 0 otherwise)",
+            "symbol": "{FlowMW}_{mw}",
+            "type": "binary",
+            "shape": ["Manufacturers", "Warehouses"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Flow of goods from Warehouse w to Distributor d (1 if flow, 0 otherwise)",
+            "symbol": "{FlowWD}_{wd}",
+            "type": "binary",
+            "shape": ["Warehouses", "Distributors"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Supplier s to Bonded Warehouse b",
+            "symbol": "{QuantitySB}_{sb}",
+            "type": "continuous",
+            "shape": ["Suppliers", "BondedWarehouses"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Bonded Warehouse b to Manufacturer m",
+            "symbol": "{QuantityBM}_{bm}",
+            "type": "continuous",
+            "shape": ["BondedWarehouses", "Manufacturers"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Bonded Warehouse b to Warehouse w",
+            "symbol": "{QuantityBW}_{bw}",
+            "type": "continuous",
+            "shape": ["BondedWarehouses", "Warehouses"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Manufacturer m to Warehouse w",
+            "symbol": "{QuantityMW}_{mw}",
+            "type": "continuous",
+            "shape": ["Manufacturers", "Warehouses"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of goods transported from Warehouse w to Distributor d",
+            "symbol": "{QuantityWD}_{wd}",
+            "type": "continuous",
+            "shape": ["Warehouses", "Distributors"],
+            "status": "formulated"
+        }
+    ],
+    "data": [
+        {
+            "{DistanceSB}_{sb}": [
+                [1942.4, 1838.2],
+                [580.2, 839.2],
+                [501.9, 1433.2]
+            ]
+        },
+        {
+            "{DistanceMW}_{mw}": [
+                [839, 1365]
+            ]
+        },
+        {
+            "{DistanceWD}_{wd}": [
+                [1153.7, 1586.3, 1428.5, 692.3],
+                [1085.5, 449.2, 430.7, 2086.9]
+            ]
+        },
+        {
+            "{DistanceBW}_{bw}": [
+                [1000, 10],
+                [10, 1000]
+            ]
+        },
+        {
+            "{DistanceBM}_{bm}": [
+                [2000.0],
+                [25.0]
+            ]
+        }
+    ],
+    "path": "/home/ckushj/LLM_Agent_SCO/Modelv8/data/problem_6"
+}

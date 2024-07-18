@@ -1,0 +1,47 @@
+A government agency is responsible for ensuring the efficient distribution of essential crops (wheat, paddy, and sugarcane) from farmers (production locations) to retailers (consumption locations) in the Sitapur district of Uttar Pradesh, India. The agency plans to establish a network of warehouses to consolidate and manage the flow of these crops. Your task is to determine:
+
+1. **Optimal Number of Warehouses and their Locations**: Where should the agency build warehouses to minimize total supply chain costs, while considering potential disruptions?
+2. **Resource Allocation**: How should the agency allocate crop transportation and storage resources under normal and disrupted scenarios to meet retailer demand?
+
+**Key Considerations**:
+
+- **Three-Echelon Supply Chain**: Farmers to Warehouses to Retailers
+- **Disruption Scenarios**:
+    - **Production Disruption**: A percentage of farmers in a specific location cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). In this case the production quantity at some locations will be reduced while the demand will remain the same. The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the crops quantity shipped from each production location to warehouse will be different as in the normal scenario but the quantity supplied from each warehouse to the retailer might be same.
+    - **Warehouse Disruption**: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. Other surplus warehouses will supply crops to the retailers to meet demand and also supply the crops to the disrupted warehouse if the specific crop’s demand is not met by the producer. Here the crops quantity shipped from each production location to warehouse will be same as in the normal scenario but the quantity supplied from each warehouse to the retailer might get different.
+- **Limited Warehouse Capacity**: Each warehouse has a maximum storage capacity.
+- **Transportation Costs**: Transportation costs are directly proportional to distance and vary by crop.
+- **Holding Costs**: Each crop has a specific holding cost per unit at the warehouse.
+- **Lost Sales Penalty**: A penalty is incurred for unmet demand at the retailers.
+- **Proximity to Transportation Hubs**: Warehouses should be strategically located within a certain distance of major railway stations to facilitate inter-state transportation.
+- Consider the inventory costs as well that is the total holding cost required in each scenario. You should add constraints to find the inventory quantity in each scenario. It is the inventory quantity multiplied by the holding cost of each crop.
+
+Your goal is to determine the optimal values for the decision variables, minimizing the total supply chain cost while considering potential disruptions and satisfying all constraints.
+
+The data we have is the:
+
+- All production locations are actually the locations of the villages.
+- List of production locations with production quantity of each crop at each location
+- List of retailer locations with demand quantity of each crop at each locations
+- All production locations are potential warehouse locations that is a warehouse can be placed at any village location.
+- List of crops produced
+- List of nearby railway station locations
+- Set of production location disruption scenario
+- Set of warehouse location disruption scenario
+- Maximum distance between warehouse and railway station distance
+- Cost of transportation cost per km per kg
+- Cost of transportation after disruption per *km* per *kg*
+- Maximum capacity of warehouse at location *h*
+- Cost of holding each crop per *kg*
+- Fixed cost of opening & operating a warehouse at location *h*
+- Cost of lost sales of each crop per *kg*
+- Probability that production location disruption scenario occurs
+- Probability that warehouse location disruption scenario occurs
+- Percentage capacity of warehouses affected due to warehouse location disruption scenario
+- Distance matrix:
+    - Distance between each production location and potential warehouse locations (same as production location)
+    - Distance between each potential warehouse location and each retailer location
+    - Distance between each potential warehouse location and railway station location
+    
+
+Your task is to formulate the mathematical model with the objective function to minimize the total supply chain cost, incorporating the transportation costs, holding costs, fixed costs of warehouses, and lost sales penalties (lost sales of each crop per kg multiplied by quantity of lost sales). Include constraints for production capacities, warehouse capacities, demand satisfaction, transportation limits, and disruption scenarios. Then solve this model to find the optimal number of warehouses and their locations. For this you should add one constraint where you fix the number of warehouses and solve and find the cost. You should iterate this process from 2 warehouses to 10 warehouses and then select optimal number of warehouses as the one which has minimum total supply chain cost.
