@@ -1,0 +1,376 @@
+{
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only 2 manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The cost of transportation per km is \\param{CostPerKm}. The distances are specified below. \n\nManufacturer to Warehouse Distances (km) \nManufacturer \\tab Bhiwandi \\tab Bengaluru \\tab Delhi \nAhemdabad \\tab \\param{Distance_M1W1} \\tab \\param{Distance_M1W2} \\tab \\param{Distance_M1W3} \nChennai \\tab \\param{Distance_M2W1} \\tab \\param{Distance_M2W2} \\tab \\param{Distance_M2W3} \nKolkata \\tab \\param{Distance_M3W1} \\tab \\param{Distance_M3W2} \\tab \\param{Distance_M3W3} \nPune \\tab \\param{Distance_M4W1} \\tab \\param{Distance_M4W2} \\tab \\param{Distance_M4W3} \nBhopal \\tab \\param{Distance_M5W1} \\tab \\param{Distance_M5W2} \\tab \\param{Distance_M5W3} \n\nWarehouse to Distributor Distances (km) \nWarehouse \\tab Agra \\tab Ludhiana \\tab Hyderabad \\tab Indore \\tab Jaipur \\tab Surat \\tab Vadodara \\tab Tirunelveli \nBhiwandi \\tab \\param{Distance_W1D1} \\tab \\param{Distance_W1D2} \\tab \\param{Distance_W1D3} \\tab \\param{Distance_W1D4} \\tab \\param{Distance_W1D5} \\tab \\param{Distance_W1D6} \\tab \\param{Distance_W1D7} \\tab \\param{Distance_W1D8} \nBengaluru \\tab \\param{Distance_W2D1} \\tab \\param{Distance_W2D2} \\tab \\param{Distance_W2D3} \\tab \\param{Distance_W2D4} \\tab \\param{Distance_W2D5} \\tab \\param{Distance_W2D6} \\tab \\param{Distance_W2D7} \\tab \\param{Distance_W2D8} \nDelhi \\tab \\param{Distance_W3D1} \\tab \\param{Distance_W3D2} \\tab \\param{Distance_W3D3} \\tab \\param{Distance_W3D4} \\tab \\param{Distance_W3D5} \\tab \\param{Distance_W3D6} \\tab \\param{Distance_W3D7} \\tab \\param{Distance_W3D8} \n\nCount and add the number of each stakeholders that is Contract manufacturer, warehouse, distributor. Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.",
+    "problem_info": "Minimize the total transportation cost of a supply chain network.",
+    "input_format": "Number of manufacturers, number of warehouses, number of distributors, distance between each pair of manufacturers and warehouses, distance between each pair of warehouses and distributors, transportation cost per km.",
+    "output_info": "The optimal manufacturer selection, the manufacturer to warehouse supply allocation and the warehouse to distributor supply allocation.",
+    "output_format": "Selected Contract Manufacturers, Assignment of each selected manufacturer to warehouses, Assignment of each warehouse to distributors",
+    "parameters": [
+        {
+            "definition": "Number of manufacturers",
+            "symbol": "{NumManufacturers}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of warehouses",
+            "symbol": "{NumWarehouses}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of distributors",
+            "symbol": "{NumDistributors}",
+            "value": 8,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation cost per km",
+            "symbol": "{CostPerKm}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between manufacturer m and warehouse w",
+            "symbol": "{Distance_MW}_mw",
+            "value": "",
+            "shape": [
+                "NumManufacturers",
+                "NumWarehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between warehouse w and distributor d",
+            "symbol": "{Distance_WD}_wd",
+            "value": "",
+            "shape": [
+                "NumWarehouses",
+                "NumDistributors"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Binary variable that indicates if manufacturer m is selected",
+            "symbol": "{SelectManufacturer}_m",
+            "type": "binary",
+            "shape": [
+                "NumManufacturers"
+            ],
+            "status": "coded",
+            "code": "SelectManufacturer = model.addVars(range(NumManufacturers), vtype=gp.GRB.BINARY, name=\"SelectManufacturer\")"
+        },
+        {
+            "definition": "Amount of product shipped from manufacturer m to warehouse w",
+            "symbol": "{Flow_MW}_mw",
+            "type": "integer",
+            "shape": [
+                "NumManufacturers",
+                "NumWarehouses"
+            ],
+            "status": "coded",
+            "code": "Flow_MW = model.addVars(NumManufacturers, NumWarehouses, name=\"Flow_MW\")"
+        },
+        {
+            "definition": "Amount of product shipped from warehouse w to distributor d",
+            "symbol": "{Flow_WD}_wd",
+            "type": "integer",
+            "shape": [
+                "NumWarehouses",
+                "NumDistributors"
+            ],
+            "status": "coded",
+            "code": "Flow_WD = model.addVars(NumWarehouses, NumDistributors, name=\"Flow_WD\")"
+        }
+    ],
+    "data": [
+        {
+            "{NumManufacturers}": 5
+        },
+        {
+            "{NumWarehouses}": 3
+        },
+        {
+            "{NumDistributors}": 8
+        },
+        {
+            "{CostPerKm}": 6
+        },
+        {
+            "{Distance_MW}_mw": [
+                [
+                    501.9,
+                    1433.2,
+                    875.3
+                ],
+                [
+                    1758.4,
+                    327.4,
+                    2180.4
+                ],
+                [
+                    1942.4,
+                    1838.2,
+                    1481.8
+                ],
+                [
+                    580.2,
+                    839.2,
+                    1364.6
+                ],
+                [
+                    819.2,
+                    917.2,
+                    708.7
+                ]
+            ]
+        },
+        {
+            "{Distance_WD}_wd": [
+                [
+                    1153.7,
+                    1586.3,
+                    1428.5,
+                    692.3,
+                    1085.5,
+                    449.2,
+                    430.7,
+                    2086.9
+                ],
+                [
+                    1923.6,
+                    2356.2,
+                    578.9,
+                    1503.3,
+                    2006.4,
+                    1372.0,
+                    1298.4,
+                    654.3
+                ],
+                [
+                    216.2,
+                    339.5,
+                    1492.2,
+                    826.0,
+                    250.2,
+                    1120.5,
+                    977.7,
+                    2460.4
+                ]
+            ]
+        }
+    ],
+    "path": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_4",
+    "background": "A protein powder supply chain consists of Contract Manufacturers (CM), Warehouses (WH), and Distributors (Dist). The flow is from CM to WH to Dist. There are {NumManufacturers} potential CMs, {NumWarehouses} WHs, and {NumDistributors} Dist. Only 2 CMs will be selected. The objective is to minimize the total transportation cost. The cost of transportation per km is {CostPerKm}.  The distances between each CM and WH, and each WH and Dist are given in matrices {Distance_MW}_mw and {Distance_WD}_wd respectively.",
+    "objective": [
+        {
+            "description": "Minimize the total transportation cost in the supply chain network",
+            "status": "runtime_error",
+            "formulation": "\\sum_{m=1}^{\\textup{NumManufacturers}} \\sum_{w=1}^{\\textup{NumWarehouses}} \\textup{Flow_MW}_{mw} \\cdot \\textup{Distance_MW}_{mw} \\cdot \\textup{CostPerKm} + \\sum_{w=1}^{\\textup{NumWarehouses}} \\sum_{d=1}^{\\textup{NumDistributors}} \\textup{Flow_WD}_{wd} \\cdot \\textup{Distance_WD}_{wd} \\cdot \\textup{CostPerKm}",
+            "related_variables": [
+                "Flow_MW",
+                "Flow_WD"
+            ],
+            "related_parameters": [
+                "NumManufacturers",
+                "NumWarehouses",
+                "Distance_MW",
+                "CostPerKm",
+                "NumWarehouses",
+                "NumDistributors",
+                "Distance_WD",
+                "CostPerKm"
+            ],
+            "code": "model.setObjective(gp.quicksum(gp.quicksum(Flow_MW[m, w] * Distance_MW[m, w] * CostPerKm for w in range(NumWarehouses)) for m in range(NumManufacturers)) + gp.quicksum(gp.quicksum(Flow_WD[w, d] * Distance_WD[w, d] * CostPerKm for d in range(NumDistributors)) for w in range(NumWarehouses)), gp.GRB.MINIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "Exactly two contract manufacturers should be selected.",
+            "formulation": "\\sum_{m=1}^{\\textup{{NumManufacturers}}} \\textup{{SelectManufacturer}}_{m} = 2",
+            "reasoning": "This statement is referring to selecting exactly two manufacturers out of five available. This is a constraint on the number of manufacturers selected.",
+            "status": "coded",
+            "relevant_section": "Only 2 manufactures would be selected from these.",
+            "related_variables": [
+                "SelectManufacturer"
+            ],
+            "related_parameters": [
+                "NumManufacturers"
+            ],
+            "code": "model.addConstr(gp.quicksum(SelectManufacturer[m] for m in range(NumManufacturers)) == 2, name=\"SelectTwoManufacturers\")"
+        },
+        {
+            "description": "Sum of {SelectManufacturer}_m for m in {NumManufacturers} = 2",
+            "formulation": "\\sum_{m=1}^{\\textup{{NumManufacturers}}} \\textup{{SelectManufacturer}}_{m} = 2",
+            "reasoning": "This is a mathematical formulation of the constraint: Exactly two contract manufacturers should be selected.",
+            "status": "coded",
+            "relevant_section": "Only 2 manufactures would be selected from these.",
+            "related_variables": [
+                "SelectManufacturer"
+            ],
+            "related_parameters": [
+                "NumManufacturers"
+            ],
+            "code": "model.addConstr(gp.quicksum(SelectManufacturer[m] for m in range(NumManufacturers)) == 2, \"SelectManufacturer_Sum\")"
+        },
+        {
+            "description": "Each contract manufacturer can supply to at most 3 warehouses.",
+            "formulation": "\\sum_{w=1}^{\\textup{{NumWarehouses}}} \\textup{{Flow_MW}}_{mw} \\leq 3 \\quad \\forall m \\in \\{1,2,3,4,5\\}",
+            "reasoning": "This statement defines a limit on the number of warehouses that each manufacturer can supply to. This is a constraint on the flow of products from manufacturers to warehouses.",
+            "status": "coded",
+            "relevant_section": "Any manufacturer can supply to any number of warehouses",
+            "related_variables": [
+                "Flow_MW"
+            ],
+            "related_parameters": [
+                "NumWarehouses"
+            ],
+            "code": "for m in range(NumManufacturers):\n    model.addConstr(gp.quicksum(Flow_MW[m, w] for w in range(NumWarehouses)) <= 3, name='max_warehouses_per_manufacturer')"
+        },
+        {
+            "description": "Sum of {Flow_MW}_mw for w in {NumWarehouses} <= 3 for each m in {NumManufacturers}",
+            "formulation": "\\sum_{w=1}^{\\textup{{NumWarehouses}}} \\textup{{Flow_MW}}_{mw} \\leq 3 \\quad \\forall m \\in \\{1,2,3,4,5\\}",
+            "reasoning": "This constraint ensures that each manufacturer supplies to at most 3 warehouses.",
+            "status": "coded",
+            "relevant_section": "Any manufacturer can supply to any number of warehouses",
+            "related_variables": [
+                "Flow_MW"
+            ],
+            "related_parameters": [
+                "NumWarehouses"
+            ],
+            "code": "for m in range(NumManufacturers):\n    model.addConstr(gp.quicksum(Flow_MW[m, w] for w in range(NumWarehouses)) <= 3, name=f\"MaxFlowFromManufacturer_{m}\")"
+        },
+        {
+            "description": "Each warehouse can receive supply from at most 3 contract manufacturers.",
+            "formulation": "\\sum_{m=1}^{\\textup{{NumManufacturers}}} \\textup{{Flow_MW}}_{mw} \\leq 3 \\quad \\forall w \\in \\{1,2,3\\}",
+            "reasoning": "This constraint ensures that each warehouse receives supply from at most 3 manufacturers.",
+            "status": "coded",
+            "relevant_section": "Each warehouse can receive supply from at most 3 contract manufacturers.",
+            "related_variables": [
+                "Flow_MW"
+            ],
+            "related_parameters": [
+                "NumManufacturers"
+            ],
+            "code": "for w in range(NumWarehouses):\n    model.addConstr(gp.quicksum(Flow_MW[m, w] for m in range(NumManufacturers)) <= 3, name=\"Warehouse_supply_limit\")"
+        },
+        {
+            "description": "Sum of {Flow_MW}_mw for m in {NumManufacturers} <= 3 for each w in {NumWarehouses}",
+            "formulation": "\\sum_{m=1}^{\\textup{{NumManufacturers}}} \\textup{{Flow_MW}}_{mw} \\leq 3 \\quad \\forall w \\in \\{1,2,3\\}",
+            "reasoning": "This is a mathematical formulation of the constraint: Each warehouse can receive supply from at most 3 contract manufacturers.",
+            "status": "coded",
+            "relevant_section": "Each warehouse can receive supply from at most 3 contract manufacturers.",
+            "related_variables": [
+                "Flow_MW"
+            ],
+            "related_parameters": [
+                "NumManufacturers"
+            ],
+            "code": "for w in range(NumWarehouses):\n    model.addConstr(gp.quicksum(Flow_MW[m, w] for m in range(NumManufacturers)) <= 3, name=f\"warehouse_flow_limit_{w}\")"
+        },
+        {
+            "description": "Each warehouse can supply to at most 8 distributors.",
+            "formulation": "\\sum_{d=1}^{\\textup{{NumDistributors}}} \\textup{{Flow_WD}}_{wd} \\leq 8 \\quad \\forall w \\in \\{1,2,3\\}",
+            "reasoning": "This constraint defines a limit on the number of distributors that each warehouse can supply to. This is a constraint on the flow of products from warehouses to distributors.",
+            "status": "coded",
+            "relevant_section": "Any warehouse can supply to any number of Distributors",
+            "related_variables": [
+                "Flow_WD"
+            ],
+            "related_parameters": [
+                "NumDistributors"
+            ],
+            "code": "for w in range(NumWarehouses):\n    model.addConstr(gp.quicksum(Flow_WD[w, d] for d in range(NumDistributors)) <= 8, name='warehouse_supply_limit')"
+        },
+        {
+            "description": "Sum of {Flow_WD}_wd for d in {NumDistributors} <= 8 for each w in {NumWarehouses}",
+            "formulation": "\\sum_{d=1}^{\\textup{{NumDistributors}}} \\textup{{Flow_WD}}_{wd} \\leq 8 \\quad \\forall w \\in \\{1,2,3\\}",
+            "reasoning": "This constraint ensures that each warehouse supplies to at most 8 distributors.",
+            "status": "coded",
+            "relevant_section": "Any warehouse can supply to any number of Distributors",
+            "related_variables": [
+                "Flow_WD"
+            ],
+            "related_parameters": [
+                "NumDistributors"
+            ],
+            "code": "for w in range(NumWarehouses):\n    model.addConstr(gp.quicksum(Flow_WD[w, d] for d in range(NumDistributors)) <= 8, name=\"Sum_Flow_WD\")"
+        },
+        {
+            "description": "Each distributor can receive supply from at most 8 warehouses.",
+            "formulation": "\\sum_{w=1}^{\\textup{{NumWarehouses}}} \\textup{{Flow_WD}}_{wd} \\leq 8 \\quad \\forall d \\in \\{1,2,3,4,5,6,7,8\\}",
+            "reasoning": "This constraint ensures that each distributor receives supply from at most 8 warehouses.",
+            "status": "coded",
+            "relevant_section": "Each distributor can receive supply from at most 8 warehouses.",
+            "related_variables": [
+                "Flow_WD"
+            ],
+            "related_parameters": [
+                "NumWarehouses"
+            ],
+            "code": "for d in range(NumDistributors):\n    model.addConstr(gp.quicksum(Flow_WD[w, d] for w in range(NumWarehouses)) <= 8, name=\"Distributor_Limit\")"
+        },
+        {
+            "description": "Sum of {Flow_WD}_wd for w in {NumWarehouses} <= 8 for each d in {NumDistributors}",
+            "formulation": "\\sum_{w=1}^{\\textup{{NumWarehouses}}} \\textup{{Flow_WD}}_{wd} \\leq 8 \\quad \\forall d \\in \\{1,2,3,4,5,6,7,8\\}",
+            "reasoning": "This is a mathematical formulation of the constraint: Each distributor can receive supply from at most 8 warehouses.",
+            "status": "coded",
+            "relevant_section": "Each distributor can receive supply from at most 8 warehouses.",
+            "related_variables": [
+                "Flow_WD"
+            ],
+            "related_parameters": [
+                "NumWarehouses"
+            ],
+            "code": "for d in range(NumDistributors):\n    model.addConstr(gp.quicksum(Flow_WD[w, d] for w in range(NumWarehouses)) <= 8, name=\"Distributors_Flow_Constraint\")"
+        },
+        {
+            "description": "{SelectManufacturer}_m is binary for each m in {NumManufacturers}",
+            "formulation": "\\textup{{SelectManufacturer}}_{m} \\in \\{0,1\\} \\quad \\forall m \\in \\{1,2,3,4,5\\}",
+            "reasoning": "This constraint defines the domain of the binary variable {SelectManufacturer}_m, which indicates if manufacturer m is selected. This constraint ensures that the value of the variable is either 0 or 1.",
+            "status": "coded",
+            "relevant_section": "Only 2 manufactures would be selected from these.",
+            "related_variables": [
+                "SelectManufacturer"
+            ],
+            "related_parameters": [],
+            "code": "for m in range(NumManufacturers):\n    model.addConstr(SelectManufacturer[m] <= 1, name=\"SelectManufacturer_binary\")"
+        },
+        {
+            "description": "{Flow_MW}_mw is non-negative integer for each m in {NumManufacturers}, w in {NumWarehouses}",
+            "formulation": "\\textup{{Flow_MW}}_{mw} \\in \\mathbb{Z}^+ \\quad \\forall m \\in \\{1,2,3,4,5\\}, w \\in \\{1,2,3\\}",
+            "reasoning": "This constraint defines the domain of the integer variable {Flow_MW}_mw, which represents the amount of product shipped from manufacturer m to warehouse w. This constraint ensures that the value of the variable is a non-negative integer.",
+            "status": "coded",
+            "relevant_section": "Any manufacturer can supply to any number of warehouses",
+            "related_variables": [
+                "Flow_MW"
+            ],
+            "related_parameters": [],
+            "code": "for m in range(NumManufacturers):\n    for w in range(NumWarehouses):\n        model.addConstr(Flow_MW[m, w] >= 0, name=\"Flow_MW_nonnegative\")\n        model.addConstr(Flow_MW[m, w] <= gp.GRB.INFINITY, name=\"Flow_MW_integer\")\n        model.addConstr(Flow_MW[m, w] <= gp.GRB.INFINITY, name=\"Flow_MW_integer\")"
+        },
+        {
+            "description": "{Flow_WD}_wd is non-negative integer for each w in {NumWarehouses}, d in {NumDistributors}",
+            "formulation": "\\textup{{Flow_WD}}_{wd} \\in \\mathbb{Z}^+ \\quad \\forall w \\in \\{1,2,3\\}, d \\in \\{1,2,3,4,5,6,7,8\\}",
+            "reasoning": "This constraint defines the domain of the integer variable {Flow_WD}_wd, which represents the amount of product shipped from warehouse w to distributor d. This constraint ensures that the value of the variable is a non-negative integer.",
+            "status": "coded",
+            "relevant_section": "Any warehouse can supply to any number of Distributors",
+            "related_variables": [
+                "Flow_WD"
+            ],
+            "related_parameters": [],
+            "code": "for w in range(NumWarehouses):\n    for d in range(NumDistributors):\n        model.addConstr(Flow_WD[w, d] >= 0, name=\"Flow_WD_non_negative\")\n        model.addConstr(Flow_WD[w, d] <= gp.GRB.INFINITY, name=\"Flow_WD_integer\")"
+        }
+    ],
+    "log_folder": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_4/log",
+    "solution_status": "runtime_error",
+    "error_message": "Traceback (most recent call last):\n  File \"/home/jiosaavn9/LLM_Agent_SCO/Modelv9/agents/evaluator.py\", line 224, in _run_code\n    exec(last_line, local_env, local_env)\n  File \"<string>\", line 1, in <module>\n  File \"src/gurobipy/gurobi.pxi\", line 3842, in gurobipy.quicksum\n  File \"<string>\", line 1, in <genexpr>\n  File \"src/gurobipy/gurobi.pxi\", line 3842, in gurobipy.quicksum\n  File \"<string>\", line 1, in <genexpr>\nTypeError: list indices must be integers or slices, not tuple\n",
+    "prep_code": "\nimport json\nimport numpy as np\nimport math\n\nimport gurobipy as gp\nfrom gurobipy import GRB\n\n # Define model\nmodel = gp.Model('model')\n\n\n\n",
+    "solver_output_status": "runtime_error"
+}

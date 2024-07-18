@@ -1,0 +1,322 @@
+{
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only 2 manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The cost of transportation per km is Rs. \\param{TransportationCostPerKm}. The distances are specified below.\\nManufacturer to Warehouse Distances (km)\\nManufacturer\tBhiwandi\tBengaluru\tDelhi\\nAhmedabad\t\\param{Distance}_{11}\t\\param{Distance}_{12}\t\\param{Distance}_{13}\\nChennai\t\\param{Distance}_{21}\t\\param{Distance}_{22}\t\\param{Distance}_{23}\\nKolkata\t\\param{Distance}_{31}\t\\param{Distance}_{32}\t\\param{Distance}_{33}\\nPune\t\\param{Distance}_{41}\t\\param{Distance}_{42}\t\\param{Distance}_{43}\\nBhopal\t\\param{Distance}_{51}\t\\param{Distance}_{52}\t\\param{Distance}_{53}\\n\\nWarehouse to Distributor Distances (km)\\nWarehouse\tAgra\tLudhiana\tHyderabad\tIndore\tJaipur\tSurat\tVadodara\tTirunelveli\\nBhiwandi\t\\param{Distance}_{11}\\param{Distance}_{12}\\param{Distance}_{13}\\param{Distance}_{14}\\param{Distance}_{15}\\param{Distance}_{16}\\param{Distance}_{17}\\param{Distance}_{18}\t\\param{Distance}_{21}\\param{Distance}_{22}\\param{Distance}_{23}\\param{Distance}_{24}\\param{Distance}_{25}\\param{Distance}_{26}\\param{Distance}_{27}\\param{Distance}_{28}\t\\param{Distance}_{31}\\param{Distance}_{32}\\param{Distance}_{33}\\param{Distance}_{34}\\param{Distance}_{35}\\param{Distance}_{36}\\param{Distance}_{37}\\param{Distance}_{38}\\nBengaluru\t\\param{Distance}_{19}\\param{Distance}_{20}\\param{Distance}_{21}\\param{Distance}_{22}\\param{Distance}_{23}\\param{Distance}_{24}\\param{Distance}_{25}\\param{Distance}_{26}\t\\param{Distance}_{27}\\param{Distance}_{28}\\param{Distance}_{29}\\param{Distance}_{30}\\param{Distance}_{31}\\param{Distance}_{32}\\param{Distance}_{33}\\param{Distance}_{34}\t\\param{Distance}_{35}\\param{Distance}_{36}\\param{Distance}_{37}\\param{Distance}_{38}\\param{Distance}_{39}\\param{Distance}_{40}\\param{Distance}_{41}\\param{Distance}_{42}\\nDelhi\t\\param{Distance}_{43}\\param{Distance}_{44}\\param{Distance}_{45}\\param{Distance}_{46}\\param{Distance}_{47}\\param{Distance}_{48}\\param{Distance}_{49}\\param{Distance}_{50}\t\\param{Distance}_{51}\\param{Distance}_{52}\\param{Distance}_{53}\\param{Distance}_{54}\\param{Distance}_{55}\\param{Distance}_{56}\\param{Distance}_{57}\\param{Distance}_{58}\t\\param{Distance}_{59}\\param{Distance}_{60}\\param{Distance}_{61}\\param{Distance}_{62}\\param{Distance}_{63}\\param{Distance}_{64}\\param{Distance}_{65}\\param{Distance}_{66}\\n\\nCount and add the number of each stakeholders that is Contract manufacturer, warehouse, distributor. Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.\\nDo not consider the flow quantity while formulating the objective function. only consider the cost associated with distance. Each Contract Manufacturer can supply to any number of warehouses and each warehouse can supply to any number of Distributors.",
+    "problem_info": "Select two contract manufacturers to minimize transportation costs in a supply chain network.",
+    "input_format": "Number of contract manufacturers, number of warehouses, number of distributors, distance between each pair of manufacturers and warehouses, distance between each pair of warehouses and distributors, transportation cost per km.",
+    "output_info": "Selected manufacturers, allocation of manufacturers to warehouses, allocation of warehouses to distributors, and total transportation cost.",
+    "output_format": "Selected Contract Manufacturers, Assignment of each selected manufacturer to warehouses, Assignment of each warehouse to distributors",
+    "parameters": [
+        {
+            "definition": "Number of Contract Manufacturers",
+            "symbol": "{ContractManufacturers}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Warehouses",
+            "symbol": "{Warehouses}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Distributors",
+            "symbol": "{Distributors}",
+            "value": 8,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Contract Manufacturer c and Warehouse w",
+            "symbol": "{Distance}_{cw}",
+            "value": [
+                [
+                    501.9,
+                    1433.2,
+                    875.3
+                ],
+                [
+                    1758.4,
+                    327.4,
+                    2180.4
+                ],
+                [
+                    1942.4,
+                    1838.2,
+                    1481.8
+                ],
+                [
+                    580.2,
+                    839.2,
+                    1364.6
+                ],
+                [
+                    819.2,
+                    917.2,
+                    708.7
+                ]
+            ],
+            "shape": [
+                "ContractManufacturers",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Warehouse w and Distributor d",
+            "symbol": "{Distance}_{wd}",
+            "value": [
+                [
+                    1153.7,
+                    1586.3,
+                    1428.5,
+                    692.3,
+                    1085.5,
+                    449.2,
+                    430.7,
+                    2086.9
+                ],
+                [
+                    1923.6,
+                    2356.2,
+                    578.9,
+                    1503.3,
+                    2006.4,
+                    1372.0,
+                    1298.4,
+                    654.3
+                ],
+                [
+                    216.2,
+                    339.5,
+                    1492.2,
+                    826.0,
+                    250.2,
+                    1120.5,
+                    977.7,
+                    2460.4
+                ]
+            ],
+            "shape": [
+                "Warehouses",
+                "Distributors"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation cost per km",
+            "symbol": "{TransportationCostPerKm}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Binary variable indicating if Contract Manufacturer c is selected or not",
+            "symbol": "{ManufacturerSelected}_c",
+            "type": "binary",
+            "shape": [
+                "ContractManufacturers"
+            ],
+            "status": "coded",
+            "code": "ManufacturerSelected = model.addVars(ContractManufacturers, vtype=gp.GRB.BINARY, name=\"ManufacturerSelected\")"
+        },
+        {
+            "definition": "Binary variable indicating if Contract Manufacturer c supplies to Warehouse w",
+            "symbol": "{SupplyContractManufacturerToWarehouse}_{cw}",
+            "type": "binary",
+            "shape": [
+                "ContractManufacturers",
+                "Warehouses"
+            ],
+            "status": "coded",
+            "code": "SupplyContractManufacturerToWarehouse = model.addVars(ContractManufacturers, Warehouses, vtype=gp.GRB.BINARY, name=\"SupplyContractManufacturerToWarehouse\")"
+        },
+        {
+            "definition": "Binary variable indicating if Warehouse w supplies to Distributor d",
+            "symbol": "{SupplyWarehouseToDistributor}_{wd}",
+            "type": "binary",
+            "shape": [
+                "Warehouses",
+                "Distributors"
+            ],
+            "status": "coded",
+            "code": "SupplyWarehouseToDistributor = model.addVars(Warehouses, Distributors, vtype=gp.GRB.BINARY, name=\"SupplyWarehouseToDistributor\")"
+        }
+    ],
+    "data": [
+        {
+            "{Distance}_{cw}": [
+                [
+                    501.9,
+                    1433.2,
+                    875.3
+                ],
+                [
+                    1758.4,
+                    327.4,
+                    2180.4
+                ],
+                [
+                    1942.4,
+                    1838.2,
+                    1481.8
+                ],
+                [
+                    580.2,
+                    839.2,
+                    1364.6
+                ],
+                [
+                    819.2,
+                    917.2,
+                    708.7
+                ]
+            ]
+        },
+        {
+            "{Distance}_{wd}": [
+                [
+                    1153.7,
+                    1586.3,
+                    1428.5,
+                    692.3,
+                    1085.5,
+                    449.2,
+                    430.7,
+                    2086.9
+                ],
+                [
+                    1923.6,
+                    2356.2,
+                    578.9,
+                    1503.3,
+                    2006.4,
+                    1372.0,
+                    1298.4,
+                    654.3
+                ],
+                [
+                    216.2,
+                    339.5,
+                    1492.2,
+                    826.0,
+                    250.2,
+                    1120.5,
+                    977.7,
+                    2460.4
+                ]
+            ]
+        },
+        {
+            "{TransportationCostPerKm}": 6
+        }
+    ],
+    "path": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_4",
+    "background": "A protein powder supply chain consists of Contract Manufacturers (CM), Warehouses (WH), and Distributors (Dist). The flow is from CM to WH to Dist. There are {ContractManufacturers} potential CMs, {Warehouses} WHs, and {Distributors} Dist. Only 2 CMs will be selected. The objective is to minimize the total transportation cost. The cost of transportation per km is {TransportationCostPerKm}.  The distances between each CM and WH, and each WH and Dist are given in matrices {Distance}_{cw} and {Distance}_{wd} respectively.",
+    "objective": [
+        {
+            "description": "Minimize the total transportation cost, which includes cost incurred from shipment between Contract Manufacturer to Warehouse and Warehouse to Distributor",
+            "status": "coded",
+            "formulation": "\\sum_{c=1}^{\\textup{{ContractManufacturers}}} \\sum_{w=1}^{\\textup{{Warehouses}}} \\textup{{TransportationCostPerKm}} * \\textup{{Distance}}_{cw} * \\textup{{SupplyContractManufacturerToWarehouse}}_{cw} + \\sum_{w=1}^{\\textup{{Warehouses}}} \\sum_{d=1}^{\\textup{{Distributors}}} \\textup{{TransportationCostPerKm}} * \\textup{{Distance}}_{wd} * \\textup{{SupplyWarehouseToDistributor}}_{wd}",
+            "related_variables": [
+                "SupplyContractManufacturerToWarehouse",
+                "SupplyWarehouseToDistributor"
+            ],
+            "related_parameters": [
+                "ContractManufacturers",
+                "Warehouses",
+                "TransportationCostPerKm",
+                "Distance",
+                "Warehouses",
+                "Distributors",
+                "TransportationCostPerKm",
+                "Distance"
+            ],
+            "code": "model.setObjective(gp.quicksum(gp.quicksum(TransportationCostPerKm * Distance[c][w] * SupplyContractManufacturerToWarehouse[c, w] for w in range(Warehouses)) for c in range(ContractManufacturers)) + gp.quicksum(gp.quicksum(TransportationCostPerKm * Distance[w][d] * SupplyWarehouseToDistributor[w, d] for d in range(Distributors)) for w in range(Warehouses)), gp.GRB.MINIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "Sum of {ManufacturerSelected}_c for all c should be equal to 2",
+            "formulation": "\\sum_{c=1}^{{\\textup{ContractManufacturers}}} {\\textup{ManufacturerSelected}}_{c} = 2",
+            "reasoning": "This constraint ensures that only two manufacturers are selected out of the available five.",
+            "status": "coded",
+            "relevant_section": "Only 2 manufactures would be selected from these.",
+            "related_variables": [
+                "ManufacturerSelected"
+            ],
+            "related_parameters": [
+                "ContractManufacturers"
+            ],
+            "code": "model.addConstr(gp.quicksum(ManufacturerSelected[c] for c in range(ContractManufacturers)) == 2, name=\"ManufacturerSelectionConstraint\")"
+        },
+        {
+            "description": "Sum of {SupplyContractManufacturerToWarehouse}_{cw} for all w should be less than or equal to 1 for each c",
+            "formulation": "\\sum_{w=1}^{{\\textup{Warehouses}}} {\\textup{SupplyContractManufacturerToWarehouse}}_{cw} \\leq 1 \\quad \\forall \\ c \\in \\{1, 2, ..., {\\textup{ContractManufacturers}}\\}",
+            "reasoning": "This constraint ensures that each selected manufacturer supplies to at most one warehouse. The problem does not state that selected manufacturers *must* supply to a warehouse, so we use less than or equal to.",
+            "status": "coded",
+            "relevant_section": "Each Contract Manufacturer can supply to any number of warehouses",
+            "related_variables": [
+                "SupplyContractManufacturerToWarehouse"
+            ],
+            "related_parameters": [
+                "Warehouses",
+                "ContractManufacturers"
+            ],
+            "code": "for c in range(ContractManufacturers):\n    model.addConstr(gp.quicksum(SupplyContractManufacturerToWarehouse[c, w] for w in range(Warehouses)) <= 1, name=\"ContractManufacturer_Supply_Constraint\")"
+        },
+        {
+            "description": "Sum of {SupplyContractManufacturerToWarehouse}_{cw} for all c should be greater than or equal to 1 for each w",
+            "formulation": "\\sum_{c=1}^{{\\textup{ContractManufacturers}}} {\\textup{SupplyContractManufacturerToWarehouse}}_{cw} \\geq 1 \\quad \\forall \\ w \\in \\{1, 2, ..., {\\textup{Warehouses}}\\}",
+            "reasoning": "This constraint ensures that each warehouse is supplied to by at least one manufacturer.",
+            "status": "coded",
+            "relevant_section": "Each Contract Manufacturer can supply to any number of warehouses",
+            "related_variables": [
+                "SupplyContractManufacturerToWarehouse"
+            ],
+            "related_parameters": [
+                "ContractManufacturers",
+                "Warehouses"
+            ],
+            "code": "for w in range(Warehouses):\n    model.addConstr(gp.quicksum(SupplyContractManufacturerToWarehouse[c, w] for c in range(ContractManufacturers)) >= 1, name=\"WarehouseSupplyRequirement_\" + str(w + 1))"
+        },
+        {
+            "description": "Sum of {SupplyWarehouseToDistributor}_{wd} for all d should be less than or equal to 1 for each w",
+            "formulation": "\\sum_{d=1}^{{\\textup{Distributors}}} {\\textup{SupplyWarehouseToDistributor}}_{wd} \\leq 1 \\quad \\forall \\ w \\in \\{1, 2, ..., {\\textup{Warehouses}}\\}",
+            "reasoning": "This constraint ensures that each warehouse supplies to at most one distributor. The problem does not state that each warehouse *must* supply to a distributor, so we use less than or equal to.",
+            "status": "coded",
+            "relevant_section": "each warehouse can supply to any number of Distributors",
+            "related_variables": [
+                "SupplyWarehouseToDistributor"
+            ],
+            "related_parameters": [
+                "Distributors",
+                "Warehouses"
+            ],
+            "code": "for w in range(Warehouses):\n    model.addConstr(gp.quicksum(SupplyWarehouseToDistributor[w, d] for d in range(Distributors)) <= 1, name=f\"Warehouse_Supply_Limit_{w}\")"
+        },
+        {
+            "description": "Sum of {SupplyWarehouseToDistributor}_{wd} for all w should be greater than or equal to 1 for each d",
+            "formulation": "\\sum_{w=1}^{{\\textup{Warehouses}}} {\\textup{SupplyWarehouseToDistributor}}_{wd} \\geq 1 \\quad \\forall \\ d \\in \\{1, 2, ..., {\\textup{Distributors}}\\}",
+            "reasoning": "This constraint ensures that each distributor is supplied to by at least one warehouse.",
+            "status": "coded",
+            "relevant_section": "each warehouse can supply to any number of Distributors",
+            "related_variables": [
+                "SupplyWarehouseToDistributor"
+            ],
+            "related_parameters": [
+                "Warehouses",
+                "Distributors"
+            ],
+            "code": "for d in range(Distributors):\n    model.addConstr(gp.quicksum(SupplyWarehouseToDistributor[w, d] for w in range(Warehouses)) >= 1, name=\"DistributorSupply\")"
+        }
+    ],
+    "log_folder": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_4/log",
+    "solution_status": "runtime_error",
+    "error_message": "Traceback (most recent call last):\n  File \"/home/jiosaavn9/LLM_Agent_SCO/Modelv9/agents/evaluator.py\", line 220, in _run_code\n    exec(last_line, local_env, local_env)\n  File \"<string>\", line 1, in <module>\n  File \"src/gurobipy/gurobi.pxi\", line 3842, in gurobipy.quicksum\n  File \"<string>\", line 1, in <genexpr>\n  File \"src/gurobipy/gurobi.pxi\", line 3842, in gurobipy.quicksum\n  File \"<string>\", line 1, in <genexpr>\nIndexError: list index out of range\n",
+    "prep_code": "\nimport json\nimport numpy as np\nimport math\n\nimport gurobipy as gp\nfrom gurobipy import GRB\n\n # Define model\nmodel = gp.Model('model')\n\n\n\n",
+    "solver_output_status": "runtime_error"
+}

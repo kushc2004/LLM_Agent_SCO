@@ -1,0 +1,199 @@
+{
+    "problem_type": "MILP",
+    "description": "A protein powder supply chain consists of Contract Manufacturer, Warehouse and Distributor. The flow is Contract Manufacturer to Warehouse to Distributor. Warehouses are at locations - Bhiwandi, Bangalore and Delhi. The Distributors are located at Agra, Ludhiana, Hyderabad, Indore, Jaipur, Surat, Vadodara and Tirunelveli. The Manufactures who have applied to be selected as Contract Manufacturers are at locations - Ahemdabad, Chennai, Kolkata, Pune and Bhopal. Only 2 manufactures would be selected from these. Optimise the supply chain network and select the two best manufacturers that would minimise the transportation cost. It should also tell which manufacturer is supplying to which warehouse and which warehouse is supplying to which distributor. The cost of transportation per km is Rs. \\param{TransportCost}. The distances are specified below.\\nManufacturer to Warehouse Distances (km)\\nManufacturer\tBhiwandi\tBengaluru\tDelhi\\nAhmedabad\t\\param{DistManufWare}\t\\param{DistManufWare}\t\\param{DistManufWare}\\nChennai\t\\param{DistManufWare}\t\\param{DistManufWare}\t\\param{DistManufWare}\\nKolkata\t\\param{DistManufWare}\t\\param{DistManufWare}\t\\param{DistManufWare}\\nPune\t\\param{DistManufWare}\t\\param{DistManufWare}\t\\param{DistManufWare}\\nBhopal\t\\param{DistManufWare}\t\\param{DistManufWare}\t\\param{DistManufWare}\\n\\nWarehouse to Distributor Distances (km)\\nWarehouse\tAgra\tLudhiana\tHyderabad\tIndore\tJaipur\tSurat\tVadodara\tTirunelveli\\nBhiwandi\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\\nBengaluru\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\\nDelhi\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\t\\param{DistWareDist}\\n\\nCount and add the number of each stakeholders that is Contract manufacturer, warehouse, distributor. Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors.\\nDo not consider the flow quantity while formulating the objective function. only consider the cost associated with distance. Each Contract Manufacturer can supply to any number of warehouses and each warehouse can supply to any number of Distributors.",
+    "problem_info": "We need to select best two manufacturers among given manufacturers which will minimize the total transportation cost of the supply chain network.",
+    "input_format": "Number of contract manufacturers, number of warehouses, number of distributors, distance between each pair of manufacturers and warehouses, distance between each pair of warehouses and distributors, transportation cost per km.",
+    "output_info": "Two best manufacturers among given manufacturers which will minimize the total transportation cost of the supply chain network, Whether a manufacturer m is supplying to warehouse w, Whether a warehouse w is supplying to distributor d",
+    "output_format": "Selected Contract Manufacturers, Assignment of each selected manufacturer to warehouses, Assignment of each warehouse to distributors",
+    "parameters": [
+        {
+            "definition": "Total Number of Manufacturers",
+            "symbol": "{Manuf}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Total Number of Warehouses",
+            "symbol": "{Warehouses}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Total Number of Distributors",
+            "symbol": "{Distributor}",
+            "value": 8,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Manufacturer m and Warehouse w",
+            "symbol": "{DistManufWare}_{mw}",
+            "value": "",
+            "shape": [
+                "Manuf",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Warehouse w and Distributor d",
+            "symbol": "{DistWareDist}_{wd}",
+            "value": "",
+            "shape": [
+                "Warehouses",
+                "Distributor"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Cost of transportation per KM",
+            "symbol": "{TransportCost}",
+            "value": 6,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Manufacturers to be selected",
+            "symbol": "{ManuSelected}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Whether a manufacturer m is selected",
+            "symbol": "{Z}_{m}",
+            "type": "binary",
+            "shape": [
+                "Manuf"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Whether a manufacturer m is supplying to warehouse w",
+            "symbol": "{X}_{mw}",
+            "type": "binary",
+            "shape": [
+                "Manuf",
+                "Warehouses"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Whether a warehouse w is supplying to distributor d",
+            "symbol": "{Y}_{wd}",
+            "type": "binary",
+            "shape": [
+                "Warehouses",
+                "Distributor"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "data": [
+        {
+            "{DistManufWare}_{mw}": [
+                [
+                    501.9,
+                    1433.2,
+                    875.3
+                ],
+                [
+                    1758.4,
+                    327.4,
+                    2180.4
+                ],
+                [
+                    1942.4,
+                    1838.2,
+                    1481.8
+                ],
+                [
+                    580.2,
+                    839.2,
+                    1364.6
+                ],
+                [
+                    819.2,
+                    917.2,
+                    708.7
+                ]
+            ]
+        },
+        {
+            "{DistWareDist}_{wd}": [
+                [
+                    1153.7,
+                    1586.3,
+                    1428.5,
+                    692.3,
+                    1085.5,
+                    449.2,
+                    430.7,
+                    2086.9
+                ],
+                [
+                    1923.6,
+                    2356.2,
+                    578.9,
+                    1503.3,
+                    2006.4,
+                    1372.0,
+                    1298.4,
+                    654.3
+                ],
+                [
+                    216.2,
+                    339.5,
+                    1492.2,
+                    826.0,
+                    250.2,
+                    1120.5,
+                    977.7,
+                    2460.4
+                ]
+            ]
+        }
+    ],
+    "path": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_4",
+    "background": "A protein powder supply chain consists of Contract Manufacturers (CM), Warehouses (WH), and Distributors (Dist). The flow is from CM to WH to Dist.  The objective is to minimize the total transportation cost. The cost of transportation per km is {TransportCost}. Only {ManuSelected} CMs will be selected. Each CM can supply to any number of WHs and each WH can supply to any number of Dist. The distances between each CM and WH, and each WH and Dist are given.",
+    "objective": [
+        {
+            "description": "Minimize the total transportation cost in the supply chain network",
+            "status": "not_formulated"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "Sum of manufacturers selected should be equal to {ManuSelected}",
+            "formulation": "\\sum_{m=1}^{\\textup{{Manuf}}} \\textup{{Z}}_{m} = \\textup{{ManuSelected}}",
+            "reasoning": "This constraint ensures that exactly {ManuSelected} manufacturers are selected from the pool of available manufacturers.",
+            "status": "formulated",
+            "relevant_section": "Only 2 manufactures would be selected from these."
+        },
+        {
+            "description": "A manufacturer m can supply to a warehouse w only if it is selected",
+            "formulation": "\\textup{{X}}_{mw} \\leq \\textup{{Z}}_{m} \\quad \\forall \\; m \\in \\{ 1, 2, ..., \\textup{{Manuf}}\\} \\text{ and } w \\in \\{ 1, 2, ..., \\textup{{Warehouses}}\\}",
+            "reasoning": "This constraint ensures that if a manufacturer is not selected, it cannot supply to any warehouse.",
+            "status": "formulated",
+            "relevant_section": "Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors."
+        },
+        {
+            "description": "Each Warehouse should be supplied by at least one Manufacturer",
+            "formulation": "\\sum_{m=1}^{\\textup{{Manuf}}} \\textup{{X}}_{mw} \\geq 1 \\quad \\forall \\; w \\in \\{ 1, 2, ..., \\textup{{Warehouses}}\\}",
+            "reasoning": "This constraint ensures that every warehouse receives supplies from at least one manufacturer.",
+            "status": "formulated",
+            "relevant_section": "Any manufacturer can supply to any number of warehouses and any warehouse can supply to any number of Distributors."
+        },
+        {
+            "description": "Each Distributor should be supplied by at least one Warehouse",
+            "formulation": "\\sum_{w=1}^{\\textup{{Warehouses}}} \\textup{{Y}}_{wd} \\geq 1 \\quad \\forall \\; d \\in \\{ 1, 2, ..., \\textup{{Distributor}}\\}",
+            "reasoning": "This constraint makes sure that each distributor is supplied by at least one warehouse.",
+            "status": "formulated",
+            "relevant_section": "Each warehouse can supply to any number of Distributors."
+        }
+    ]
+}

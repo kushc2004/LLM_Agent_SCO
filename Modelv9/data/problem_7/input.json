@@ -1,0 +1,245 @@
+{
+    "problem_type": "MILP",
+    "description": "A government agency in Sitapur district, Uttar Pradesh, India, aims to optimize the distribution of \\param{Crops} (wheat, paddy, and sugarcane) from \\param{ProductionLocations} (villages) to \\param{RetailerLocations} through a network of warehouses. The goal is to determine the optimal number and locations of warehouses to minimize the total supply chain cost, considering potential disruptions. The supply chain has three echelons: Farmers to Warehouses to Retailers. Two disruption scenarios are considered: Production Disruption, where a percentage of farmers in a specific location cannot supply crops, and Warehouse Disruption, where a percentage of warehouse capacity becomes unavailable. The model considers limited warehouse capacity, transportation costs (varying by crop and distance), holding costs (per crop, per unit), lost sales penalties (per crop, per unit), and proximity to \\param{RailwayStationLocations} for inter-state transportation. The model also considers inventory costs, calculated as the total holding cost required in each scenario. The objective is to minimize the total supply chain cost, including transportation, holding, fixed warehouse costs, and lost sales penalties.",
+    "problem_info": "This is a supply chain optimization problem that involves determining the optimal number and locations of warehouses, as well as the allocation of resources under normal and disrupted scenarios, in order to minimize the total supply chain cost while satisfying supply, demand, and capacity constraints.",
+    "input_format": "The input data consists of the following: the number of production locations, the number of potential warehouse locations (same as production locations), the number of retailer locations, the number of crops, the number of railway station locations, a set of production location disruption scenarios, a set of warehouse location disruption scenarios, the maximum distance between a warehouse and a railway station, the cost of transportation per km per kg, the cost of transportation after disruption per km per kg, the maximum capacity of each warehouse, the cost of holding each crop per kg, the fixed cost of opening & operating a warehouse, the cost of lost sales of each crop per kg, the probability of each production location disruption scenario occurring, the probability of each warehouse location disruption scenario occurring, the percentage of warehouse capacity affected by each warehouse location disruption scenario, and the distances between each pair of production locations, potential warehouse locations, retailer locations, and railway station locations.",
+    "output_info": "The output should provide the optimal number of warehouses, their locations, the quantity of each crop transported from each production location to each warehouse, the quantity of each crop transported from each warehouse to each retailer, and the total supply chain cost, all while considering both normal and disrupted scenarios.",
+    "output_format": "The output should include the optimal number of warehouses, a list of the selected warehouse locations, the flow of crops from production locations to warehouses, the flow of crops from warehouses to retailers, and the total cost.",
+    "parameters": [
+        {
+            "definition": "Number of Crops",
+            "symbol": "{Crops}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Production Locations",
+            "symbol": "{ProductionLocations}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Retailer Locations",
+            "symbol": "{RetailerLocations}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Railway Station Locations",
+            "symbol": "{RailwayStationLocations}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Potential Warehouse Locations (same as Production Locations)",
+            "symbol": "{PotentialWarehouseLocations}",
+            "value": "",
+            "shape": ["ProductionLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Production Location Disruption Scenarios",
+            "symbol": "{ProductionDisruptionScenarios}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Warehouse Location Disruption Scenarios",
+            "symbol": "{WarehouseDisruptionScenarios}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum Distance between Warehouse and Railway Station",
+            "symbol": "{MaxWarehouseRailwayDistance}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Production Quantity of Crop c at Location i",
+            "symbol": "{ProductionQuantity}_ci",
+            "value": "",
+            "shape": ["Crops", "ProductionLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Demand Quantity of Crop c at Retailer Location j",
+            "symbol": "{DemandQuantity}_cj",
+            "value": "",
+            "shape": ["Crops", "RetailerLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation Cost per km per kg of Crop c",
+            "symbol": "{TransportationCost}_c",
+            "value": "",
+            "shape": ["Crops"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation Cost per km per kg of Crop c After Disruption",
+            "symbol": "{DisruptedTransportationCost}_c",
+            "value": "",
+            "shape": ["Crops"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum Capacity of Warehouse at Location h",
+            "symbol": "{WarehouseCapacity}_h",
+            "value": "",
+            "shape": ["PotentialWarehouseLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Holding Cost per kg of Crop c",
+            "symbol": "{HoldingCost}_c",
+            "value": "",
+            "shape": ["Crops"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Fixed Cost of Opening & Operating a Warehouse at Location h",
+            "symbol": "{FixedWarehouseCost}_h",
+            "value": "",
+            "shape": ["PotentialWarehouseLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Cost of Lost Sales of Crop c per kg",
+            "symbol": "{LostSalesPenalty}_c",
+            "value": "",
+            "shape": ["Crops"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability of Production Location Disruption Scenario s occurring",
+            "symbol": "{ProductionDisruptionProbability}_s",
+            "value": "",
+            "shape": ["ProductionDisruptionScenarios"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability of Warehouse Location Disruption Scenario w occurring",
+            "symbol": "{WarehouseDisruptionProbability}_w",
+            "value": "",
+            "shape": ["WarehouseDisruptionScenarios"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Percentage of Warehouse Capacity affected due to Warehouse Location Disruption Scenario w",
+            "symbol": "{WarehouseDisruptionImpact}_w",
+            "value": "",
+            "shape": ["WarehouseDisruptionScenarios"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Production Location i and Potential Warehouse Location h",
+            "symbol": "{DistanceProductionWarehouse}_ih",
+            "value": "",
+            "shape": ["ProductionLocations", "PotentialWarehouseLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Potential Warehouse Location h and Retailer Location j",
+            "symbol": "{DistanceWarehouseRetailer}_hj",
+            "value": "",
+            "shape": ["PotentialWarehouseLocations", "RetailerLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Potential Warehouse Location h and Railway Station Location r",
+            "symbol": "{DistanceWarehouseRailway}_hr",
+            "value": "",
+            "shape": ["PotentialWarehouseLocations", "RailwayStationLocations"],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Binary variable indicating whether a warehouse is opened at Potential Warehouse Location h (1 if open, 0 otherwise)",
+            "symbol": "{WarehouseOpen}_h",
+            "type": "binary",
+            "shape": ["PotentialWarehouseLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h under normal conditions",
+            "symbol": "{FlowProductionWarehouse}_cih",
+            "type": "continuous",
+            "shape": ["Crops", "ProductionLocations", "PotentialWarehouseLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer Location j under normal conditions",
+            "symbol": "{FlowWarehouseRetailer}_chj",
+            "type": "continuous",
+            "shape": ["Crops", "PotentialWarehouseLocations", "RetailerLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h under Production Disruption Scenario s",
+            "symbol": "{FlowProductionWarehouseDisruption}_cihs",
+            "type": "continuous",
+            "shape": ["Crops", "ProductionLocations", "PotentialWarehouseLocations", "ProductionDisruptionScenarios"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer Location j under Warehouse Disruption Scenario w",
+            "symbol": "{FlowWarehouseRetailerDisruption}_chwj",
+            "type": "continuous",
+            "shape": ["Crops", "PotentialWarehouseLocations", "RetailerLocations", "WarehouseDisruptionScenarios"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c held as inventory in Warehouse h under normal conditions",
+            "symbol": "{Inventory}_ch",
+            "type": "continuous",
+            "shape": ["Crops", "PotentialWarehouseLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c held as inventory in Warehouse h under Production Disruption Scenario s",
+            "symbol": "{InventoryProductionDisruption}_chs",
+            "type": "continuous",
+            "shape": ["Crops", "PotentialWarehouseLocations", "ProductionDisruptionScenarios"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c held as inventory in Warehouse h under Warehouse Disruption Scenario w",
+            "symbol": "{InventoryWarehouseDisruption}_chw",
+            "type": "continuous",
+            "shape": ["Crops", "PotentialWarehouseLocations", "WarehouseDisruptionScenarios"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer Location j under normal conditions",
+            "symbol": "{LostSales}_cj",
+            "type": "continuous",
+            "shape": ["Crops", "RetailerLocations"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer Location j under Production Disruption Scenario s",
+            "symbol": "{LostSalesProductionDisruption}_cjs",
+            "type": "continuous",
+            "shape": ["Crops", "RetailerLocations", "ProductionDisruptionScenarios"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer Location j under Warehouse Disruption Scenario w",
+            "symbol": "{LostSalesWarehouseDisruption}_cjw",
+            "type": "continuous",
+            "shape": ["Crops", "RetailerLocations", "WarehouseDisruptionScenarios"],
+            "status": "formulated"
+        }
+    ],
+    "data": [],
+    "path": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_7"
+}

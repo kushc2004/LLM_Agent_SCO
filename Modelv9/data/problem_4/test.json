@@ -1,0 +1,40 @@
+{
+    "objective": {
+      "description": "Minimize the total transportation cost in the supply chain network",
+      "formulation": "\\min \\quad \\sum_{m=1}^{\\textup{NManufacturers}} \\sum_{w=1}^{\\textup{NWarehouses}} \\textup{FlowManufacturerWarehouse}_{mw} \\textup{TransportationCostPerKM} \\textup{Distance}_{mw} \\textup{SelectManufacturer}_m \\sum_{w=1}^{\\textup{NWarehouses}} \\sum_{d=1}^{\\textup{NDistributors}} \\textup{FlowWarehouseDistributor}_{wd} \\textup{TransportationCostPerKM} \\textup{Distance}_{wd} \n"
+    },
+    "auxiliary_constraints": [
+        {
+            "description": "Formula to calculate the distance between two points",
+            "formulation": "\\textup{Distance}_{mw} = \\sqrt{ (\\textup{CMx}_{m} - \\textup{WHx}_{w})^2 + (\\textup{CMy}_{m} - \\textup{WHy}_{w})^2 } \n \\textup{Distance}_{wd} = \\sqrt{ (\\textup{WHx}_{w} - \\textup{Disx}_{d})^2 + (\\textup{WHy}_{w} - \\textup{Disy}_{d})^2 } \n"
+        },
+        {
+            "description": "Flow from Manufacturer to Warehouse is positive",
+            "formulation": "\\textup{FlowManufacturerWarehouse}_{mw} >= 0 \\quad \\forall m,w \n"
+        },
+        {
+            "description": "Flow from Warehouse to Distributor is positive",
+            "formulation": "\\textup{FlowWarehouseDistributor}_{wd} >= 0 \\quad \\forall w,d \n"
+        }
+    ],
+    "new_variables": [
+        {
+            "definition": "Decision variable indicating whether manufacturer m is selected",
+            "symbol": "{SelectManufacturer}_m",
+            "shape": ["{NManufacturers}"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Variable for Distance between manufacturer m and warehouse w",
+            "symbol": "Distance_mw",
+            "shape": ["{NManufacturers}","{NWarehouses}"],
+            "status": "formulated"
+        },
+        {
+            "definition": "Variable for Distance between warehouse w and distributor d",
+            "symbol": "Distance_wd",
+            "shape": ["{NWarehouses}","{NDistributors}"],
+            "status": "formulated"
+        }
+    ]
+}

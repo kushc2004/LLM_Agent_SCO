@@ -1,0 +1,12 @@
+[
+    {
+        "agent_name": "Formulator",
+        "task": "Please formulate the objective function and constraints for this optimization problem.",
+        "result": "Formulation Done! Now we can write the code."
+    },
+    {
+        "agent_name": "Programmer",
+        "task": "Please write the code for the optimization problem based on the formulation.",
+        "result": "Coding Done! Now we can evaluate the code!"
+    }
+]
