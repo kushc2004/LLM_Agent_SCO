@@ -295,7 +295,6 @@ def transform_problem(folder_dir: str):
         # delete until the last '```'
         output_json = output_json[: output_json.rfind("```")]
 
-    
 
     with open(folder_dir + "/input.json", "w") as f:
         f.write(output_json)
@@ -325,6 +324,10 @@ def transform_problem(folder_dir: str):
             param["symbol"] = new_symbol
 
     update["description"] = output_desc
+    update["problem_desc"] = description
+
+    with open(folder_dir + "/input.json", "w") as f:
+        json.dump(update, f)
 
     return update
 

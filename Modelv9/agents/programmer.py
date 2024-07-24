@@ -2,6 +2,8 @@ import os
 from typing import Dict, Optional, List, Tuple
 from agents.agent import Agent
 import json
+import time
+import re
 
 variable_definition_prompt_templates = [
     """
@@ -48,12 +50,7 @@ You're an expert programmer in a team of optimization experts. The goal of the t
 Here's a constraint we need you to write the code for, along with the list of related variables and parameters:
 -----
 {context}
------
-Below are the parameters & variables. (Use the symbols of parameters & variables only):
------
-Parameters: {parameters}
 
-Variables: {variables}
 -----
 **Instructions**
 - Assume the parameters and variables are defined, and gurobipy is imported as gp. Now generate a code accordingly and enclose it between "=====" lines.
@@ -63,9 +60,10 @@ Variables: {variables}
 - If the constraint requires changing a variable's integralilty, generate the code for changing the variable's integrality rather than defining the variable again.
 - If there is no code needed, just generate the comment line (using # ) enclosed in ===== lines explaining why.
 - Variables should become before parameters when defining inequality constraints in gurobipy (because of the gurobi parsing order syntax)
-- While writing the constraint keep sure that the code is correct. While writing any loops ensure that it is correct. 
-    Example: If <parameter_name> is = [1,2,3] that is it is a list.
-    then for i in range(parameter_name) is wrong beacaue 'list' object cannot be interpreted as an integer, therefore you should use for i in <parameter_name>
+- First check the shape of all the related parameters and variables and then accordingly code the constraints.
+- If using parameter in constraint use <parameter_name>[index1][index2] format and if there is a vairable then use <variable_name>[index1, index2] format. This is because parameter will be an integer or a list and variable will be a tuple. So you should code that is correct for both parameter and variable.
+- If shape of a parameter/variable is a blank list then it means the value of that respective variable/parmaeter is integer.
+- **STRICT INSTRUCTION** Ensure that you are not iterating over any int. That is if you are iterating over a parameter and if the parameter is int, then you should iterate over range(<parameter_name>). Example: if ProductionLocations is a paramter with some integer value x, then the code: for i in ProductionLocations:..<rest_code>... is wrong. for i in range(ProductionLocations):..<rest_code>.. is correct
 - If you are using a function that is not in the gurobipy module, then first import the respective module on a separate line and then use the function on the next line. 
           Example: 
           import math 
@@ -73,9 +71,9 @@ Variables: {variables}
 - While programming, if yo are using paramter or varibale symbols then do not use the brackets {{ or }}, the brackets are only for your understanding that anything mentioned inside the bracket is a symbol.
 - Ensure that you are not using gp.quicksum on an expression that already represents a single linear expression. Don't write quicksum for every sum, first understand what the expression means then write it accordingly.
 - Ensure that you put all the brackets correctly, and are not missing any.
-- Ensure that you are not iterating over any int. That is if you are iterating over a parameter and if the parameter is int, then you should iterate over range(<parameter_name>).
 
-Here's an example:
+
+Here's an example1:
 **input**:
 
 
@@ -96,9 +94,9 @@ Here's an example:
     "related_parameters": [
         {{
             "symbol": "storageSize_{{m}}",
-            "definition": "storage size available in month m",
+            "definition": "storage size available in month m of oil i",
             "shape": [
-                "M"
+                "M","I:
             ]
         }}
     ]
@@ -110,10 +108,38 @@ Here's an example:
 # Add storage capacity constraints
 for i in range(I):
     for m in range(M):
-        model.addConstr(storage[i, m] <= storageSize[m], name="storage_capacity")
+        model.addConstr(storage[i, m] <= storageSize[m][i], name="storage_capacity")
 =====
 
-Take a deep breath and approach this task methodically, step by step.
+
+example2:
+
+**input**
+{{
+            "description": "The sum of flow of all crops from a production location to all warehouses should be less than or equal to the production quantity of that crop at that location",
+            "formulation": "\\sum_{{h=1}}^{{\\textup{{PotentialWarehouseLocations}}}} \\textup{{FlowProductionWarehouse}}_{{cih}} \\leq \\textup{{ProductionQuantity}}_{{ci}} \\quad \\forall c \\in \\textup{{Crops}}, i \\in \\textup{{ProductionLocations}}",
+            "reasoning": "This constraint ensures that the total amount of each crop transported from a production location to all warehouses does not exceed the available production quantity at that location.",
+            "status": "formulated",
+            "relevant_section": "The model considers limited warehouse capacity, transportation costs (varying by crop and distance), holding costs (per crop, per unit), lost sales penalties (per crop, per unit), and proximity to \\\\param{{RailwayStationLocations}} for inter-state transportation.",
+            "related_variables": [
+                "FlowProductionWarehouse"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "ProductionQuantity",
+                "Crops",
+                "ProductionLocations"
+            ]
+        }}
+
+**output**
+=====
+for c in range(Crops):
+    for i in range(ProductionLocations):
+        model.addConstr(gp.quicksum(FlowProductionWarehouse[c, i, h] for h in PotentialWarehouseLocations) <= ProductionQuantity[c][i], name='ProductionQuantityConstraint')
+=====
+
+Take a deep breath and approach this task methodically, step by step. The code generated should be python code and should follow python syntax. At the end recheck the code you have written and if you find any error then solve it and give the updated output. one common error is iterating over integer. This is wrong, if you want to iterate over int then you should use range function. First check the respective variable/parameter if it is int or not then only apply the for loop.
 
 """,
     ],
@@ -127,24 +153,21 @@ You're an expert programmer in a team of optimization experts. The goal of the t
 - If you are using a function that is not in the gurobipy module, then first import the respective module on a separate line and then use the function on the next line. 
           Example: 
           import math\\nmodel.setObjective(gp.quicksum(gp.quicksum(Visit[v, c] * math.sqrt((Latitude[c] - Latitude[c - 1])**2 + (Longitude[c] - Longitude[c - 1])**2) for c in range(1, N + 1)) for v in range(V)), gp.GRB.MINIMIZE) 
-- While writing the code of the objective check if you are writing correctly or not, for example if the parameter is in a list or matrix: <parameter_name> = [[1,2,3],[4,5,6]] then in the formulation you should use accordinly <parameter_name>[i][j] for i in I for j in J
+- If using parameter in constraint use <parameter_name>[index1][index2] format and if there is a vairable then use <variable_name>[index1, index2] format. This is because parameter will be an integer or a list and variable will be a tuple. So you should code that is correct for both parameter and variable.
 - When you are coding the parameters use the matrix form for writing it. Example: Dist[m][w]
 - The tuple form for writing is different. Example: Dist[m,w]
 - You should identify correctly how to represent it and then code. For simplicity, use matrix form for parameters and always use tuple form for variables.
 - While programming, if yo are using paramter or varibale symbols then do not use the brackets {{ or }}, the brackets are only for your understanding that anything mentioned inside the bracket is a symbol.
 - Ensure that you are not using gp.quicksum on an expression that already represents a single linear expression. Don't write quicksum for every sum, first understand what the expression means then write it accordingly.
+- First check the shapeof all the related parameters and variables and then accordingly code the constraints.
+- If shape of a parameter/variable is a blank list then it means the value of that respective variable/parmaeter is integer.
 - Ensure that you put all the brackets correctly, and are not missing any.
 
 Here's the objective function we need you to write the code for, along with the list of related variables and parameters:
 
 -----
 {context}
------
-Below are the parameters & variables. (Use the symbols of parameters & variables only):
------
-Parameters: {parameters}
 
-Variables: {variables}
 -----
 
 Assume the parameters and variables are defined, and gurobipy is imported as gp. Now generate a code accordingly and enclose it between "=====" lines. Only generate the code and the =====s, and don't generate any other text. 
@@ -223,7 +246,7 @@ model.setObjective(gp.quicksum(gp.quicksum(TransportCost * Distance[m][w] * Flow
 
 
 
-Take a deep breath and approach this task methodically, step by step.
+Take a deep breath and approach this task methodically, step by step. The code generated should be python code and should follow python syntax. At the end recheck the code you have written and if you find any error then solve it and give the updated output. one common error is iterating over int. First check the respective variable/parameter if it is int or not then only apply the for loop.
 
 """,
     ],
@@ -391,6 +414,11 @@ Take a deep breath and solve the problem step by step.
 
 import json
 
+
+
+
+
+
 class Programmer(Agent):
     def __init__(
         self, model_name=None, solver="gurobipy", debugger_on=True, **kwargs
@@ -533,6 +561,11 @@ class Programmer(Agent):
 
     def _generate_code_from_formulation(self, state: Dict) -> Tuple[str, Dict]:
         
+        var_size = len(state["variables"])
+        var_count = 0
+        var_count1 = 0
+        last_call_time = time.time() 
+ 
         for variable in state["variables"]:
             print(f"Programming variable {variable['symbol']} ...")
 
@@ -547,21 +580,32 @@ class Programmer(Agent):
 
                 # print(state["parameters"])
 
+                # prompt = variable_definition_prompt_templates[0].format(
+                #             variable=context
+                #             )
                 prompt = variable_definition_prompt_templates[0].format(
                             variable=context,
                             parameters= state["parameters"])
                 
-                var_size = len(state["variables"])
-                var_count = 0
 
-                cnt = 3
+
+                cnt = 1
                 while cnt > 0:
                     try:
                         if var_count < 15:
                             response = self.llm_call3(prompt=prompt)
                             var_count += 1
+                            last_call_time = time.time()
+
+                        elif var_count1 < 15:
+                                response = self.llm_call4(prompt=prompt)
+                                var_count1 += 1
+                                var_count = 0
                         else:
-                            response = self.llm_call4(prompt=prompt)
+                            time_since_last_call = time.time() - last_call_time
+                            time_to_wait = max(0,70 - time_since_last_call) 
+                            response = self.llm_call3(prompt=prompt)
+                            var_count += 1
 
                         print(response)
                         code = [
@@ -599,9 +643,18 @@ class Programmer(Agent):
 
             elif variable["status"] == "coded":
                 pass
+        
 
+        constr_size = len(state["constraints"])
+        constr_count = 0
+        constr_count1 = 0
+        last_call_time = time.time()
+        
         for target in ["constraints", "objective"]:
             for item in state[target]:
+                
+                rel = {}
+
                 print(f"Programming {target} ...")
                 if item["status"] == "not_formulated":
                     raise Exception(f"{target} {item} is not formulated yet!")
@@ -614,11 +667,17 @@ class Programmer(Agent):
                     context["related_parameters"] = []
 
                     for parameter in state["parameters"]:
-                        if parameter["symbol"] in item["related_parameters"]:
+                        symb = re.search(r'\{(.*?)\}', parameter["symbol"])
+                        symb = symb.group(1)
+
+                        if symb in item["related_parameters"]:
                             context["related_parameters"].append(parameter)
 
                     for variable in state["variables"]:
-                        if variable["symbol"] in item["related_variables"]:
+                        symb = re.search(r'\{(.*?)\}', variable["symbol"])
+                        symb = symb.group(1)
+
+                        if symb in item["related_variables"]:
                             if not "code" in variable:
                                 raise Exception(
                                     f"Variable {variable} is not coded yet!"
@@ -631,24 +690,44 @@ class Programmer(Agent):
                                     "code": variable["code"],
                                 }
                             )
+                    # print("*"*5,'\n', context)
 
                     prompt = main_prompt_templates[target][0].format(
-                                context=json.dumps(context, indent=4),
-                                parameters=state["parameters"],
-                                variables=state["variables"])
+                                context=json.dumps(context, indent=4)
+                                )
+                    # prompt = main_prompt_templates[target][0].format(
+                    #             context=json.dumps(context, indent=4),
+                    #             parameters=state["parameters"],
+                    #             variables=state["variables"])
 
-                    cnt = 3
+                    cnt = 1
 
-                    constr_size = len(state["constraints"])
-                    constr_count = 0
 
                     while cnt > 0:
                         try:
                             if constr_count < 15:
+                                print(f"Using llm_call5. Count: {constr_count}")
                                 response = self.llm_call5(prompt=prompt)
                                 constr_count += 1
-                            else:
+                                last_call_time = time.time()
+                                
+                            elif constr_count1 < 15:
+                                print(f"Using llm_call6. Count: {constr_count1}")
                                 response = self.llm_call6(prompt=prompt)
+                                constr_count1 += 1
+                                
+                            else:
+                                time_since_last_call = time.time() - last_call_time
+                                time_to_wait = max(0, 70 - time_since_last_call)
+                                
+                                if time_to_wait > 0:
+                                    print(f"Waiting for {time_to_wait:.2f} seconds")
+                                    time.sleep(time_to_wait)
+                                
+                                print("Using llm_call5 after waiting")
+                                response = self.llm_call5(prompt=prompt)
+                                constr_count += 1
+                                last_call_time = time.time()
                                 
                             print(response)
                             code = [

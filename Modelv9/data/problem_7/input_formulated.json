@@ -327,7 +327,65 @@
     "objective": [
         {
             "description": "Minimize the total cost, including transportation costs, holding costs, fixed costs of operating warehouses, lost sales penalties, and disruption costs, considering probabilities of disruption scenarios.",
-            "status": "not_formulated"
+            "status": "formulated",
+            "formulation": "\\sum_{f \\in \\textup{F}} \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{QuantityFWH}_{fhc} \\cdot \\textup{DistanceFH}_{fh} \\cdot \\textup{TransportationCost}_{c} + \\sum_{h \\in \\textup{H}} \\sum_{r \\in \\textup{R}} \\sum_{c \\in \\textup{C}} \\textup{QuantityWHR}_{hrc}  \\cdot \\textup{DistanceHR}_{hr} \\cdot \\textup{TransportationCost}_{c} + \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{Inventory}_{hc} \\cdot \\textup{HoldingCost}_{c} +  \\sum_{h \\in \\textup{H}} \\textup{WarehouseOpen}_{h} \\cdot \\textup{FixedCost} + \\sum_{r \\in \\textup{R}} \\sum_{c \\in \\textup{C}}  \\textup{LostSales}_{rc} \\cdot \\textup{LostSalesPenalty}_{c} + \\sum_{pd \\in \\textup{PD}} (\\textup{ProbabilityPD}_{pd} \\cdot (\\sum_{f \\in \\textup{F}} \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{QuantityFWHProductionDisruption}_{fhcpd} \\cdot \\textup{DistanceFH}_{fh} \\cdot \\textup{DisruptionTransportationCost} + \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{InventoryProductionDisruption}_{hcpd} \\cdot \\textup{HoldingCost}_{c}))+ \\sum_{wd \\in \\textup{WD}} (\\textup{ProbabilityWD}_{wd} \\cdot ( \\sum_{h \\in \\textup{H}} \\sum_{r \\in \\textup{R}} \\sum_{c \\in \\textup{C}} \\textup{QuantityWHSWarehouseDisruption}_{hrcwd} \\cdot \\textup{DistanceHR}_{hr} \\cdot \\textup{DisruptionTransportationCost} + \\sum_{h \\in \\textup{H}} \\sum_{h' \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{QuantityWHWH}_{hh'cwd} \\cdot \\textup{DistanceFH}_{hh'} \\cdot \\textup{DisruptionTransportationCost} + \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{InventoryWarehouseDisruption}_{hcwd} \\cdot \\textup{HoldingCost}_{c}))",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHR",
+                "Inventory",
+                "WarehouseOpen",
+                "LostSales",
+                "QuantityFWHProductionDisruption",
+                "InventoryProductionDisruption",
+                "QuantityWHSWarehouseDisruption",
+                "QuantityWHWH",
+                "InventoryWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "F",
+                "H",
+                "C",
+                "DistanceFH",
+                "TransportationCost",
+                "H",
+                "R",
+                "C",
+                "DistanceHR",
+                "TransportationCost",
+                "H",
+                "C",
+                "HoldingCost",
+                "H",
+                "FixedCost",
+                "R",
+                "C",
+                "LostSalesPenalty",
+                "PD",
+                "ProbabilityPD",
+                "F",
+                "H",
+                "C",
+                "DistanceFH",
+                "DisruptionTransportationCost",
+                "H",
+                "C",
+                "HoldingCost",
+                "WD",
+                "ProbabilityWD",
+                "H",
+                "R",
+                "C",
+                "DistanceHR",
+                "DisruptionTransportationCost",
+                "H",
+                "H",
+                "C",
+                "DistanceFH",
+                "DisruptionTransportationCost",
+                "H",
+                "C",
+                "HoldingCost"
+            ]
         }
     ],
     "constraints": [
@@ -336,63 +394,297 @@
             "formulation": "\\sum_{h \\in \\textup{H}} \\textup{QuantityFWH}_{fhc} \\leq \\textup{ProductionQuantity}_{fc} \\quad \\forall f \\in \\textup{F}, \\ c \\in \\textup{C}",
             "reasoning": "This constraint ensures that the total amount of a crop transported from a farmer to all warehouses doesn't exceed the farmer's production capacity for that crop.",
             "status": "formulated",
-            "relevant_section": "Three-Echelon Supply Chain: Farmers to Warehouses to Retailers"
+            "relevant_section": "Three-Echelon Supply Chain: Farmers to Warehouses to Retailers",
+            "related_variables": [
+                "QuantityFWH"
+            ],
+            "related_parameters": [
+                "H",
+                "ProductionQuantity",
+                "F",
+                "C"
+            ]
         },
         {
             "description": "The total quantity of each crop transported from all warehouses to a retailer should be less than or equal to the retailer's demand quantity for that crop.",
             "formulation": "\\sum_{h \\in \\textup{H}} \\textup{QuantityWHR}_{hrc} \\leq \\textup{DemandQuantity}_{rc}  \\quad \\forall r \\in \\textup{R}, \\ c \\in \\textup{C}",
             "reasoning": "This constraint ensures that the total amount of a crop transported from all warehouses to a retailer doesn't exceed the retailer's demand for that crop.",
             "status": "formulated",
-            "relevant_section": "Three-Echelon Supply Chain: Farmers to Warehouses to Retailers"
+            "relevant_section": "Three-Echelon Supply Chain: Farmers to Warehouses to Retailers",
+            "related_variables": [
+                "QuantityWHR"
+            ],
+            "related_parameters": [
+                "H",
+                "DemandQuantity",
+                "R",
+                "C"
+            ]
         },
         {
             "description": "The total quantity of each crop entering a warehouse plus the initial inventory of that crop at the warehouse should be equal to the total quantity of that crop leaving the warehouse (considering transportation to retailers and other warehouses) under normal and disruption scenarios.",
             "formulation": "\\sum_{f \\in \\textup{F}} \\textup{QuantityFWH}_{fhc} = \\sum_{r \\in \\textup{R}} \\textup{QuantityWHR}_{hrc} + \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd}  \\quad \\forall h \\in \\textup{H}, \\ c \\in \\textup{C} \\\\ \\sum_{f \\in \\textup{F}} \\textup{QuantityFWHProductionDisruption}_{fhcpd} = \\sum_{r \\in \\textup{R}} \\textup{QuantityWHR}_{hrc} + \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd}  \\quad \\forall h \\in \\textup{H}, \\ c \\in \\textup{C}, \\ pd \\in \\textup{PD} \\\\ \\sum_{f \\in \\textup{F}} \\textup{QuantityFWH}_{fhc}  = \\sum_{r \\in \\textup{R}} \\textup{QuantityWHSWarehouseDisruption}_{hrcwd} + \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd} \\quad \\forall h \\in \\textup{H}, \\ c \\in \\textup{C}, \\ wd \\in \\textup{WD}",
             "reasoning": "This constraint represents the flow conservation of crops at each warehouse. It ensures that the total inflow of a crop to a warehouse equals the total outflow of that crop from the warehouse, considering both normal operations and disruption scenarios.",
             "status": "formulated",
-            "relevant_section": "Three-Echelon Supply Chain: Farmers to Warehouses to Retailers\nProduction Disruption: All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the other warehouses will also directly supply the the retailers (surplus warehouse to retailer).\nWarehouse Disruption: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. We will use a reassignment strategy where along with the existing warehouse other surplus warehouse will also supply to the retailers (from disrupted warehouse to retailer + from another warehouse to retailer). Along with this other surplus warehouse will also supply crops to the disrupted warehouse (from warehouse to warehouse)."
+            "relevant_section": "Three-Echelon Supply Chain: Farmers to Warehouses to Retailers\nProduction Disruption: All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the other warehouses will also directly supply the the retailers (surplus warehouse to retailer).\nWarehouse Disruption: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. We will use a reassignment strategy where along with the existing warehouse other surplus warehouse will also supply to the retailers (from disrupted warehouse to retailer + from another warehouse to retailer). Along with this other surplus warehouse will also supply crops to the disrupted warehouse (from warehouse to warehouse).",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHR",
+                "QuantityWHWH",
+                "QuantityFWHProductionDisruption",
+                "QuantityWHR",
+                "QuantityWHWH",
+                "QuantityFWH",
+                "QuantityWHSWarehouseDisruption",
+                "QuantityWHWH"
+            ],
+            "related_parameters": [
+                "F",
+                "R",
+                "H",
+                "H",
+                "C",
+                "F",
+                "R",
+                "H",
+                "H",
+                "C",
+                "PD",
+                "F",
+                "R",
+                "H",
+                "H",
+                "C",
+                "WD"
+            ]
         },
         {
             "description": "The total quantity of each crop stored at a warehouse should be less than or equal to the warehouse's maximum capacity.",
             "formulation": "\\sum_{c \\in \\textup{C}} \\textup{Inventory}_{hc} \\leq \\textup{MaxCapacity} \\times \\textup{WarehouseOpen}_{h} \\quad \\forall h \\in \\textup{H}",
             "reasoning": "This constraint ensures that the total amount of crops stored in a warehouse doesn't exceed the warehouse's storage capacity. It also ensures that a warehouse can only store crops if it's open.",
             "status": "formulated",
-            "relevant_section": "Limited Warehouse Capacity: Each warehouse has a maximum storage capacity of \\\\param{MaxCapacity}."
+            "relevant_section": "Limited Warehouse Capacity: Each warehouse has a maximum storage capacity of \\\\param{MaxCapacity}.",
+            "related_variables": [
+                "Inventory",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "C",
+                "MaxCapacity",
+                "H"
+            ]
         },
         {
             "description": "Warehouses should be located within a maximum distance of {MaxDistance} from major railway stations.",
             "formulation": "\\textup{DistanceHS}_{hs} \\leq \\textup{MaxDistance} \\times \\textup{WarehouseOpen}_{h} \\quad \\forall h \\in \\textup{H}, s \\in \\textup{S}",
             "reasoning": "This constraint enforces the proximity requirement of warehouses to railway stations. It ensures that if a warehouse is opened, its distance to at least one railway station should be within the maximum allowed distance.",
             "status": "formulated",
-            "relevant_section": "Proximity to Transportation Hubs: Warehouses should be strategically located within a \\\\param{MaxDistance} of major railway stations to facilitate inter-state transportation."
+            "relevant_section": "Proximity to Transportation Hubs: Warehouses should be strategically located within a \\\\param{MaxDistance} of major railway stations to facilitate inter-state transportation.",
+            "related_variables": [
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "DistanceHS",
+                "MaxDistance",
+                "H",
+                "S"
+            ]
         },
         {
             "description": "All flow variables should be non-negative.",
             "formulation": "\\textup{QuantityFWH}_{fhc}, \\textup{QuantityWHR}_{hrc}, \\textup{QuantityFWHProductionDisruption}_{fhcpd}, \\textup{QuantityWHSWarehouseDisruption}_{hrcwd}, \\textup{QuantityWHWH}_{hh'cwd}  \\geq 0 \\quad \\forall f \\in \\textup{F}, \\ h, h' \\in \\textup{H}, \\ r \\in \\textup{R}, \\ c \\in \\textup{C}, \\ pd \\in \\textup{PD}, \\ wd \\in \\textup{WD}",
             "reasoning": "This constraint ensures that all the quantities of crops transported between different entities are non-negative, as negative quantities wouldn't make sense in a real-world supply chain context.",
             "status": "formulated",
-            "relevant_section": "none"
+            "relevant_section": "none",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHR",
+                "QuantityFWHProductionDisruption",
+                "QuantityWHSWarehouseDisruption",
+                "QuantityWHWH"
+            ],
+            "related_parameters": [
+                "F",
+                "H",
+                "R",
+                "C",
+                "PD",
+                "WD"
+            ]
         },
         {
             "description": "All inventory variables should be non-negative.",
             "formulation": "\\textup{Inventory}_{hc}, \\textup{InventoryProductionDisruption}_{hcpd}, \\textup{InventoryWarehouseDisruption}_{hcwd} \\geq 0 \\quad \\forall h \\in \\textup{H}, \\ c \\in \\textup{C}, \\ pd \\in \\textup{PD}, \\ wd \\in \\textup{WD}",
             "reasoning": "This constraint ensures that the inventory levels at warehouses are non-negative. Negative inventory levels are not physically meaningful.",
             "status": "formulated",
-            "relevant_section": "none"
+            "relevant_section": "none",
+            "related_variables": [
+                "Inventory",
+                "InventoryProductionDisruption",
+                "InventoryWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "H",
+                "C",
+                "PD",
+                "WD"
+            ]
         },
         {
             "description": "All lost sales variables should be non-negative.",
             "formulation": "\\textup{LostSales}_{rc} \\geq 0 \\quad \\forall r \\in \\textup{R}, \\ c \\in \\textup{C}",
             "reasoning": "This constraint is valid as lost sales represent the unmet demand for crops at retailers, and it wouldn't make sense to have negative lost sales.",
             "status": "formulated",
-            "relevant_section": "none"
+            "relevant_section": "none",
+            "related_variables": [
+                "LostSales"
+            ],
+            "related_parameters": [
+                "R",
+                "C"
+            ]
         },
         {
             "description": "The binary variable {WarehouseOpen}_{h} should be 1 if a warehouse is opened at location h, and 0 otherwise.",
             "formulation": "\\textup{WarehouseOpen}_{h} \\in \\{0, 1\\} \\quad \\forall h \\in \\textup{H}",
             "reasoning": "This is a standard constraint for binary variables, ensuring that they can only take values of 0 or 1 to represent whether a warehouse is open or not.",
             "status": "formulated",
-            "relevant_section": "none"
+            "relevant_section": "none",
+            "related_variables": [
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "H"
+            ]
+        },
+        {
+            "description": "Inventory Balance at Warehouse h for Crop c",
+            "formulation": "\\sum_{f \\in \\textup{F}} \\textup{QuantityFWH}_{fhc} - \\sum_{r \\in \\textup{R}} \\textup{QuantityWHR}_{hrc} = \\textup{Inventory}_{hc} \\ \\forall h \\in \\textup{H}, \\forall c \\in \\textup{C}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHR",
+                "Inventory"
+            ],
+            "related_parameters": [
+                "F",
+                "R",
+                "H",
+                "C"
+            ]
+        },
+        {
+            "description": "Inventory Balance at Warehouse h for Crop c (Production Disruption Scenario)",
+            "formulation": "\\sum_{f \\in \\textup{F}} \\textup{QuantityFWHProductionDisruption}_{fhcpd} - \\sum_{r \\in \\textup{R}} \\textup{QuantityWHR}_{hrc} = \\textup{InventoryProductionDisruption}_{hcpd} \\ \\forall h \\in \\textup{H}, \\forall c \\in \\textup{C}, \\forall pd \\in \\textup{PD}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityFWHProductionDisruption",
+                "QuantityWHR",
+                "InventoryProductionDisruption"
+            ],
+            "related_parameters": [
+                "F",
+                "R",
+                "H",
+                "C",
+                "PD"
+            ]
+        },
+        {
+            "description": "Inventory Balance at Warehouse h for Crop c (Warehouse Disruption Scenario)",
+            "formulation": "\\sum_{f \\in \\textup{F}} \\textup{QuantityFWH}_{fhc} + \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{h'hcwd} - \\sum_{r \\in \\textup{R}} \\textup{QuantityWHSWarehouseDisruption}_{hrcwd} - \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd} =  \\textup{InventoryWarehouseDisruption}_{hcwd} \\ \\forall h \\in \\textup{H}, \\forall c \\in \\textup{C}, \\forall wd \\in \\textup{WD}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHWH",
+                "QuantityWHSWarehouseDisruption",
+                "QuantityWHWH",
+                "InventoryWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "F",
+                "H",
+                "R",
+                "H",
+                "H",
+                "C",
+                "WD"
+            ]
+        },
+        {
+            "description": "Warehouse Capacity Constraint",
+            "formulation": "\\sum_{c \\in \\textup{C}}  \\textup{Inventory}_{hc}  \\le \\textup{MaxCapacity} \\cdot \\textup{WarehouseOpen}_{h} \\ \\forall h \\in \\textup{H}",
+            "status": "formulated",
+            "related_variables": [
+                "Inventory",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "C",
+                "MaxCapacity",
+                "H"
+            ]
+        },
+        {
+            "description": "Warehouse Capacity Constraint (Production Disruption Scenario)",
+            "formulation": "\\sum_{c \\in \\textup{C}} \\textup{InventoryProductionDisruption}_{hcpd} \\le \\textup{MaxCapacity} \\cdot \\textup{WarehouseOpen}_{h}  \\ \\forall h \\in \\textup{H}, \\forall pd \\in \\textup{PD}",
+            "status": "formulated",
+            "related_variables": [
+                "InventoryProductionDisruption",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "C",
+                "MaxCapacity",
+                "H",
+                "PD"
+            ]
+        },
+        {
+            "description": "Warehouse Capacity Constraint (Warehouse Disruption Scenario)",
+            "formulation": "\\sum_{c \\in \\textup{C}}  \\textup{InventoryWarehouseDisruption}_{hcwd}  \\le (1 - \\textup{DisruptionPercentage}_{wd}) \\cdot \\textup{MaxCapacity} \\cdot \\textup{WarehouseOpen}_{h} \\ \\forall h \\in \\textup{H}, \\forall wd \\in \\textup{WD}",
+            "status": "formulated",
+            "related_variables": [
+                "InventoryWarehouseDisruption",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "C",
+                "DisruptionPercentage",
+                "MaxCapacity",
+                "H",
+                "WD"
+            ]
+        },
+        {
+            "description": "Demand Satisfaction and Lost Sales",
+            "formulation": "\\sum_{h \\in \\textup{H}} \\textup{QuantityWHR}_{hrc} + \\textup{LostSales}_{rc} = \\textup{DemandQuantity}_{rc}  \\ \\forall r \\in \\textup{R}, \\forall c \\in \\textup{C}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityWHR",
+                "LostSales"
+            ],
+            "related_parameters": [
+                "H",
+                "DemandQuantity",
+                "R",
+                "C"
+            ]
+        },
+        {
+            "description": "Ensure that a warehouse can only ship from itself if it is open",
+            "formulation": "\\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd} \\le \\textup{MaxCapacity} \\cdot \\textup{WarehouseOpen}_{h} \\ \\forall h \\in \\textup{H},\\forall wd \\in \\textup{WD}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityWHWH",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "H",
+                "MaxCapacity",
+                "H",
+                "WD"
+            ]
         }
     ]
 }

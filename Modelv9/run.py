@@ -20,7 +20,7 @@ def generate_snop(path):
 def run_formulator(self, path):
     with open(path + "/input_wc.json", "r") as f:
             state = json.load(f)
-    Formulator(client=None).generate_reply(task="formulate",state=state, sender=self)
+    Formulator(client=None).generate_reply(task="formulate", state=state, sender=self)
 
 def run_manager(self, path):
     
@@ -68,10 +68,10 @@ def test():
 
 
 
-path="/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_6"
+path="/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_7"
 # generate_snop(path)
 # run_manager(Agent, path)
-run_formulator(Agent, path)
+# run_formulator(Agent, path)
 # test()
-run_programmer(Agent, path)
+# run_programmer(Agent, path)
 run_evaluator(Agent, path)

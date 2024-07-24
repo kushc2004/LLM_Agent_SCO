@@ -10,7 +10,7 @@ def gemini_client():    #pro model used in transform_snop, formulator
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY_ORIGINAL"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-1.5-pro')
     return model
 
 def gemini_client1():
@@ -102,7 +102,7 @@ def gemini_client_pro():    #pro model used in add_constraints
         config = json.load(f)
     
     genai.configure(api_key = config["GEMINI_API_KEY_PRO"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-1.5-pro')
 
     return model
 

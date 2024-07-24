@@ -58,24 +58,25 @@ Here is a {targetType} we need you to model:
 {targetDescription}
 -----
 
-Here is some context on the problem:
+Here is the problem description which you should understand before formulation. Carefully understand all the important/key points mentioned in the description:
+{problem_desc}
 -----
+
+Here is some context on the problem:
 {background}
 -----
 
 Here is the list of available variables:
------
 {variables}
 -----
 
 And finally, here is the list of input parameters:
------
 {parameters}
 -----
 ** STRICT INSTRUCTIONS **
 1. Ensure that you only use the variables and parameters provided. You can define new variables if you think it is necessary. 
 2. If any of the variable mentioned in your formulations is not defined then mention it under new_variables. 
-First, take a deep breath and explain how we should define the {targetType}.Then, generate a json file and ensure that it is in correct format with " used correctly. Generate the file accordingly with the following format (STICK TO THIS FORMAT!): 
+First, take a deep breath and explain how we should define the {targetType}. Then, generate a json file and ensure that it is in correct format with " used correctly. Generate the file accordingly with the following format (STICK TO THIS FORMAT!): 
 
 ```json
 {{
@@ -209,6 +210,7 @@ class Formulator(Agent):
                 ],
                 indent=4,
             ),
+            problem_desc = state["problem_desc"],
         )
 
         cnt = 1
@@ -414,6 +416,7 @@ class Formulator(Agent):
             formulation=json.dumps(context["formulation"], indent=4),
             json=json.dumps(target),
             error=context["error"],
+            problem_desc = state["problem_desc"],
         )
 
         cnt = 1

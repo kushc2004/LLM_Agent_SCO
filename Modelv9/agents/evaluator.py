@@ -5,6 +5,7 @@ import traceback
 import re
 import ast
 import pandas as pd
+import time
 
 main_prompt_templates = [
     """
@@ -156,19 +157,29 @@ class Evaluator(Agent):
                 local_env,
             )
 
-            #GET PARAMETER DATA FORM USER
-            
-            self.get_parameter_data(state=state)
-            param = state["parameters"]
-            for i in param:
-                print(i)
-                symb = re.search(r'\{(.*?)\}', i["symbol"])
-                print(symb)
-                symb = symb.group(1)
+            #GET PARAMETER DATA FROM STATE DICT
 
-                last_line = f"""{symb} = {i["value"]}"""
+            for param in state["parameters"]:
+                symb = re.search(r'\{(.*?)\}', param["symbol"])
+                symb = symb.group(1)
+                last_line = f"""{symb} = {param["value"]}"""
                 code += last_line + "\n"
                 exec(last_line, local_env, local_env)
+
+
+            #GET PARAMETER DATA FORM USER
+            
+            # self.get_parameter_data(state=state)
+            # param = state["parameters"]
+            # for i in param:
+            #     print(i)
+            #     symb = re.search(r'\{(.*?)\}', i["symbol"])
+            #     print(symb)
+            #     symb = symb.group(1)
+
+            #     last_line = f"""{symb} = {i["value"]}"""
+            #     code += last_line + "\n"
+            #     exec(last_line, local_env, local_env)
 
 
 

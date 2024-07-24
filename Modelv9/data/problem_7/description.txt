@@ -7,9 +7,10 @@ A government agency is responsible for ensuring the efficient distribution of es
 
 - **Three-Echelon Supply Chain**: Farmers to Warehouses to Retailers
 - **Disruption Scenarios**:
-    - **Production Disruption**: A percentage of farmers in a specific location cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). In this case the production quantity at some locations will be reduced while the demand will remain the same. The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the crops quantity shipped from each production location to warehouse will be different as in the normal scenario but the quantity supplied from each warehouse to the retailer might be same.
-    - **Warehouse Disruption**: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. Other surplus warehouses will supply crops to the retailers to meet demand and also supply the crops to the disrupted warehouse if the specific crop’s demand is not met by the producer. Here the crops quantity shipped from each production location to warehouse will be same as in the normal scenario but the quantity supplied from each warehouse to the retailer might get different.
-- **Limited Warehouse Capacity**: Each warehouse has a maximum storage capacity.
+    - **Production Disruption**: All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). In this case the production quantity at all locations will be reduced while the demand will remain the same. The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the other warehouses will also directly supply the the retailers (surplus warehouse to retailer). Here the crops quantity shipped from each production location to warehouse will be different as in the normal scenario but the quantity supplied from each warehouse to the retailer might be same.
+    - **Warehouse Disruption**: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. We will use a reassignment strategy where along with the existing warehouse other surplus warehouse will also supply to the retailers (from disrupted warehouse to retailer + from another warehouse to retailer). Along with this other surplus warehouse will also supply crops to the disrupted warehouse (from warehouse to warehouse). Above both strategies will be used to meet the demand in case of warehouse disruption scenario. Here the crops quantity shipped from each production location to warehouse will be same as in the normal scenario but the quantity supplied from each warehouse to the retailer might get different.
+- You should consider variables for supply of crops in different strategies in both the disruption scenarios.
+- **Limited Warehouse Capacity**: Each warehouse has a maximum storage capacity. This value is constant and same for every warehouse.
 - **Transportation Costs**: Transportation costs are directly proportional to distance and vary by crop.
 - **Holding Costs**: Each crop has a specific holding cost per unit at the warehouse.
 - **Lost Sales Penalty**: A penalty is incurred for unmet demand at the retailers.
@@ -33,15 +34,15 @@ The data we have is the:
 - Cost of transportation after disruption per *km* per *kg*
 - Maximum capacity of warehouse at location *h*
 - Cost of holding each crop per *kg*
-- Fixed cost of opening & operating a warehouse at location *h*
+- Fixed cost of opening & operating a warehouse at location *h*. This value is constant and same for every warehouse.
 - Cost of lost sales of each crop per *kg*
 - Probability that production location disruption scenario occurs
 - Probability that warehouse location disruption scenario occurs
 - Percentage capacity of warehouses affected due to warehouse location disruption scenario
 - Distance matrix:
-    - Distance between each production location and potential warehouse locations (same as production location)
+    - Distance between each production location and potential warehouse locations (same as production location). (this distances is same as the distance between every two potential warehouse locations also)
     - Distance between each potential warehouse location and each retailer location
     - Distance between each potential warehouse location and railway station location
     
 
-Your task is to formulate the mathematical model with the objective function to minimize the total supply chain cost, incorporating the transportation costs, holding costs, fixed costs of warehouses, and lost sales penalties (lost sales of each crop per kg multiplied by quantity of lost sales). Include constraints for production capacities, warehouse capacities, demand satisfaction, transportation limits, and disruption scenarios. Then solve this model to find the optimal number of warehouses and their locations. For this you should add one constraint where you fix the number of warehouses and solve and find the cost. You should iterate this process from 2 warehouses to 10 warehouses and then select optimal number of warehouses as the one which has minimum total supply chain cost.
+Your task is to formulate the mathematical model with the objective function to minimize the total supply chain cost, incorporating the transportation costs, holding costs, fixed costs of warehouses, and lost sales penalties (lost sales of each crop per kg multiplied by quantity of lost sales). Include constraints for production capacities, warehouse capacities, demand satisfaction, transportation limits, and disruption scenarios. Then solve this model to find the optimal number of warehouses and their locations.

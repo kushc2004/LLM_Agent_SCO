@@ -1,0 +1,718 @@
+{
+    "problem_type": "MILP",
+    "description": "A government agency in Sitapur district of Uttar Pradesh, India, aims to optimize the distribution of \\\\param{Crops} essential crops (wheat, paddy, and sugarcane) from \\\\param{Farmers} farmers (production locations) to \\\\param{Retailers} retailers (consumption locations). The agency plans to establish a network of warehouses to manage the crop flow. The objective is to determine the optimal number and locations of warehouses, as well as resource allocation strategies, to minimize the total supply chain cost, considering potential disruptions. \\n\\n**Key Considerations:**\\n\\n- **Three-Echelon Supply Chain:** Farmers to Warehouses to Retailers\\n- **Disruption Scenarios:**\\n    - **Production Disruption:** All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the other warehouses will also directly supply the the retailers (surplus warehouse to retailer).\\n    - **Warehouse Disruption:** A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. We will use a reassignment strategy where along with the existing warehouse other surplus warehouse will also supply to the retailers (from disrupted warehouse to retailer + from another warehouse to retailer). Along with this other surplus warehouse will also supply crops to the disrupted warehouse (from warehouse to warehouse).\\n- **Limited Warehouse Capacity:** Each warehouse has a maximum storage capacity of \\\\param{MaxCapacity}.\\n- **Transportation Costs:** Transportation costs are directly proportional to distance and vary by crop. The cost of transportation after disruption from production location \\\\param{F} to warehouse \\\\param{H}  and from warehouse \\\\param{H} to retailers \\\\param{R}  is \\\\param{DisruptionTransportationCost}.\\n- **Holding Costs:** Each crop has a specific holding cost per unit at the warehouse.\\n- **Lost Sales Penalty:** A penalty of \\\\param{LostSalesPenalty} is incurred for unmet demand at the retailers.\\n- **Proximity to Transportation Hubs:** Warehouses should be strategically located within a \\\\param{MaxDistance} of major railway stations to facilitate inter-state transportation.\\n\\nThe goal is to determine the optimal values for the decision variables, minimizing the total supply chain cost while considering potential disruptions and satisfying all constraints.",
+    "problem_info": "The problem aims to optimize the supply chain of essential crops by determining the optimal number and locations of warehouses, as well as resource allocation strategies, while considering potential disruptions and minimizing the total supply chain cost.",
+    "input_format": "Sets of farmers, potential warehouse locations, retailers, crops, railway stations, production disruption scenarios, and warehouse disruption scenarios; production quantity of each crop at each farmer; demand quantity of each crop at each retailer; distances between farmers and warehouses, warehouses and retailers, and warehouses and railway stations; transportation cost per km per kg of each crop; holding cost per kg of each crop at each warehouse; maximum capacity of a warehouse; fixed cost of opening & operating a warehouse; lost sales penalty per kg of each crop; maximum distance between a warehouse and a railway station; probability of each production disruption scenario; probability of each warehouse disruption scenario; percentage of warehouse capacity affected in each warehouse disruption scenario; transportation cost after disruption.",
+    "output_info": "The output includes:\n- Optimal number of warehouses and their locations.\n- Quantity of each crop transported from each farmer to each warehouse under normal and disruption scenarios.\n- Quantity of each crop transported from each warehouse to each retailer under normal and disruption scenarios.\n- Inventory levels of each crop at each warehouse under normal and disruption scenarios.\n- Total supply chain cost, including transportation, holding, fixed, and lost sales costs.",
+    "output_format": "Optimal number and locations of warehouses, quantity of each crop transported from each farmer to each warehouse, quantity of each crop transported from each warehouse to each retailer, inventory levels at each warehouse, and lost sales at each retailer, under normal and disruption scenarios.",
+    "parameters": [
+        {
+            "definition": "Set of Farmers (Production Locations)",
+            "symbol": "{F}",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Potential Warehouse Locations",
+            "symbol": "{H}",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Retailers (Consumption Locations)",
+            "symbol": "{R}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Crops",
+            "symbol": "{C}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Railway Stations",
+            "symbol": "{S}",
+            "value": 28,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Production Disruption Scenarios",
+            "symbol": "{PD}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Warehouse Disruption Scenarios",
+            "symbol": "{WD}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Production Quantity of Crop c at Farmer f",
+            "symbol": "{ProductionQuantity}{fc}",
+            "value": [[0.0, 1788.1024, 0.0], [0.0, 3539.4944, 0.0], [0.0, 2381.5872, 0.0], [0.0, 3786.3336, 0.0], [0.0, 0.0, 75474.472], [0.0, 0.0, 32843.8928], [0.0, 0.0, 30761.8384], [0.0, 0.0, 46990.5248], [792.335999999999, 0.0, 0.0], [3804.1525, 0.0, 0.0]],
+            "shape": [
+                "F",
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Demand Quantity of Crop c at Retailer r",
+            "symbol": "{DemandQuantity}{rc}",
+            "value": [[3711.579999999997, 0.0, 0.0], [2038.499999999999, 0.0, 0.0]],
+            "shape": [
+                "R",
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Farmer f and Warehouse h",
+            "symbol": "{DistanceFH}{fh}",
+            "value": [[0.0, 1.2582877496709353, 4.867254456290843, 11.7179100616398, 31.357706053325938, 46.6824532926627, 45.647284109756995, 40.1872620655773, 47.422395204521365, 37.49194619056814], [1.2582877496709353, 0.0, 5.438372867857991, 10.824954352470828, 31.69492721553409, 47.91986232460358, 46.905513360919365, 41.43342475086484, 48.67846590163407, 38.73313717660502], [4.867254456290843, 5.438372867857991, 0.0, 10.873632535040848, 35.454605551529596, 44.36031396414961, 44.1273621928408, 38.094011683706285, 46.22444811321127, 35.29703106040663], [11.7179100616398, 10.824954352470828, 10.873632535040848, 0.0, 41.67860822617392, 54.5190467490639, 54.78650643142072, 48.469501475193546, 56.9933630545568, 45.624073917597606], [31.357706053325938, 31.69492721553409, 35.454605551529596, 41.67860822617392, 0.0, 54.46087337133318, 48.78710011794677, 48.15858291316353, 48.15277449769995, 46.808459952680515], [46.6824532926627, 47.91986232460358, 44.36031396414961, 54.5190467490639, 54.46087337133318, 0.0, 8.137622105055696, 6.766091160608452, 11.522597778052244, 9.218251063199439], [45.647284109756995, 46.905513360919365, 44.1273621928408, 54.78650643142072, 48.78710011794677, 8.137622105055696, 0.0, 7.835657559595728, 3.7056419264002955, 10.44703616113249], [40.1872620655773, 41.43342475086484, 38.094011683706285, 48.469501475193546, 48.15858291316353, 6.766091160608452, 7.835657559595728, 0.0, 11.369528091718614, 2.8874255153417616], [47.422395204521365, 48.67846590163407, 46.22444811321127, 56.9933630545568, 48.15277449769995, 11.522597778052244, 3.7056419264002955, 11.369528091718614, 0.0, 13.804917390693214], [37.49194619056814, 38.73313717660502, 35.29703106040663, 45.624073917597606, 46.808459952680515, 9.218251063199439, 10.44703616113249, 2.8874255153417616, 13.804917390693214, 0.0]],
+            "shape": [
+                "F",
+                "H"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Warehouse h and Retailer r",
+            "symbol": "{DistanceHR}{hr}",
+            "value": [[6.720641866770818, 43.199716670803895], [6.275539433059449, 44.45046830280852], [4.871590318126178, 41.22447662910968], [6.002111122138036, 51.657007168173486], [37.96928701946116, 49.68779016133786], [48.88046065906962, 4.806181345340648], [48.89497054951591, 5.119652888277618], [42.71755093049564, 3.261593086537658], [51.046278959931406, 8.817682810145275], [39.89385932583398, 6.146707458143214]],
+            "shape": [
+                "H",
+                "R"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Warehouse h and Railway Station s",
+            "symbol": "{DistanceHS}{hs}",
+            "value": [[5.1916102493736815, 1.6716204152602685, 54.94675026823505, 33.60603397597613, 35.93785971807895, 10.720598010006192, 17.026141234590074, 44.66549268331149, 24.415559533412356, 50.58089176143231, 39.09052221964439, 58.781889383238344, 3.63413399648296, 30.848803705306267, 19.909984757881706, 22.988158322583924, 22.172735123817287, 9.988461296656883, 27.431874812296765, 45.68461960324783, 32.66868222956273, 27.67936528303548, 21.10276632920846, 11.089958760427784, 37.745744101549775, 49.70064824278386, 19.819025278346025, 11.002509163572594], [5.827896493732767, 2.538591622139665, 55.788944872533826, 34.69427436129203, 34.91784859348398, 11.907461256525174, 18.2429194261703, 45.586443741038444, 25.54651465705175, 51.44802905188196, 40.09055613974966, 59.59542967183893, 4.197083073928949, 29.87019969901702, 18.82883995263437, 21.91865737377298, 21.24950680532081, 8.882416692777229, 28.071377085284333, 45.958153419774305, 33.07235178185727, 28.161994990402764, 21.7131554548018, 12.009056674568866, 38.082706593447995, 49.94228463661165, 20.442095941566773, 11.662748673661174], [9.290193121102204, 6.078331666125733, 57.38623152594755, 34.791452114346505, 35.02178903486305, 11.767646640170101, 17.27248108715409, 46.77756766154598, 25.396066909846333, 52.92403941036418, 40.80804649242266, 61.33366282100052, 8.034958627323885, 29.737600507011493, 19.72014993582449, 22.622547503177117, 26.57694924205932, 10.632828241551138, 22.635065816840108, 49.8644901028939, 36.61597358154334, 31.46939576493414, 16.28221685905521, 6.942310308381041, 41.818148738898564, 53.93402250784332, 23.32112695210904, 14.640891635896788], [16.62433438431704, 13.317808548959958, 66.61366640891696, 45.13638742445807, 24.36168204133223, 22.023451306094092, 27.96060162967997, 56.38220974467401, 35.82759982693534, 62.27113457305826, 50.778645121321446, 70.413860814973, 14.989976574018934, 19.185880241642593, 8.866556531788184, 11.750365574637048, 24.021377109673047, 3.452593437748115, 27.26605990616067, 55.6291385532179, 43.235079269948066, 38.5511304045706, 21.313060534578593, 16.435126408693115, 48.01657406421965, 59.47260999754301, 31.120117337602117, 22.42467323801897], [26.26250235901228, 29.746082733334024, 30.568643983548704, 24.890570156715217, 63.194561796471696, 26.707828492038278, 27.270492443640475, 24.581839227395566, 23.94261028286205, 27.509632185195102, 23.873379150806663, 33.28275051869055, 27.73147491312314, 58.93107819043839, 47.44857139041539, 50.38093872581372, 28.954415320547962, 38.66853713336986, 54.55499046188298, 14.43378323169902, 2.2297521751429783, 5.114838257961064, 49.11749550024577, 38.24338307132237, 6.388895003008925, 18.557017943786324, 12.975450298726456, 20.88513443300708], [45.708677716587005, 46.169872091893275, 50.60580168246568, 30.821084080798652, 76.21180892199104, 37.90655356317925, 32.232124842224124, 41.57479599944456, 30.989455376241366, 46.93900961239155, 35.911935978033554, 54.36023810920263, 46.35449306465951, 70.909281296623, 63.17271282033292, 65.68105739133328, 66.66040308487666, 54.9626018547523, 35.84752325018468, 64.63222198107597, 53.57802018157384, 49.62523225094353, 37.52508139663212, 38.08661783841553, 57.9368637582001, 68.32299937499096, 44.88808690882644, 44.470395646530925], [43.79414692799541, 44.864151611435936, 42.589142624852514, 24.2797376006348, 77.69098058266985, 35.8490802405337, 29.635316773491468, 33.88799614805144, 26.40547605860443, 39.026721809316946, 28.603691447817194, 46.29434056458009, 44.693138919464424, 72.32713382242241, 63.62373900817992, 66.3419092032882, 64.03227579691007, 54.717614690367085, 39.80833129949466, 57.95456802762258, 47.68063896712797, 44.18819594857635, 40.270242240581844, 38.560693643471545, 51.686848791822456, 61.493328290669226, 40.490802876381935, 41.56816857822086], [39.03454345970169, 39.60947903211531, 46.905556816269154, 25.256608733998945, 70.76380963995717, 31.19610637179232, 25.469941628160882, 37.13937446752967, 24.45812018007321, 42.93806269478908, 30.997357379141715, 50.847266209895174, 39.72342107202966, 65.42150251232248, 57.21793238293024, 59.82108883874451, 59.924938064531375, 48.72477167932221, 32.018179522775235, 58.863762138322805, 47.38123409819742, 43.24784225445389, 32.74940530551719, 32.058232570615225, 51.9101253445437, 62.66124001983222, 38.23899476108375, 37.70695241184552], [45.21835328814184, 46.53624268871837, 39.80649124180614, 23.321558099816993, 80.23190112098108, 37.30483682280558, 30.956363251206334, 31.642625789842786, 26.76642516745004, 36.43823466442202, 26.84463831191881, 43.39711196872565, 46.21791584776987, 74.86151880082775, 65.85537944383614, 68.63763242356424, 64.99327565506216, 56.73635141923546, 43.14956945556217, 56.54617385995309, 46.90252210593783, 43.746034918089954, 43.3276883752204, 40.95927919701154, 50.63270076873317, 59.95004023512412, 40.7166927501898, 42.56308248803398], [36.50009208939141, 36.958778062322516, 47.39760729393829, 24.75045033888341, 67.87639186616128, 28.72434961116774, 23.184631821395104, 37.28700907447207, 22.92079276229648, 43.2926798313455, 30.89998614867417, 51.41565401141263, 37.13663776193708, 62.53412954968755, 54.35950694045069, 56.95174857907602, 57.49893551625474, 45.92269995233548, 29.372409023905114, 57.98927166133209, 46.14675466002615, 41.82492866163592, 29.923533814900228, 29.203255447320416, 50.82881661288991, 61.86359947267955, 36.42625803432919, 35.41466334623997]],
+            "shape": [
+                "H",
+                "S"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation Cost per km per kg of Crop c",
+            "symbol": "{TransportationCost}{c}",
+            "value": [6,6,6],
+            "shape": [
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Holding Cost per kg of Crop c at Warehouse h",
+            "symbol": "{HoldingCost}{c}",
+            "value": [4, 5, 3],
+            "shape": [
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum Capacity of a Warehouse",
+            "symbol": "{MaxCapacity}",
+            "value": 100000000,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Fixed Cost of opening & operating a Warehouse at location h",
+            "symbol": "{FixedCost}",
+            "value": 10000000,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Lost Sales Penalty per kg of Crop c",
+            "symbol": "{LostSalesPenalty}{c}",
+            "value": [8, 10, 6],
+            "shape": [
+                "C"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum Distance between a Warehouse and a Railway Station",
+            "symbol": "{MaxDistance}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability of Production Disruption Scenario pd",
+            "symbol": "{ProbabilityPD}{pd}",
+            "value": [0.5, 0.7],
+            "shape": [
+                "PD"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability of Warehouse Disruption Scenario wd",
+            "symbol": "{ProbabilityWD}{wd}",
+            "value": [0.3, 0.2],
+            "shape": [
+                "WD"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Percentage of Warehouse Capacity affected in Scenario wd",
+            "symbol": "{DisruptionPercentage}{wd}",
+            "value": [0.3, 0.2],
+            "shape": [
+                "WD"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Crops",
+            "symbol": "{Crops}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Farmers",
+            "symbol": "{Farmers}",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Retailers",
+            "symbol": "{Retailers}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Cost of transportation after disruption per km per kg",
+            "symbol": "{DisruptionTransportationCost}",
+            "value": 15,
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Quantity of Crop c transported from Farmer f to Warehouse h",
+            "symbol": "{QuantityFWH}_{fhc}",
+            "type": "continuous",
+            "shape": [
+                "F",
+                "H",
+                "C"
+            ],
+            "status": "coded",
+            "code": "QuantityFWH = model.addVars(F, H, C, vtype=gp.GRB.CONTINUOUS, name=\"QuantityFWH\")"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer r",
+            "symbol": "{QuantityWHR}_{hrc}",
+            "type": "continuous",
+            "shape": [
+                "H",
+                "R",
+                "C"
+            ],
+            "status": "coded",
+            "code": "QuantityWHR = model.addVars(H, R, C, vtype=gp.GRB.CONTINUOUS, name=\"QuantityWHR\")"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Farmer f to Warehouse h under Production Disruption Scenario pd",
+            "symbol": "{QuantityFWHProductionDisruption}_{fhcpd}",
+            "type": "continuous",
+            "shape": [
+                "F",
+                "H",
+                "C",
+                "PD"
+            ],
+            "status": "coded",
+            "code": "QuantityFWHProductionDisruption = model.addVars(F, H, C, PD, vtype=gp.GRB.CONTINUOUS, name=\"QuantityFWHProductionDisruption\")"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer r under Warehouse Disruption Scenario wd",
+            "symbol": "{QuantityWHSWarehouseDisruption}_{hrcwd}",
+            "type": "continuous",
+            "shape": [
+                "H",
+                "R",
+                "C",
+                "WD"
+            ],
+            "status": "coded",
+            "code": "QuantityWHSWarehouseDisruption = model.addVars(H, R, C, WD, name=\"QuantityWHSWarehouseDisruption\", vtype=GRB.CONTINUOUS)"
+        },
+        {
+            "definition": "Binary variable indicating if a Warehouse is opened at Location h (1 if open, 0 otherwise)",
+            "symbol": "{WarehouseOpen}_{h}",
+            "type": "binary",
+            "shape": [
+                "H"
+            ],
+            "status": "coded",
+            "code": "WarehouseOpen = model.addVars(H, vtype=gp.GRB.BINARY, name=\"WarehouseOpen\")"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Warehouse h' under Warehouse Disruption Scenario wd",
+            "symbol": "{QuantityWHWH}_{hh'cwd}",
+            "type": "continuous",
+            "shape": [
+                "H",
+                "H",
+                "C",
+                "WD"
+            ],
+            "status": "coded",
+            "code": "QuantityWHWH = model.addVars(H, H, C, WD, name=\"QuantityWHWH\", lb=0)"
+        },
+        {
+            "definition": "Inventory Level of Crop c at Warehouse h",
+            "symbol": "{Inventory}_{hc}",
+            "type": "continuous",
+            "shape": [
+                "H",
+                "C"
+            ],
+            "status": "coded",
+            "code": "Inventory = model.addVars(H, C, vtype=gp.GRB.CONTINUOUS, name=\"Inventory\")"
+        },
+        {
+            "definition": "Inventory Level of Crop c at Warehouse h under Production Disruption Scenario pd",
+            "symbol": "{InventoryProductionDisruption}_{hcpd}",
+            "type": "continuous",
+            "shape": [
+                "H",
+                "C",
+                "PD"
+            ],
+            "status": "coded",
+            "code": "InventoryProductionDisruption = model.addVars(H, C, PD, name=\"InventoryProductionDisruption\")"
+        },
+        {
+            "definition": "Inventory Level of Crop c at Warehouse h under Warehouse Disruption Scenario wd",
+            "symbol": "{InventoryWarehouseDisruption}_{hcwd}",
+            "type": "continuous",
+            "shape": [
+                "H",
+                "C",
+                "WD"
+            ],
+            "status": "coded",
+            "code": "InventoryWarehouseDisruption = model.addVars(H, C, WD, vtype=gp.GRB.CONTINUOUS, name=\"InventoryWarehouseDisruption\")"
+        },
+        {
+            "definition": "Lost Sales of product c at retailer r",
+            "symbol": "{LostSales}_{rc}",
+            "type": "continuous",
+            "shape": [
+                "R",
+                "C"
+            ],
+            "status": "coded",
+            "code": "LostSales = model.addVars(R, C, name=\"LostSales\", lb=0.0)"
+        }
+    ],
+    "data": [],
+    "path": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_7",
+    "problem_desc": "A government agency is responsible for ensuring the efficient distribution of essential crops (wheat, paddy, and sugarcane) from farmers (production locations) to retailers (consumption locations) in the Sitapur district of Uttar Pradesh, India. The agency plans to establish a network of warehouses to consolidate and manage the flow of these crops. Your task is to determine:\n\n1. **Optimal Number of Warehouses and their Locations**: Where should the agency build warehouses to minimize total supply chain costs, while considering potential disruptions?\n2. **Resource Allocation**: How should the agency allocate crop transportation and storage resources under normal and disrupted scenarios to meet retailer demand?\n\n**Key Considerations**:\n\n- **Three-Echelon Supply Chain**: Farmers to Warehouses to Retailers\n- **Disruption Scenarios**:\n    - **Production Disruption**: All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). In this case the production quantity at all locations will be reduced while the demand will remain the same. The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the other warehouses will also directly supply the the retailers (surplus warehouse to retailer). Here the crops quantity shipped from each production location to warehouse will be different as in the normal scenario but the quantity supplied from each warehouse to the retailer might be same.\n    - **Warehouse Disruption**: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. We will use a reassignment strategy where along with the existing warehouse other surplus warehouse will also supply to the retailers (from disrupted warehouse to retailer + from another warehouse to retailer). Along with this other surplus warehouse will also supply crops to the disrupted warehouse (from warehouse to warehouse). Above both strategies will be used to meet the demand in case of warehouse disruption scenario. Here the crops quantity shipped from each production location to warehouse will be same as in the normal scenario but the quantity supplied from each warehouse to the retailer might get different.\n- You should consider variables for supply of crops in different strategies in both the disruption scenarios.\n- **Limited Warehouse Capacity**: Each warehouse has a maximum storage capacity. This value is constant and same for every warehouse.\n- **Transportation Costs**: Transportation costs are directly proportional to distance and vary by crop.\n- **Holding Costs**: Each crop has a specific holding cost per unit at the warehouse.\n- **Lost Sales Penalty**: A penalty is incurred for unmet demand at the retailers.\n- **Proximity to Transportation Hubs**: Warehouses should be strategically located within a certain distance of major railway stations to facilitate inter-state transportation.\n- Consider the inventory costs as well that is the total holding cost required in each scenario. You should add constraints to find the inventory quantity in each scenario. It is the inventory quantity multiplied by the holding cost of each crop.\n\nYour goal is to determine the optimal values for the decision variables, minimizing the total supply chain cost while considering potential disruptions and satisfying all constraints.\n\nThe data we have is the:\n\n- All production locations are actually the locations of the villages.\n- List of production locations with production quantity of each crop at each location\n- List of retailer locations with demand quantity of each crop at each locations\n- All production locations are potential warehouse locations that is a warehouse can be placed at any village location.\n- List of crops produced\n- List of nearby railway station locations\n- Set of production location disruption scenario\n- Set of warehouse location disruption scenario\n- Maximum distance between warehouse and railway station distance\n- Cost of transportation cost per km per kg\n- Cost of transportation after disruption per *km* per *kg*\n- Maximum capacity of warehouse at location *h*\n- Cost of holding each crop per *kg*\n- Fixed cost of opening & operating a warehouse at location *h*. This value is constant and same for every warehouse.\n- Cost of lost sales of each crop per *kg*\n- Probability that production location disruption scenario occurs\n- Probability that warehouse location disruption scenario occurs\n- Percentage capacity of warehouses affected due to warehouse location disruption scenario\n- Distance matrix:\n    - Distance between each production location and potential warehouse locations (same as production location). (this distances is same as the distance between every two potential warehouse locations also)\n    - Distance between each potential warehouse location and each retailer location\n    - Distance between each potential warehouse location and railway station location\n    \n\nYour task is to formulate the mathematical model with the objective function to minimize the total supply chain cost, incorporating the transportation costs, holding costs, fixed costs of warehouses, and lost sales penalties (lost sales of each crop per kg multiplied by quantity of lost sales). Include constraints for production capacities, warehouse capacities, demand satisfaction, transportation limits, and disruption scenarios. Then solve this model to find the optimal number of warehouses and their locations.",
+    "background": "A government agency in Sitapur district of Uttar Pradesh, India, aims to optimize the distribution of {Crops} essential crops (wheat, paddy, and sugarcane) from {Farmers} farmers (production locations) to {Retailers} retailers (consumption locations), minimizing the total supply chain cost while considering potential disruptions. The agency plans to establish a network of warehouses to manage the crop flow.",
+    "objective": [
+        {
+            "description": "Minimize the total cost, including transportation costs, holding costs, fixed costs of operating warehouses, lost sales penalties, and disruption costs, considering probabilities of disruption scenarios.",
+            "status": "coded",
+            "formulation": "\\sum_{f \\in \\textup{F}} \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{QuantityFWH}_{fhc} \\cdot \\textup{DistanceFH}_{fh} \\cdot \\textup{TransportationCost}_{c} + \\sum_{h \\in \\textup{H}} \\sum_{r \\in \\textup{R}} \\sum_{c \\in \\textup{C}} \\textup{QuantityWHR}_{hrc}  \\cdot \\textup{DistanceHR}_{hr} \\cdot \\textup{TransportationCost}_{c} + \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{Inventory}_{hc} \\cdot \\textup{HoldingCost}_{c} +  \\sum_{h \\in \\textup{H}} \\textup{WarehouseOpen}_{h} \\cdot \\textup{FixedCost} + \\sum_{r \\in \\textup{R}} \\sum_{c \\in \\textup{C}}  \\textup{LostSales}_{rc} \\cdot \\textup{LostSalesPenalty}_{c} + \\sum_{pd \\in \\textup{PD}} (\\textup{ProbabilityPD}_{pd} \\cdot (\\sum_{f \\in \\textup{F}} \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{QuantityFWHProductionDisruption}_{fhcpd} \\cdot \\textup{DistanceFH}_{fh} \\cdot \\textup{DisruptionTransportationCost} + \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{InventoryProductionDisruption}_{hcpd} \\cdot \\textup{HoldingCost}_{c}))+ \\sum_{wd \\in \\textup{WD}} (\\textup{ProbabilityWD}_{wd} \\cdot ( \\sum_{h \\in \\textup{H}} \\sum_{r \\in \\textup{R}} \\sum_{c \\in \\textup{C}} \\textup{QuantityWHSWarehouseDisruption}_{hrcwd} \\cdot \\textup{DistanceHR}_{hr} \\cdot \\textup{DisruptionTransportationCost} + \\sum_{h \\in \\textup{H}} \\sum_{h' \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{QuantityWHWH}_{hh'cwd} \\cdot \\textup{DistanceFH}_{hh'} \\cdot \\textup{DisruptionTransportationCost} + \\sum_{h \\in \\textup{H}} \\sum_{c \\in \\textup{C}} \\textup{InventoryWarehouseDisruption}_{hcwd} \\cdot \\textup{HoldingCost}_{c}))",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHR",
+                "Inventory",
+                "WarehouseOpen",
+                "LostSales",
+                "QuantityFWHProductionDisruption",
+                "InventoryProductionDisruption",
+                "QuantityWHSWarehouseDisruption",
+                "QuantityWHWH",
+                "InventoryWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "F",
+                "H",
+                "C",
+                "DistanceFH",
+                "TransportationCost",
+                "H",
+                "R",
+                "C",
+                "DistanceHR",
+                "TransportationCost",
+                "H",
+                "C",
+                "HoldingCost",
+                "H",
+                "FixedCost",
+                "R",
+                "C",
+                "LostSalesPenalty",
+                "PD",
+                "ProbabilityPD",
+                "F",
+                "H",
+                "C",
+                "DistanceFH",
+                "DisruptionTransportationCost",
+                "H",
+                "C",
+                "HoldingCost",
+                "WD",
+                "ProbabilityWD",
+                "H",
+                "R",
+                "C",
+                "DistanceHR",
+                "DisruptionTransportationCost",
+                "H",
+                "H",
+                "C",
+                "DistanceFH",
+                "DisruptionTransportationCost",
+                "H",
+                "C",
+                "HoldingCost"
+            ],
+            "code": "model.setObjective(gp.quicksum(gp.quicksum(gp.quicksum(QuantityFWH[f, h, c] * DistanceFH[f][h] * TransportationCost[c] for c in range(C)) for h in range(H)) for f in range(F)) + gp.quicksum(gp.quicksum(gp.quicksum(QuantityWHR[h, r, c] * DistanceHR[h][r] * TransportationCost[c] for c in range(C)) for r in range(R)) for h in range(H)) + gp.quicksum(gp.quicksum(Inventory[h, c] * HoldingCost[c] for c in range(C)) for h in range(H)) + gp.quicksum(WarehouseOpen[h] * FixedCost for h in range(H)) + gp.quicksum(gp.quicksum(LostSales[r, c] * LostSalesPenalty[c] for c in range(C)) for r in range(R)) + gp.quicksum(ProbabilityPD[pd] * (gp.quicksum(gp.quicksum(gp.quicksum(QuantityFWHProductionDisruption[f, h, c, pd] * DistanceFH[f][h] * DisruptionTransportationCost for c in range(C)) for h in range(H)) for f in range(F)) + gp.quicksum(gp.quicksum(InventoryProductionDisruption[h, c, pd] * HoldingCost[c] for c in range(C)) for h in range(H))) for pd in range(PD)) + gp.quicksum(ProbabilityWD[wd] * (gp.quicksum(gp.quicksum(gp.quicksum(QuantityWHSWarehouseDisruption[h, r, c, wd] * DistanceHR[h][r] * DisruptionTransportationCost for c in range(C)) for r in range(R)) for h in range(H)) + gp.quicksum(gp.quicksum(gp.quicksum(QuantityWHWH[h, h_p, c, wd] * DistanceFH[h][h_p] * DisruptionTransportationCost for c in range(C)) for h_p in range(H)) for h in range(H)) + gp.quicksum(gp.quicksum(InventoryWarehouseDisruption[h, c, wd] * HoldingCost[c] for c in range(C)) for h in range(H))) for wd in range(WD)), gp.GRB.MINIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "The total quantity of each crop transported from a farmer to all warehouses should be less than or equal to the farmer's production quantity for that crop.",
+            "formulation": "\\sum_{h \\in \\textup{H}} \\textup{QuantityFWH}_{fhc} \\leq \\textup{ProductionQuantity}_{fc} \\quad \\forall f \\in \\textup{F}, \\ c \\in \\textup{C}",
+            "reasoning": "This constraint ensures that the total amount of a crop transported from a farmer to all warehouses doesn't exceed the farmer's production capacity for that crop.",
+            "status": "coded",
+            "relevant_section": "Three-Echelon Supply Chain: Farmers to Warehouses to Retailers",
+            "related_variables": [
+                "QuantityFWH"
+            ],
+            "related_parameters": [
+                "H",
+                "ProductionQuantity",
+                "F",
+                "C"
+            ],
+            "code": "for f in range(F):\n    for c in range(C):\n        model.addConstr(gp.quicksum(QuantityFWH[f, h, c] for h in range(H)) <= ProductionQuantity[f][c], name='TotalQuantityConstraint')"
+        },
+        {
+            "description": "The total quantity of each crop transported from all warehouses to a retailer should be less than or equal to the retailer's demand quantity for that crop.",
+            "formulation": "\\sum_{h \\in \\textup{H}} \\textup{QuantityWHR}_{hrc} \\leq \\textup{DemandQuantity}_{rc}  \\quad \\forall r \\in \\textup{R}, \\ c \\in \\textup{C}",
+            "reasoning": "This constraint ensures that the total amount of a crop transported from all warehouses to a retailer doesn't exceed the retailer's demand for that crop.",
+            "status": "coded",
+            "relevant_section": "Three-Echelon Supply Chain: Farmers to Warehouses to Retailers",
+            "related_variables": [
+                "QuantityWHR"
+            ],
+            "related_parameters": [
+                "H",
+                "DemandQuantity",
+                "R",
+                "C"
+            ],
+            "code": "for r in range(R):\n    for c in range(C):\n        model.addConstr(gp.quicksum(QuantityWHR[h, r, c] for h in range(H)) <= DemandQuantity[r][c], name='DemandConstraint')"
+        },
+        {
+            "description": "The total quantity of each crop entering a warehouse plus the initial inventory of that crop at the warehouse should be equal to the total quantity of that crop leaving the warehouse (considering transportation to retailers and other warehouses) under normal and disruption scenarios.",
+            "formulation": "\\sum_{f \\in \\textup{F}} \\textup{QuantityFWH}_{fhc} = \\sum_{r \\in \\textup{R}} \\textup{QuantityWHR}_{hrc} + \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd}  \\quad \\forall h \\in \\textup{H}, \\ c \\in \\textup{C} \\\\ \\sum_{f \\in \\textup{F}} \\textup{QuantityFWHProductionDisruption}_{fhcpd} = \\sum_{r \\in \\textup{R}} \\textup{QuantityWHR}_{hrc} + \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd}  \\quad \\forall h \\in \\textup{H}, \\ c \\in \\textup{C}, \\ pd \\in \\textup{PD} \\\\ \\sum_{f \\in \\textup{F}} \\textup{QuantityFWH}_{fhc}  = \\sum_{r \\in \\textup{R}} \\textup{QuantityWHSWarehouseDisruption}_{hrcwd} + \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd} \\quad \\forall h \\in \\textup{H}, \\ c \\in \\textup{C}, \\ wd \\in \\textup{WD}",
+            "reasoning": "This constraint represents the flow conservation of crops at each warehouse. It ensures that the total inflow of a crop to a warehouse equals the total outflow of that crop from the warehouse, considering both normal operations and disruption scenarios.",
+            "status": "coded",
+            "relevant_section": "Three-Echelon Supply Chain: Farmers to Warehouses to Retailers\nProduction Disruption: All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the other warehouses will also directly supply the the retailers (surplus warehouse to retailer).\nWarehouse Disruption: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. We will use a reassignment strategy where along with the existing warehouse other surplus warehouse will also supply to the retailers (from disrupted warehouse to retailer + from another warehouse to retailer). Along with this other surplus warehouse will also supply crops to the disrupted warehouse (from warehouse to warehouse).",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHR",
+                "QuantityWHWH",
+                "QuantityFWHProductionDisruption",
+                "QuantityWHR",
+                "QuantityWHWH",
+                "QuantityFWH",
+                "QuantityWHSWarehouseDisruption",
+                "QuantityWHWH"
+            ],
+            "related_parameters": [
+                "F",
+                "R",
+                "H",
+                "H",
+                "C",
+                "F",
+                "R",
+                "H",
+                "H",
+                "C",
+                "PD",
+                "F",
+                "R",
+                "H",
+                "H",
+                "C",
+                "WD"
+            ],
+            "code": "for h in range(H):\n    for c in range(C):\n        model.addConstr(gp.quicksum(QuantityFWH[f, h, c] for f in range(F)) == gp.quicksum(QuantityWHR[h, r, c] for r in range(R)) + gp.quicksum(QuantityWHWH[h, h_prime, c, wd] for h_prime in range(H) for wd in range(WD)), name=\"Warehouse_Balance_Normal\")\nfor h in range(H):\n    for c in range(C):\n        for pd in range(PD):\n            model.addConstr(gp.quicksum(QuantityFWHProductionDisruption[f, h, c, pd] for f in range(F)) == gp.quicksum(QuantityWHR[h, r, c] for r in range(R)) + gp.quicksum(QuantityWHWH[h, h_prime, c, wd] for h_prime in range(H) for wd in range(WD)), name=\"Warehouse_Balance_ProductionDisruption\")\nfor h in range(H):\n    for c in range(C):\n        for wd in range(WD):\n            model.addConstr(gp.quicksum(QuantityFWH[f, h, c] for f in range(F)) == gp.quicksum(QuantityWHSWarehouseDisruption[h, r, c, wd] for r in range(R)) + gp.quicksum(QuantityWHWH[h, h_prime, c, wd] for h_prime in range(H)), name=\"Warehouse_Balance_WarehouseDisruption\")"
+        },
+        {
+            "description": "The total quantity of each crop stored at a warehouse should be less than or equal to the warehouse's maximum capacity.",
+            "formulation": "\\sum_{c \\in \\textup{C}} \\textup{Inventory}_{hc} \\leq \\textup{MaxCapacity} \\times \\textup{WarehouseOpen}_{h} \\quad \\forall h \\in \\textup{H}",
+            "reasoning": "This constraint ensures that the total amount of crops stored in a warehouse doesn't exceed the warehouse's storage capacity. It also ensures that a warehouse can only store crops if it's open.",
+            "status": "coded",
+            "relevant_section": "Limited Warehouse Capacity: Each warehouse has a maximum storage capacity of \\\\param{MaxCapacity}.",
+            "related_variables": [
+                "Inventory",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "C",
+                "MaxCapacity",
+                "H"
+            ],
+            "code": "for h in range(H):\n    model.addConstr(gp.quicksum(Inventory[h, c] for c in range(C)) <= MaxCapacity * WarehouseOpen[h], name=\"WarehouseCapacityConstraint\")"
+        },
+        {
+            "description": "Warehouses should be located within a maximum distance of {MaxDistance} from major railway stations.",
+            "formulation": "\\textup{DistanceHS}_{hs} \\leq \\textup{MaxDistance} \\times \\textup{WarehouseOpen}_{h} \\quad \\forall h \\in \\textup{H}, s \\in \\textup{S}",
+            "reasoning": "This constraint enforces the proximity requirement of warehouses to railway stations. It ensures that if a warehouse is opened, its distance to at least one railway station should be within the maximum allowed distance.",
+            "status": "coded",
+            "relevant_section": "Proximity to Transportation Hubs: Warehouses should be strategically located within a \\\\param{MaxDistance} of major railway stations to facilitate inter-state transportation.",
+            "related_variables": [
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "DistanceHS",
+                "MaxDistance",
+                "H",
+                "S"
+            ],
+            "code": "for h in range(H):\n    for s in range(S):\n        model.addConstr(DistanceHS[h][s] <= MaxDistance * WarehouseOpen[h], name='WarehouseDistanceConstraint')"
+        },
+        {
+            "description": "All flow variables should be non-negative.",
+            "formulation": "\\textup{QuantityFWH}_{fhc}, \\textup{QuantityWHR}_{hrc}, \\textup{QuantityFWHProductionDisruption}_{fhcpd}, \\textup{QuantityWHSWarehouseDisruption}_{hrcwd}, \\textup{QuantityWHWH}_{hh'cwd}  \\geq 0 \\quad \\forall f \\in \\textup{F}, \\ h, h' \\in \\textup{H}, \\ r \\in \\textup{R}, \\ c \\in \\textup{C}, \\ pd \\in \\textup{PD}, \\ wd \\in \\textup{WD}",
+            "reasoning": "This constraint ensures that all the quantities of crops transported between different entities are non-negative, as negative quantities wouldn't make sense in a real-world supply chain context.",
+            "status": "coded",
+            "relevant_section": "none",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHR",
+                "QuantityFWHProductionDisruption",
+                "QuantityWHSWarehouseDisruption",
+                "QuantityWHWH"
+            ],
+            "related_parameters": [
+                "F",
+                "H",
+                "R",
+                "C",
+                "PD",
+                "WD"
+            ],
+            "code": "for f in range(F):\n    for h in range(H):\n        for c in range(C):\n            model.addConstr(QuantityFWH[f, h, c] >= 0, name=\"QuantityFWH_nonnegative\")\nfor h in range(H):\n    for r in range(R):\n        for c in range(C):\n            model.addConstr(QuantityWHR[h, r, c] >= 0, name=\"QuantityWHR_nonnegative\")\nfor f in range(F):\n    for h in range(H):\n        for c in range(C):\n            for pd in range(PD):\n                model.addConstr(QuantityFWHProductionDisruption[f, h, c, pd] >= 0, name=\"QuantityFWHProductionDisruption_nonnegative\")\nfor h in range(H):\n    for r in range(R):\n        for c in range(C):\n            for wd in range(WD):\n                model.addConstr(QuantityWHSWarehouseDisruption[h, r, c, wd] >= 0, name=\"QuantityWHSWarehouseDisruption_nonnegative\")\nfor h in range(H):\n    for hp in range(H):\n        for c in range(C):\n            for wd in range(WD):\n                model.addConstr(QuantityWHWH[h, hp, c, wd] >= 0, name=\"QuantityWHWH_nonnegative\")"
+        },
+        {
+            "description": "All inventory variables should be non-negative.",
+            "formulation": "\\textup{Inventory}_{hc}, \\textup{InventoryProductionDisruption}_{hcpd}, \\textup{InventoryWarehouseDisruption}_{hcwd} \\geq 0 \\quad \\forall h \\in \\textup{H}, \\ c \\in \\textup{C}, \\ pd \\in \\textup{PD}, \\ wd \\in \\textup{WD}",
+            "reasoning": "This constraint ensures that the inventory levels at warehouses are non-negative. Negative inventory levels are not physically meaningful.",
+            "status": "coded",
+            "relevant_section": "none",
+            "related_variables": [
+                "Inventory",
+                "InventoryProductionDisruption",
+                "InventoryWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "H",
+                "C",
+                "PD",
+                "WD"
+            ],
+            "code": "for h in range(H):\n    for c in range(C):\n        model.addConstr(Inventory[h, c] >= 0, name='Inventory_non_negative')\n        for pd in range(PD):\n            model.addConstr(InventoryProductionDisruption[h, c, pd] >= 0, name='InventoryProductionDisruption_non_negative')\n        for wd in range(WD):\n            model.addConstr(InventoryWarehouseDisruption[h, c, wd] >= 0, name='InventoryWarehouseDisruption_non_negative')"
+        },
+        {
+            "description": "All lost sales variables should be non-negative.",
+            "formulation": "\\textup{LostSales}_{rc} \\geq 0 \\quad \\forall r \\in \\textup{R}, \\ c \\in \\textup{C}",
+            "reasoning": "This constraint is valid as lost sales represent the unmet demand for crops at retailers, and it wouldn't make sense to have negative lost sales.",
+            "status": "coded",
+            "relevant_section": "none",
+            "related_variables": [
+                "LostSales"
+            ],
+            "related_parameters": [
+                "R",
+                "C"
+            ],
+            "code": "for r in range(R):\n    for c in range(C):\n        model.addConstr(LostSales[r, c] >= 0, name=\"NonNegativeLostSales\")"
+        },
+        {
+            "description": "The binary variable {WarehouseOpen}_{h} should be 1 if a warehouse is opened at location h, and 0 otherwise.",
+            "formulation": "\\textup{WarehouseOpen}_{h} \\in \\{0, 1\\} \\quad \\forall h \\in \\textup{H}",
+            "reasoning": "This is a standard constraint for binary variables, ensuring that they can only take values of 0 or 1 to represent whether a warehouse is open or not.",
+            "status": "coded",
+            "relevant_section": "none",
+            "related_variables": [
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "H"
+            ],
+            "code": "for h in range(H):\n    model.addConstr(WarehouseOpen[h] <= 1, name='WarehouseOpenBinary')"
+        },
+        {
+            "description": "Inventory Balance at Warehouse h for Crop c",
+            "formulation": "\\sum_{f \\in \\textup{F}} \\textup{QuantityFWH}_{fhc} - \\sum_{r \\in \\textup{R}} \\textup{QuantityWHR}_{hrc} = \\textup{Inventory}_{hc} \\ \\forall h \\in \\textup{H}, \\forall c \\in \\textup{C}",
+            "status": "coded",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHR",
+                "Inventory"
+            ],
+            "related_parameters": [
+                "F",
+                "R",
+                "H",
+                "C"
+            ],
+            "code": "for h in range(H):\n    for c in range(C):\n        model.addConstr(gp.quicksum(QuantityFWH[f, h, c] for f in range(F)) - gp.quicksum(QuantityWHR[h, r, c] for r in range(R)) == Inventory[h, c], name='InventoryBalance')"
+        },
+        {
+            "description": "Inventory Balance at Warehouse h for Crop c (Production Disruption Scenario)",
+            "formulation": "\\sum_{f \\in \\textup{F}} \\textup{QuantityFWHProductionDisruption}_{fhcpd} - \\sum_{r \\in \\textup{R}} \\textup{QuantityWHR}_{hrc} = \\textup{InventoryProductionDisruption}_{hcpd} \\ \\forall h \\in \\textup{H}, \\forall c \\in \\textup{C}, \\forall pd \\in \\textup{PD}",
+            "status": "coded",
+            "related_variables": [
+                "QuantityFWHProductionDisruption",
+                "QuantityWHR",
+                "InventoryProductionDisruption"
+            ],
+            "related_parameters": [
+                "F",
+                "R",
+                "H",
+                "C",
+                "PD"
+            ],
+            "code": "for h in range(H):\n    for c in range(C):\n        for pd in range(PD):\n            model.addConstr(gp.quicksum(QuantityFWHProductionDisruption[f, h, c, pd] for f in range(F)) - gp.quicksum(QuantityWHR[h, r, c] for r in range(R)) == InventoryProductionDisruption[h, c, pd], name='InventoryBalanceConstraint')"
+        },
+        {
+            "description": "Inventory Balance at Warehouse h for Crop c (Warehouse Disruption Scenario)",
+            "formulation": "\\sum_{f \\in \\textup{F}} \\textup{QuantityFWH}_{fhc} + \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{h'hcwd} - \\sum_{r \\in \\textup{R}} \\textup{QuantityWHSWarehouseDisruption}_{hrcwd} - \\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd} =  \\textup{InventoryWarehouseDisruption}_{hcwd} \\ \\forall h \\in \\textup{H}, \\forall c \\in \\textup{C}, \\forall wd \\in \\textup{WD}",
+            "status": "coded",
+            "related_variables": [
+                "QuantityFWH",
+                "QuantityWHWH",
+                "QuantityWHSWarehouseDisruption",
+                "QuantityWHWH",
+                "InventoryWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "F",
+                "H",
+                "R",
+                "H",
+                "H",
+                "C",
+                "WD"
+            ],
+            "code": "for h in range(H):\n    for c in range(C):\n        for wd in range(WD):\n            model.addConstr(gp.quicksum(QuantityFWH[f, h, c] for f in range(F)) + gp.quicksum(QuantityWHWH[h_prime, h, c, wd] for h_prime in range(H)) - gp.quicksum(QuantityWHSWarehouseDisruption[h, r, c, wd] for r in range(R)) - gp.quicksum(QuantityWHWH[h, h_prime, c, wd] for h_prime in range(H)) == InventoryWarehouseDisruption[h, c, wd], name='InventoryBalanceWarehouseDisruption')"
+        },
+        {
+            "description": "Warehouse Capacity Constraint",
+            "formulation": "\\sum_{c \\in \\textup{C}}  \\textup{Inventory}_{hc}  \\le \\textup{MaxCapacity} \\cdot \\textup{WarehouseOpen}_{h} \\ \\forall h \\in \\textup{H}",
+            "status": "coded",
+            "related_variables": [
+                "Inventory",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "C",
+                "MaxCapacity",
+                "H"
+            ],
+            "code": "for h in range(H):\n    model.addConstr(gp.quicksum(Inventory[h, c] for c in range(C)) <= MaxCapacity * WarehouseOpen[h], name='WarehouseCapacityConstraint')"
+        },
+        {
+            "description": "Warehouse Capacity Constraint (Production Disruption Scenario)",
+            "formulation": "\\sum_{c \\in \\textup{C}} \\textup{InventoryProductionDisruption}_{hcpd} \\le \\textup{MaxCapacity} \\cdot \\textup{WarehouseOpen}_{h}  \\ \\forall h \\in \\textup{H}, \\forall pd \\in \\textup{PD}",
+            "status": "coded",
+            "related_variables": [
+                "InventoryProductionDisruption",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "C",
+                "MaxCapacity",
+                "H",
+                "PD"
+            ],
+            "code": "for h in range(H):\n    for pd in range(PD):\n        model.addConstr(gp.quicksum(InventoryProductionDisruption[h, c, pd] for c in range(C)) <= MaxCapacity * WarehouseOpen[h], name='WarehouseCapacityConstraint')"
+        },
+        {
+            "description": "Warehouse Capacity Constraint (Warehouse Disruption Scenario)",
+            "formulation": "\\sum_{c \\in \\textup{C}}  \\textup{InventoryWarehouseDisruption}_{hcwd}  \\le (1 - \\textup{DisruptionPercentage}_{wd}) \\cdot \\textup{MaxCapacity} \\cdot \\textup{WarehouseOpen}_{h} \\ \\forall h \\in \\textup{H}, \\forall wd \\in \\textup{WD}",
+            "status": "coded",
+            "related_variables": [
+                "InventoryWarehouseDisruption",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "C",
+                "DisruptionPercentage",
+                "MaxCapacity",
+                "H",
+                "WD"
+            ],
+            "code": "for h in range(H):\n    for wd in range(WD):\n        model.addConstr(gp.quicksum(InventoryWarehouseDisruption[h, c, wd] for c in range(C)) <= (1 - DisruptionPercentage[wd]) * MaxCapacity * WarehouseOpen[h], name='WarehouseCapacityDisruption')"
+        },
+        {
+            "description": "Demand Satisfaction and Lost Sales",
+            "formulation": "\\sum_{h \\in \\textup{H}} \\textup{QuantityWHR}_{hrc} + \\textup{LostSales}_{rc} = \\textup{DemandQuantity}_{rc}  \\ \\forall r \\in \\textup{R}, \\forall c \\in \\textup{C}",
+            "status": "coded",
+            "related_variables": [
+                "QuantityWHR",
+                "LostSales"
+            ],
+            "related_parameters": [
+                "H",
+                "DemandQuantity",
+                "R",
+                "C"
+            ],
+            "code": "for r in range(R):\n    for c in range(C):\n        model.addConstr(gp.quicksum(QuantityWHR[h, r, c] for h in range(H)) + LostSales[r, c] == DemandQuantity[r][c], name='DemandSatisfaction')"
+        },
+        {
+            "description": "Ensure that a warehouse can only ship from itself if it is open",
+            "formulation": "\\sum_{h' \\in \\textup{H}} \\textup{QuantityWHWH}_{hh'cwd} \\le \\textup{MaxCapacity} \\cdot \\textup{WarehouseOpen}_{h} \\ \\forall h \\in \\textup{H},\\forall wd \\in \\textup{WD}",
+            "status": "coded",
+            "related_variables": [
+                "QuantityWHWH",
+                "WarehouseOpen"
+            ],
+            "related_parameters": [
+                "H",
+                "MaxCapacity",
+                "H",
+                "WD"
+            ],
+            "code": "for h in range(H):\n    for wd in range(WD):\n        model.addConstr(gp.quicksum(QuantityWHWH[h, h_prime, c, wd] for h_prime in range(H) for c in range(C)) <= MaxCapacity * WarehouseOpen[h], name='WarehouseShipFromOpen')"
+        }
+    ]
+}

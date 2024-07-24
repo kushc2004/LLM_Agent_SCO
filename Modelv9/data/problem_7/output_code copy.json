@@ -1,0 +1,332 @@
+{
+    "problem_type": "MILP",
+    "description": "A government agency in Sitapur district, Uttar Pradesh, India, aims to optimize the distribution of \\param{Crops} (wheat, paddy, and sugarcane) from \\param{ProductionLocations} (villages) to \\param{RetailerLocations} through a network of warehouses. The goal is to determine the optimal number and locations of warehouses to minimize the total supply chain cost, considering potential disruptions. The supply chain has three echelons: Farmers to Warehouses to Retailers. Two disruption scenarios are considered: Production Disruption, where a percentage of farmers in a specific location cannot supply crops, and Warehouse Disruption, where a percentage of warehouse capacity becomes unavailable. The model considers limited warehouse capacity, transportation costs (varying by crop and distance), holding costs (per crop, per unit), lost sales penalties (per crop, per unit), and proximity to \\param{RailwayStationLocations} for inter-state transportation. The model also considers inventory costs, calculated as the total holding cost required in each scenario. The objective is to minimize the total supply chain cost, including transportation, holding, fixed warehouse costs, and lost sales penalties.",
+    "problem_info": "This is a supply chain optimization problem that involves determining the optimal number and locations of warehouses, as well as the allocation of resources under normal and disrupted scenarios, in order to minimize the total supply chain cost while satisfying supply, demand, and capacity constraints.",
+    "input_format": "The input data should include the following parameters: number of crops, number of production locations, number of retailer locations, number of railway station locations, set of potential warehouse locations, set of production location disruption scenarios, set of warehouse location disruption scenarios, maximum distance between warehouse and railway station, production quantity of each crop at each production location, demand quantity of each crop at each retailer location, transportation cost per km per kg of each crop, transportation cost per km per kg of each crop after disruption, maximum capacity of warehouse at each potential warehouse location, holding cost per kg of each crop, fixed cost of opening & operating a warehouse at each potential warehouse location, cost of lost sales of each crop per kg, probability of each production location disruption scenario occurring, probability of each warehouse location disruption scenario occurring, percentage of warehouse capacity affected due to each warehouse location disruption scenario, distance between each production location and potential warehouse location, distance between each potential warehouse location and retailer location, and distance between each potential warehouse location and railway station location.",
+    "output_info": "The output should provide the optimal number of warehouses, their locations, the quantity of each crop transported from each production location to each warehouse, the quantity of each crop transported from each warehouse to each retailer, and the total supply chain cost, all while considering both normal and disrupted scenarios.",
+    "output_format": "The output should provide the optimal number of warehouses, their locations, the quantity of each crop transported from each production location to each warehouse and from each warehouse to each retailer location, the quantity of each crop held as inventory at each warehouse, and the quantity of lost sales of each crop at each retailer location under normal and disruption scenarios.",
+    "parameters": [
+        {
+            "definition": "Number of Crops",
+            "symbol": "{Crops}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Production Locations",
+            "symbol": "{ProductionLocations}",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Retailer Locations",
+            "symbol": "{RetailerLocations}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Railway Station Locations",
+            "symbol": "{RailwayStationLocations}",
+            "value": 28,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Potential Warehouse Locations (same as Production Locations)",
+            "symbol": "{PotentialWarehouseLocations}",
+            "value": ["Abdipur","Amirnagar","Angrasi","Baerapur","Bambhaura","Barchhata","Bhithia","Kaima Klan","Kolgarh","Kadbada"],
+            "shape": [
+                "ProductionLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Production Location Disruption Scenarios",
+            "symbol": "{ProductionDisruptionScenarios}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Set of Warehouse Location Disruption Scenarios",
+            "symbol": "{WarehouseDisruptionScenarios}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum Distance between Warehouse and Railway Station",
+            "symbol": "{MaxWarehouseRailwayDistance}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Production Quantity of Crop c at Location i",
+            "symbol": "{ProductionQuantity}_ci",
+            "value": [[0, 0, 0, 0, 0, 0, 0, 0, 792.335999999999, 3804.1525], [1788.1024, 3539.4944, 2381.5872, 3786.3336, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 75474.472, 32843.8928, 30761.8384, 46990.5248, 0, 0]],
+            "shape": [
+                "Crops",
+                "ProductionLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Demand Quantity of Crop c at Retailer Location j",
+            "symbol": "{DemandQuantity}_cj",
+            "value": [[3711.579999999997, 2038.499999999999], [0, 0], [0, 0]],
+            "shape": [
+                "Crops",
+                "RetailerLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation Cost per km per kg of Crop c",
+            "symbol": "{TransportationCost}_c",
+            "value": 6,
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation Cost per km per kg of Crop c After Disruption",
+            "symbol": "{DisruptedTransportationCost}_c",
+            "value": 15,
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum Capacity of Warehouse at Location h",
+            "symbol": "{WarehouseCapacity}_h",
+            "value": 100000000,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Holding Cost per kg of Crop c",
+            "symbol": "{HoldingCost}_c",
+            "value": [4, 5, 3],
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Fixed Cost of Opening & Operating a Warehouse at Location h",
+            "symbol": "{FixedWarehouseCost}_h",
+            "value": 10000000,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Cost of Lost Sales of Crop c per kg",
+            "symbol": "{LostSalesPenalty}_c",
+            "value": [8, 10, 6],
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability of Production Location Disruption Scenario s occurring",
+            "symbol": "{ProductionDisruptionProbability}_s",
+            "value": [0.15, 0.25],
+            "shape": [
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability of Warehouse Location Disruption Scenario w occurring",
+            "symbol": "{WarehouseDisruptionProbability}_w",
+            "value": [0.5, 0.7],
+            "shape": [
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Percentage of Warehouse Capacity affected due to Warehouse Location Disruption Scenario w",
+            "symbol": "{WarehouseDisruptionImpact}_w",
+            "value": [0.3, 0.2],
+            "shape": [
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Production Location i and Potential Warehouse Location h",
+            "symbol": "{DistanceProductionWarehouse}_ih",
+            "value": [[0.0, 1.2582877496709353, 4.867254456290843, 11.7179100616398, 31.357706053325938, 46.6824532926627, 45.647284109756995, 40.1872620655773, 47.422395204521365, 37.49194619056814], [1.2582877496709353, 0.0, 5.438372867857991, 10.824954352470828, 31.69492721553409, 47.91986232460358, 46.905513360919365, 41.43342475086484, 48.67846590163407, 38.73313717660502], [4.867254456290843, 5.438372867857991, 0.0, 10.873632535040848, 35.454605551529596, 44.36031396414961, 44.1273621928408, 38.094011683706285, 46.22444811321127, 35.29703106040663], [11.7179100616398, 10.824954352470828, 10.873632535040848, 0.0, 41.67860822617392, 54.5190467490639, 54.78650643142072, 48.469501475193546, 56.9933630545568, 45.624073917597606], [31.357706053325938, 31.69492721553409, 35.454605551529596, 41.67860822617392, 0.0, 54.46087337133318, 48.78710011794677, 48.15858291316353, 48.15277449769995, 46.808459952680515], [46.6824532926627, 47.91986232460358, 44.36031396414961, 54.5190467490639, 54.46087337133318, 0.0, 8.137622105055696, 6.766091160608452, 11.522597778052244, 9.218251063199439], [45.647284109756995, 46.905513360919365, 44.1273621928408, 54.78650643142072, 48.78710011794677, 8.137622105055696, 0.0, 7.835657559595728, 3.7056419264002955, 10.44703616113249], [40.1872620655773, 41.43342475086484, 38.094011683706285, 48.469501475193546, 48.15858291316353, 6.766091160608452, 7.835657559595728, 0.0, 11.369528091718614, 2.8874255153417616], [47.422395204521365, 48.67846590163407, 46.22444811321127, 56.9933630545568, 48.15277449769995, 11.522597778052244, 3.7056419264002955, 11.369528091718614, 0.0, 13.804917390693214], [37.49194619056814, 38.73313717660502, 35.29703106040663, 45.624073917597606, 46.808459952680515, 9.218251063199439, 10.44703616113249, 2.8874255153417616, 13.804917390693214, 0.0]]
+
+            ,
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Potential Warehouse Location h and Retailer Location j",
+            "symbol": "{DistanceWarehouseRetailer}_hj",
+            "value": [[6.720641866770818, 43.199716670803895], [6.275539433059449, 44.45046830280852], [4.871590318126178, 41.22447662910968], [6.002111122138036, 51.657007168173486], [37.96928701946116, 49.68779016133786], [48.88046065906962, 4.806181345340648], [48.89497054951591, 5.119652888277618], [42.71755093049564, 3.261593086537658], [51.046278959931406, 8.817682810145275], [39.89385932583398, 6.146707458143214]]
+            ,
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Potential Warehouse Location h and Railway Station Location r",
+            "symbol": "{DistanceWarehouseRailway}_hr",
+            "value": [[5.1916102493736815, 1.6716204152602685, 54.94675026823505, 33.60603397597613, 35.93785971807895, 10.720598010006192, 17.026141234590074, 44.66549268331149, 24.415559533412356, 50.58089176143231, 39.09052221964439, 58.781889383238344, 3.63413399648296, 30.848803705306267, 19.909984757881706, 22.988158322583924, 22.172735123817287, 9.988461296656883, 27.431874812296765, 45.68461960324783, 32.66868222956273, 27.67936528303548, 21.10276632920846, 11.089958760427784, 37.745744101549775, 49.70064824278386, 19.819025278346025, 11.002509163572594], [5.827896493732767, 2.538591622139665, 55.788944872533826, 34.69427436129203, 34.91784859348398, 11.907461256525174, 18.2429194261703, 45.586443741038444, 25.54651465705175, 51.44802905188196, 40.09055613974966, 59.59542967183893, 4.197083073928949, 29.87019969901702, 18.82883995263437, 21.91865737377298, 21.24950680532081, 8.882416692777229, 28.071377085284333, 45.958153419774305, 33.07235178185727, 28.161994990402764, 21.7131554548018, 12.009056674568866, 38.082706593447995, 49.94228463661165, 20.442095941566773, 11.662748673661174], [9.290193121102204, 6.078331666125733, 57.38623152594755, 34.791452114346505, 35.02178903486305, 11.767646640170101, 17.27248108715409, 46.77756766154598, 25.396066909846333, 52.92403941036418, 40.80804649242266, 61.33366282100052, 8.034958627323885, 29.737600507011493, 19.72014993582449, 22.622547503177117, 26.57694924205932, 10.632828241551138, 22.635065816840108, 49.8644901028939, 36.61597358154334, 31.46939576493414, 16.28221685905521, 6.942310308381041, 41.818148738898564, 53.93402250784332, 23.32112695210904, 14.640891635896788], [16.62433438431704, 13.317808548959958, 66.61366640891696, 45.13638742445807, 24.36168204133223, 22.023451306094092, 27.96060162967997, 56.38220974467401, 35.82759982693534, 62.27113457305826, 50.778645121321446, 70.413860814973, 14.989976574018934, 19.185880241642593, 8.866556531788184, 11.750365574637048, 24.021377109673047, 3.452593437748115, 27.26605990616067, 55.6291385532179, 43.235079269948066, 38.5511304045706, 21.313060534578593, 16.435126408693115, 48.01657406421965, 59.47260999754301, 31.120117337602117, 22.42467323801897], [26.26250235901228, 29.746082733334024, 30.568643983548704, 24.890570156715217, 63.194561796471696, 26.707828492038278, 27.270492443640475, 24.581839227395566, 23.94261028286205, 27.509632185195102, 23.873379150806663, 33.28275051869055, 27.73147491312314, 58.93107819043839, 47.44857139041539, 50.38093872581372, 28.954415320547962, 38.66853713336986, 54.55499046188298, 14.43378323169902, 2.2297521751429783, 5.114838257961064, 49.11749550024577, 38.24338307132237, 6.388895003008925, 18.557017943786324, 12.975450298726456, 20.88513443300708], [45.708677716587005, 46.169872091893275, 50.60580168246568, 30.821084080798652, 76.21180892199104, 37.90655356317925, 32.232124842224124, 41.57479599944456, 30.989455376241366, 46.93900961239155, 35.911935978033554, 54.36023810920263, 46.35449306465951, 70.909281296623, 63.17271282033292, 65.68105739133328, 66.66040308487666, 54.9626018547523, 35.84752325018468, 64.63222198107597, 53.57802018157384, 49.62523225094353, 37.52508139663212, 38.08661783841553, 57.9368637582001, 68.32299937499096, 44.88808690882644, 44.470395646530925], [43.79414692799541, 44.864151611435936, 42.589142624852514, 24.2797376006348, 77.69098058266985, 35.8490802405337, 29.635316773491468, 33.88799614805144, 26.40547605860443, 39.026721809316946, 28.603691447817194, 46.29434056458009, 44.693138919464424, 72.32713382242241, 63.62373900817992, 66.3419092032882, 64.03227579691007, 54.717614690367085, 39.80833129949466, 57.95456802762258, 47.68063896712797, 44.18819594857635, 40.270242240581844, 38.560693643471545, 51.686848791822456, 61.493328290669226, 40.490802876381935, 41.56816857822086], [39.03454345970169, 39.60947903211531, 46.905556816269154, 25.256608733998945, 70.76380963995717, 31.19610637179232, 25.469941628160882, 37.13937446752967, 24.45812018007321, 42.93806269478908, 30.997357379141715, 50.847266209895174, 39.72342107202966, 65.42150251232248, 57.21793238293024, 59.82108883874451, 59.924938064531375, 48.72477167932221, 32.018179522775235, 58.863762138322805, 47.38123409819742, 43.24784225445389, 32.74940530551719, 32.058232570615225, 51.9101253445437, 62.66124001983222, 38.23899476108375, 37.70695241184552], [45.21835328814184, 46.53624268871837, 39.80649124180614, 23.321558099816993, 80.23190112098108, 37.30483682280558, 30.956363251206334, 31.642625789842786, 26.76642516745004, 36.43823466442202, 26.84463831191881, 43.39711196872565, 46.21791584776987, 74.86151880082775, 65.85537944383614, 68.63763242356424, 64.99327565506216, 56.73635141923546, 43.14956945556217, 56.54617385995309, 46.90252210593783, 43.746034918089954, 43.3276883752204, 40.95927919701154, 50.63270076873317, 59.95004023512412, 40.7166927501898, 42.56308248803398], [36.50009208939141, 36.958778062322516, 47.39760729393829, 24.75045033888341, 67.87639186616128, 28.72434961116774, 23.184631821395104, 37.28700907447207, 22.92079276229648, 43.2926798313455, 30.89998614867417, 51.41565401141263, 37.13663776193708, 62.53412954968755, 54.35950694045069, 56.95174857907602, 57.49893551625474, 45.92269995233548, 29.372409023905114, 57.98927166133209, 46.14675466002615, 41.82492866163592, 29.923533814900228, 29.203255447320416, 50.82881661288991, 61.86359947267955, 36.42625803432919, 35.41466334623997]],
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RailwayStationLocations"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Binary variable indicating whether a warehouse is opened at Potential Warehouse Location h (1 if open, 0 otherwise)",
+            "symbol": "{WarehouseOpen}_h",
+            "type": "binary",
+            "shape": [
+                "PotentialWarehouseLocations"
+            ],
+            "status": "coded",
+            "code": "WarehouseOpen = model.addVars(PotentialWarehouseLocations, vtype=gp.GRB.BINARY, name=\"WarehouseOpen\")"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h under normal conditions",
+            "symbol": "{FlowProductionWarehouse}_cih",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "coded",
+            "code": "FlowProductionWarehouse = model.addVars(Crops, ProductionLocations, PotentialWarehouseLocations, name=\"FlowProductionWarehouse\", lb=0)"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer Location j under normal conditions",
+            "symbol": "{FlowWarehouseRetailer}_chj",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "PotentialWarehouseLocations",
+                "RetailerLocations"
+            ],
+            "status": "coded",
+            "code": "FlowWarehouseRetailer = model.addVars(Crops, PotentialWarehouseLocations, RetailerLocations, vtype=gp.GRB.CONTINUOUS, name=\"FlowWarehouseRetailer\")"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h under Production Disruption Scenario s",
+            "symbol": "{FlowProductionWarehouseDisruption}_cihs",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "coded",
+            "code": "FlowProductionWarehouseDisruption = model.addVars(Crops, ProductionLocations, PotentialWarehouseLocations, ProductionDisruptionScenarios, vtype=gp.GRB.CONTINUOUS, name=\"FlowProductionWarehouseDisruption\")"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer Location j under Warehouse Disruption Scenario w",
+            "symbol": "{FlowWarehouseRetailerDisruption}_chwj",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "coded",
+            "code": "FlowWarehouseRetailerDisruption = model.addVars(Crops, PotentialWarehouseLocations, RetailerLocations, WarehouseDisruptionScenarios, vtype=gp.GRB.CONTINUOUS, name=\"FlowWarehouseRetailerDisruption\")"
+        },
+        {
+            "definition": "Quantity of Crop c held as inventory in Warehouse h under normal conditions",
+            "symbol": "{Inventory}_ch",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "coded",
+            "code": "Inventory = model.addVars(Crops, PotentialWarehouseLocations, name=\"Inventory\")"
+        },
+        {
+            "definition": "Quantity of Crop c held as inventory in Warehouse h under Production Disruption Scenario s",
+            "symbol": "{InventoryProductionDisruption}_chs",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "PotentialWarehouseLocations",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "coded",
+            "code": "InventoryProductionDisruption = model.addVars(Crops, PotentialWarehouseLocations, ProductionDisruptionScenarios, vtype=gp.GRB.CONTINUOUS, name=\"InventoryProductionDisruption\")"
+        },
+        {
+            "definition": "Quantity of Crop c held as inventory in Warehouse h under Warehouse Disruption Scenario w",
+            "symbol": "{InventoryWarehouseDisruption}_chw",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "PotentialWarehouseLocations",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "coded",
+            "code": "InventoryWarehouseDisruption = model.addVars(Crops, PotentialWarehouseLocations, WarehouseDisruptionScenarios, name='InventoryWarehouseDisruption')"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer Location j under normal conditions",
+            "symbol": "{LostSales}_cj",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "RetailerLocations"
+            ],
+            "status": "coded",
+            "code": "LostSales = model.addVars(Crops, RetailerLocations, vtype=gp.GRB.CONTINUOUS, name=\"LostSales\")"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer Location j under Production Disruption Scenario s",
+            "symbol": "{LostSalesProductionDisruption}_cjs",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "RetailerLocations",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "coded",
+            "code": "LostSalesProductionDisruption = model.addVars(Crops, RetailerLocations, ProductionDisruptionScenarios, name=\"LostSalesProductionDisruption\")"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer Location j under Warehouse Disruption Scenario w",
+            "symbol": "{LostSalesWarehouseDisruption}_cjw",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "RetailerLocations",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "coded",
+            "code": "LostSalesWarehouseDisruption = model.addVars(Crops, RetailerLocations, WarehouseDisruptionScenarios, name='LostSalesWarehouseDisruption', lb=0)"
+        }
+    ],
+    "data": [],
+    "path": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_7"
+}
