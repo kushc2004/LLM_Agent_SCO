@@ -592,15 +592,14 @@ class Programmer(Agent):
                 cnt = 1
                 while cnt > 0:
                     try:
-                        if var_count < 15:
+                        if var_count < 14:
                             response = self.llm_call3(prompt=prompt)
                             var_count += 1
                             last_call_time = time.time()
 
-                        elif var_count1 < 15:
+                        elif var_count1 < 14:
                                 response = self.llm_call4(prompt=prompt)
                                 var_count1 += 1
-                                var_count = 0
                         else:
                             time_since_last_call = time.time() - last_call_time
                             time_to_wait = max(0,70 - time_since_last_call) 

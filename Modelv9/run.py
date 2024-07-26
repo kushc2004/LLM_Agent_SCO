@@ -68,10 +68,10 @@ def test():
 
 
 
-path="/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_7"
-# generate_snop(path)
+path="/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_8"
+generate_snop(path)
 # run_manager(Agent, path)
 # run_formulator(Agent, path)
 # test()
 # run_programmer(Agent, path)
-run_evaluator(Agent, path)
+# run_evaluator(Agent, path)

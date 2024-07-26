@@ -1,0 +1,1504 @@
+{
+    "problem_type": "MILP",
+    "description": "A government agency is responsible for ensuring the efficient distribution of essential crops (wheat, paddy, and sugarcane) from farmers (production locations) to retailers (consumption locations) in the Sitapur district of Uttar Pradesh, India. The agency plans to establish a network of warehouses to consolidate and manage the flow of these crops. Your task is to determine:\\n\\n1. **Optimal Number of Warehouses and their Locations**: Where should the agency build warehouses to minimize total supply chain costs, while considering potential disruptions?\\n2. **Resource Allocation**: How should the agency allocate crop transportation and storage resources under normal and disrupted scenarios to meet retailer demand?\\n\\n**Key Considerations**:\\n\\n- **Three-Echelon Supply Chain**: Farmers to Warehouses to Retailers\\n- **Disruption Scenarios**:\\n    - **Production Disruption**: All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). In this case the production quantity at all locations will be reduced while the demand will remain the same. The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the other warehouses will also directly supply the the retailers (surplus warehouse to retailer). Here the crops quantity shipped from each production location to warehouse will be different as in the normal scenario but the quantity supplied from each warehouse to the retailer might be same.\\n    - **Warehouse Disruption**: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. We will use a reassignment strategy where along with the existing warehouse other surplus warehouse will also supply to the retailers (from disrupted warehouse to retailer + from another warehouse to retailer). Along with this other surplus warehouse will also supply crops to the disrupted warehouse (from warehouse to warehouse). Above both strategies will be used to meet the demand in case of warehouse disruption scenario. Here the crops quantity shipped from each production location to warehouse will be same as in the normal scenario but the quantity supplied from each warehouse to the retailer might get different.\\n- You should consider variables for supply of crops in different strategies in both the disruption scenarios.\\n- **Limited Warehouse Capacity**: Each warehouse has a maximum storage capacity. This value is \\\\param{MaxWarehouseCapacity} and same for every warehouse.\\n- **Transportation Costs**: Transportation costs are directly proportional to distance and vary by crop. This cost is only the \\\\param{TransportationCost}{c} * distance * some binary variable. Do not include quantity in the transportation cost.\\n- **Holding Costs**: Each crop has a specific \\\\param{HoldingCost}{c} at the warehouse.\\n- **Lost Sales Penalty**: A \\\\param{LostSalesPenalty}{c} is incurred for unmet demand at the retailers.\\n- **Proximity to Transportation Hubs**: Warehouses should be strategically located within a \\\\param{MaxDistanceWarehouseRailway} of major railway stations to facilitate inter-state transportation.\\n- Consider the inventory costs as well that is the total holding cost required in each scenario. You should add constraints to find the inventory quantity in each scenario. It is the inventory quantity multiplied by the \\\\param{HoldingCost}{c} of each crop.\\n\\nYour goal is to determine the optimal values for the decision variables, minimizing the total supply chain cost while considering potential disruptions and satisfying all constraints.\\n\\nThe data we have is the:\\n\\n- All production locations are actually the locations of the villages.\\n- List of \\\\param{ProductionLocations} with \\\\param{ProductionQuantity}{ic} of each crop at each location\\n- List of \\\\param{RetailerLocations} with \\\\param{DemandQuantity}{jc} of each crop at each locations\\n- All production locations are potential warehouse locations that is a warehouse can be placed at any village location.\\n- List of \\\\param{Crops} produced\\n- List of nearby \\\\param{RailwayStations} locations\\n- Set of \\\\param{ProductionDisruptionScenarios}\\n- Set of \\\\param{WarehouseDisruptionScenarios}\\n- \\\\param{MaxDistanceWarehouseRailway}\\n- \\\\param{TransportationCost}{c}\\n- \\\\param{DisruptedTransportationCost}{c}\\n- \\\\param{MaxWarehouseCapacity}\\n- \\\\param{HoldingCost}{c}\\n- \\\\param{FixedCostWarehouse}. This value is constant and same for every warehouse.\\n- \\\\param{LostSalesPenalty}{c}\\n- \\\\param{ProbabilityProductionDisruption}{s}\\n- \\\\param{ProbabilityWarehouseDisruption}{w}\\n- \\\\param{PercentageCapacityAffected}{w}\\n- Distance matrix:\\n    - \\\\param{DistanceProductionWarehouse}{ih} (this distances is same as the distance between every two potential warehouse locations also)\\n    - \\\\param{DistanceWarehouseRetailer}{hj}\\n    - \\\\param{DistanceWarehouseRailway}{hr}\\n    \\n\\nYour task is to formulate the mathematical model with the objective function to minimize the total supply chain cost, incorporating the \\\\param{TransportationCost}{c}, \\\\param{HoldingCost}{c}, \\\\param{FixedCostWarehouse}, and \\\\param{LostSalesPenalty}{c} (\\\\param{LostSalesPenalty}{c} multiplied by quantity of lost sales). You should not include the quantity in the objective function, it should only be included in the constraints. Include constraints for production capacities, warehouse capacities, demand satisfaction, transportation limits, and disruption scenarios. Then solve this model to find the optimal number of warehouses and their locations.",
+    "problem_info": "Minimize the total supply chain cost of a three-echelon supply chain network while considering potential disruptions.",
+    "input_format": "The input data should include: a list of production locations with production quantities for each crop; a list of retailer locations with demand quantities for each crop; a list of potential warehouse locations; a list of crops; a list of nearby railway station locations; sets of production and warehouse disruption scenarios; maximum warehouse capacity; transportation costs per km for each crop (normal and disrupted); holding cost per kg for each crop at the warehouse; fixed cost of opening a warehouse; lost sales penalty per kg for each crop; probability of each production disruption scenario; probability of each warehouse disruption scenario; percentage of warehouse capacity affected in each warehouse disruption scenario; distance matrices between production locations and potential warehouse locations, between potential warehouse locations and retailer locations, and between potential warehouse locations and railway stations; and the maximum allowed distance between a warehouse and a railway station.",
+    "output_info": "Optimal number of warehouses, their locations, and the flow of crops through the supply chain to minimize the total cost.",
+    "output_format": "The output should provide the optimal number of warehouses and their locations, as well as the quantity of each crop transported from each production location to each warehouse and from each warehouse to each retailer, under normal and disruption scenarios. It should also include the lost sales for each retailer for each crop under all scenarios. Finally it should include the inventory quantity at each warehouse for every crop under all scenarios.",
+    "parameters": [
+        {
+            "definition": "Number of Production Locations",
+            "symbol": "{ProductionLocations}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Retailer Locations",
+            "symbol": "{RetailerLocations}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Crops",
+            "symbol": "{Crops}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Potential Warehouse Locations",
+            "symbol": "{PotentialWarehouseLocations}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Railway Stations",
+            "symbol": "{RailwayStations}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Production Disruption Scenarios",
+            "symbol": "{ProductionDisruptionScenarios}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Warehouse Disruption Scenarios",
+            "symbol": "{WarehouseDisruptionScenarios}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Production Quantity of Crop c at Production Location i",
+            "symbol": "{ProductionQuantity}{ic}",
+            "value": "",
+            "shape": [
+                "ProductionLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Demand Quantity of Crop c at Retailer Location j",
+            "symbol": "{DemandQuantity}{jc}",
+            "value": "",
+            "shape": [
+                "RetailerLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum Capacity of Warehouse",
+            "symbol": "{MaxWarehouseCapacity}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation Cost per km of Crop c",
+            "symbol": "{TransportationCost}{c}",
+            "value": "",
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation Cost per km of Crop c after Disruption",
+            "symbol": "{DisruptedTransportationCost}{c}",
+            "value": "",
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Holding Cost per kg of Crop c at the Warehouse",
+            "symbol": "{HoldingCost}{c}",
+            "value": "",
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Fixed Cost of opening and operating a Warehouse at Location h",
+            "symbol": "{FixedCostWarehouse}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Cost of Lost Sales of Crop c per kg",
+            "symbol": "{LostSalesPenalty}{c}",
+            "value": "",
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability that Production Location Disruption Scenario s occurs",
+            "symbol": "{ProbabilityProductionDisruption}{s}",
+            "value": "",
+            "shape": [
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability that Warehouse Location Disruption Scenario w occurs",
+            "symbol": "{ProbabilityWarehouseDisruption}{w}",
+            "value": "",
+            "shape": [
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Percentage Capacity of Warehouses affected due to Warehouse Location Disruption Scenario w",
+            "symbol": "{PercentageCapacityAffected}{w}",
+            "value": "",
+            "shape": [
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Production Location i and Potential Warehouse Location h",
+            "symbol": "{DistanceProductionWarehouse}{ih}",
+            "value": "",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Potential Warehouse Location h and Retailer Location j",
+            "symbol": "{DistanceWarehouseRetailer}{hj}",
+            "value": "",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Potential Warehouse Location h and Railway Station r",
+            "symbol": "{DistanceWarehouseRailway}{hr}",
+            "value": "",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RailwayStations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum allowed Distance between Warehouse and Railway Station",
+            "symbol": "{MaxDistanceWarehouseRailway}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h in normal scenario",
+            "symbol": "{QuantityProductionWarehouseNormal}_{ihc}",
+            "type": "continuous",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer j in normal scenario",
+            "symbol": "{QuantityWarehouseRetailerNormal}_{hjc}",
+            "type": "continuous",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h in Production Disruption Scenario s",
+            "symbol": "{QuantityProductionWarehouseProductionDisruption}_{ihcs}",
+            "type": "continuous",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer j in Production Disruption Scenario s",
+            "symbol": "{QuantityWarehouseRetailerProductionDisruption}_{hjcs}",
+            "type": "continuous",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h in Warehouse Disruption Scenario w",
+            "symbol": "{QuantityProductionWarehouseWarehouseDisruption}_{ihcw}",
+            "type": "continuous",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer j in Warehouse Disruption Scenario w",
+            "symbol": "{QuantityWarehouseRetailerWarehouseDisruption}_{hjcw}",
+            "type": "continuous",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Warehouse h' in Warehouse Disruption Scenario w",
+            "symbol": "{QuantityWarehouseWarehouseWarehouseDisruption}_{hh'cw}",
+            "type": "continuous",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether a Warehouse is opened at Potential Location h or not",
+            "symbol": "{BinaryWarehouseOpen}_{h}",
+            "type": "binary",
+            "shape": [
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer j in normal scenario",
+            "symbol": "{LostSalesNormal}_{jc}",
+            "type": "continuous",
+            "shape": [
+                "RetailerLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer j in Production Disruption Scenario s",
+            "symbol": "{LostSalesProductionDisruption}_{jcs}",
+            "type": "continuous",
+            "shape": [
+                "RetailerLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer j in Warehouse Disruption Scenario w",
+            "symbol": "{LostSalesWarehouseDisruption}_{jcw}",
+            "type": "continuous",
+            "shape": [
+                "RetailerLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Inventory quantity of crop c at warehouse h in normal scenario",
+            "symbol": "{InventoryNormal}_{hc}",
+            "type": "continuous",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Inventory quantity of crop c at warehouse h in Production Disruption Scenario s",
+            "symbol": "{InventoryProductionDisruption}_{hcs}",
+            "type": "continuous",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Inventory quantity of crop c at warehouse h in Warehouse Disruption Scenario w",
+            "symbol": "{InventoryWarehouseDisruption}_{hcw}",
+            "type": "continuous",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether a Warehouse is opened at Potential Location h or not",
+            "symbol": "\\\\\\\\textup{BinaryWarehouseOpen}_h",
+            "shape": [
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether a Warehouse is opened at Potential Location h or not",
+            "symbol": "\\\\\\\\textup{BinaryWarehouseOpen}_h",
+            "shape": [
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h in normal scenario",
+            "symbol": "\\\\\\\\textup{QuantityProductionWarehouseNormal}_{ihc}",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer j in normal scenario",
+            "symbol": "\\\\\\\\textup{QuantityWarehouseRetailerNormal}_{hjc}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h in Production Disruption Scenario s",
+            "symbol": "\\\\\\\\textup{QuantityProductionWarehouseProductionDisruption}_{ihcs}",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer j in Production Disruption Scenario s",
+            "symbol": "\\\\\\\\textup{QuantityWarehouseRetailerProductionDisruption}_{hjcs}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Production Location i to Warehouse h in Warehouse Disruption Scenario w",
+            "symbol": "\\\\\\\\textup{QuantityProductionWarehouseWarehouseDisruption}_{ihcw}",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Retailer j in Warehouse Disruption Scenario w",
+            "symbol": "\\\\\\\\textup{QuantityWarehouseRetailerWarehouseDisruption}_{hjcw}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of Crop c transported from Warehouse h to Warehouse h' in Warehouse Disruption Scenario w",
+            "symbol": "\\\\\\\\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{hh'cw}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer j in normal scenario",
+            "symbol": "\\\\\\\\textup{LostSalesNormal}_{jc}",
+            "shape": [
+                "RetailerLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer j in Production Disruption Scenario s",
+            "symbol": "\\\\\\\\textup{LostSalesProductionDisruption}_{jcs}",
+            "shape": [
+                "RetailerLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Quantity of lost sales of Crop c at Retailer j in Warehouse Disruption Scenario w",
+            "symbol": "\\\\\\\\textup{LostSalesWarehouseDisruption}_{jcw}",
+            "shape": [
+                "RetailerLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Inventory quantity of crop c at warehouse h in normal scenario",
+            "symbol": "\\\\\\\\textup{InventoryNormal}_{hc}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Inventory quantity of crop c at warehouse h in Production Disruption Scenario s",
+            "symbol": "\\\\\\\\textup{InventoryProductionDisruption}_{hcs}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Inventory quantity of crop c at warehouse h in Warehouse Disruption Scenario w",
+            "symbol": "\\\\\\\\textup{InventoryWarehouseDisruption}_{hcw}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{ih}",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{ih}",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{ih}",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{ih}",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Large number that is multiplied to the binary variable in the constraint",
+            "symbol": "\\\\\\\\textup{LargeNumber}",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{ih}",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{ih}",
+            "shape": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Large number that is multiplied to the binary variable in the constraint",
+            "symbol": "\\\\\\\\textup{LargeNumber}",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between potential warehouse location h and railway station r is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{hr}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RailwayStations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between potential warehouse location h and railway station r is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{hr}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RailwayStations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Large number that is multiplied to the binary variable in the constraint",
+            "symbol": "\\\\\\\\textup{LargeNumber}",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between potential warehouse location h and retailer location j is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{hj}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between potential warehouse location h and retailer location j is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{hj}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between potential warehouse location h and retailer location j is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{hj}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between potential warehouse location h and retailer location j is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{hj}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "RetailerLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Large number that is multiplied to the binary variable in the constraint",
+            "symbol": "\\\\\\\\textup{LargeNumber}",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between potential warehouse location h and potential warehouse location h' is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{hh'}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Binary variable indicating whether the distance between potential warehouse location h and potential warehouse location h' is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "symbol": "\\\\\\\\textup{IsWarehouseNearRailwayStation}_{hh'}",
+            "shape": [
+                "PotentialWarehouseLocations",
+                "PotentialWarehouseLocations"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "data": [],
+    "path": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_8",
+    "problem_desc": "A government agency is responsible for ensuring the efficient distribution of essential crops (wheat, paddy, and sugarcane) from farmers (production locations) to retailers (consumption locations) in the Sitapur district of Uttar Pradesh, India. The agency plans to establish a network of warehouses to consolidate and manage the flow of these crops. Your task is to determine:\n\n1. **Optimal Number of Warehouses and their Locations**: Where should the agency build warehouses to minimize total supply chain costs, while considering potential disruptions?\n2. **Resource Allocation**: How should the agency allocate crop transportation and storage resources under normal and disrupted scenarios to meet retailer demand?\n\n**Key Considerations**:\n\n- **Three-Echelon Supply Chain**: Farmers to Warehouses to Retailers\n- **Disruption Scenarios**:\n    - **Production Disruption**: All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). In this case the production quantity at all locations will be reduced while the demand will remain the same. The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the other warehouses will also directly supply the the retailers (surplus warehouse to retailer). Here the crops quantity shipped from each production location to warehouse will be different as in the normal scenario but the quantity supplied from each warehouse to the retailer might be same.\n    - **Warehouse Disruption**: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. We will use a reassignment strategy where along with the existing warehouse other surplus warehouse will also supply to the retailers (from disrupted warehouse to retailer + from another warehouse to retailer). Along with this other surplus warehouse will also supply crops to the disrupted warehouse (from warehouse to warehouse). Above both strategies will be used to meet the demand in case of warehouse disruption scenario. Here the crops quantity shipped from each production location to warehouse will be same as in the normal scenario but the quantity supplied from each warehouse to the retailer might get different.\n- You should consider variables for supply of crops in different strategies in both the disruption scenarios.\n- **Limited Warehouse Capacity**: Each warehouse has a maximum storage capacity. This value is constant and same for every warehouse.\n- **Transportation Costs**: Transportation costs are directly proportional to distance and vary by crop. This cost is only the transportation cost per km * distance * some binary variable. Do not include quantity in the transportation cost.\n- **Holding Costs**: Each crop has a specific holding cost per unit at the warehouse.\n- **Lost Sales Penalty**: A penalty is incurred for unmet demand at the retailers.\n- **Proximity to Transportation Hubs**: Warehouses should be strategically located within a certain distance of major railway stations to facilitate inter-state transportation.\n- Consider the inventory costs as well that is the total holding cost required in each scenario. You should add constraints to find the inventory quantity in each scenario. It is the inventory quantity multiplied by the holding cost of each crop.\n\nYour goal is to determine the optimal values for the decision variables, minimizing the total supply chain cost while considering potential disruptions and satisfying all constraints.\n\nThe data we have is the:\n\n- All production locations are actually the locations of the villages.\n- List of production locations with production quantity of each crop at each location\n- List of retailer locations with demand quantity of each crop at each locations\n- All production locations are potential warehouse locations that is a warehouse can be placed at any village location.\n- List of crops produced\n- List of nearby railway station locations\n- Set of production location disruption scenario\n- Set of warehouse location disruption scenario\n- Maximum distance between warehouse and railway station distance\n- Cost of transportation cost per km\n- Cost of transportation after disruption per *km*\n- Maximum capacity of warehouse at location *h*\n- Cost of holding each crop per *kg*\n- Fixed cost of opening & operating a warehouse at location *h*. This value is constant and same for every warehouse.\n- Cost of lost sales of each crop per *kg*\n- Probability that production location disruption scenario occurs\n- Probability that warehouse location disruption scenario occurs\n- Percentage capacity of warehouses affected due to warehouse location disruption scenario\n- Distance matrix:\n    - Distance between each production location and potential warehouse locations (same as production location). (this distances is same as the distance between every two potential warehouse locations also)\n    - Distance between each potential warehouse location and each retailer location\n    - Distance between each potential warehouse location and railway station location\n    \n\nYour task is to formulate the mathematical model with the objective function to minimize the total supply chain cost, incorporating the transportation costs, holding costs, fixed costs of warehouses, and lost sales penalties (lost sales of each crop per kg multiplied by quantity of lost sales). You should not include the quantity in the objective function, it should only be included in the constraints. Include constraints for production capacities, warehouse capacities, demand satisfaction, transportation limits, and disruption scenarios. Then solve this model to find the optimal number of warehouses and their locations.",
+    "background": "A government agency in Sitapur, Uttar Pradesh, India, aims to optimize the distribution of wheat, paddy, and sugarcane from farmers to retailers by establishing a network of warehouses. The agency needs to determine the optimal number and locations of warehouses, considering potential disruptions (production and warehouse) while minimizing total supply chain costs.",
+    "objective": [
+        {
+            "description": "Minimize the total supply chain cost, including transportation costs for normal and disruption scenarios, fixed costs of opening warehouses, holding costs at warehouses, and penalties for lost sales, considering the probabilities of disruption scenarios. Please note that this objective does not include quantity in the transportation cost. It only considers the distance.",
+            "status": "formulated",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{FixedCostWarehouse} \\cdot \\textup{BinaryWarehouseOpen}_h \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{i=1}^{\\textup{ProductionLocations}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{TransportationCost}_c \\cdot \\textup{DistanceProductionWarehouse}_{ih} \\cdot \\textup{QuantityProductionWarehouseNormal}_{ihc} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\sum_{j=1}^{\\textup{RetailerLocations}} \\textup{TransportationCost}_c \\cdot \\textup{DistanceWarehouseRetailer}_{hj} \\cdot \\textup{QuantityWarehouseRetailerNormal}_{hjc} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{HoldingCost}_c \\cdot \\textup{InventoryNormal}_{hc} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{j=1}^{\\textup{RetailerLocations}} \\textup{LostSalesPenalty}_c \\cdot \\textup{LostSalesNormal}_{jc} \\quad + \\quad \\sum_{s=1}^{\\textup{ProductionDisruptionScenarios}} \\textup{ProbabilityProductionDisruption}_s \\cdot (\\sum_{c=1}^{\\textup{Crops}} \\sum_{i=1}^{\\textup{ProductionLocations}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{DisruptedTransportationCost}_c \\cdot \\textup{DistanceProductionWarehouse}_{ih} \\cdot \\textup{QuantityProductionWarehouseProductionDisruption}_{ihcs} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\sum_{j=1}^{\\textup{RetailerLocations}} \\textup{DisruptedTransportationCost}_c \\cdot \\textup{DistanceWarehouseRetailer}_{hj} \\cdot \\textup{QuantityWarehouseRetailerProductionDisruption}_{hjcs} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{HoldingCost}_c \\cdot \\textup{InventoryProductionDisruption}_{hcs} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{j=1}^{\\textup{RetailerLocations}} \\textup{LostSalesPenalty}_c \\cdot \\textup{LostSalesProductionDisruption}_{jcs}) \\quad + \\quad \\sum_{w=1}^{\\textup{WarehouseDisruptionScenarios}} \\textup{ProbabilityWarehouseDisruption}_w \\cdot (\\sum_{c=1}^{\\textup{Crops}} \\sum_{i=1}^{\\textup{ProductionLocations}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{DisruptedTransportationCost}_c \\cdot \\textup{DistanceProductionWarehouse}_{ih} \\cdot \\textup{QuantityProductionWarehouseWarehouseDisruption}_{ihcw} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\sum_{j=1}^{\\textup{RetailerLocations}} \\textup{DisruptedTransportationCost}_c \\cdot \\textup{DistanceWarehouseRetailer}_{hj} \\cdot \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{hjcw} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\sum_{h'=1}^{\\textup{PotentialWarehouseLocations}} \\textup{DisruptedTransportationCost}_c \\cdot \\textup{DistanceProductionWarehouse}_{hh'} \\cdot \\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{hh'cw} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{HoldingCost}_c \\cdot \\textup{InventoryWarehouseDisruption}_{hcw} \\quad + \\quad \\sum_{c=1}^{\\textup{Crops}} \\sum_{j=1}^{\\textup{RetailerLocations}} \\textup{LostSalesPenalty}_c \\cdot \\textup{LostSalesWarehouseDisruption}_{jcw})",
+            "related_variables": [
+                "BinaryWarehouseOpen",
+                "QuantityProductionWarehouseNormal",
+                "QuantityWarehouseRetailerNormal",
+                "InventoryNormal",
+                "LostSalesNormal",
+                "QuantityProductionWarehouseProductionDisruption",
+                "QuantityWarehouseRetailerProductionDisruption",
+                "InventoryProductionDisruption",
+                "LostSalesProductionDisruption",
+                "QuantityProductionWarehouseWarehouseDisruption",
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption",
+                "InventoryWarehouseDisruption",
+                "LostSalesWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "FixedCostWarehouse",
+                "Crops",
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "TransportationCost",
+                "DistanceProductionWarehouse",
+                "Crops",
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "TransportationCost",
+                "DistanceWarehouseRetailer",
+                "Crops",
+                "PotentialWarehouseLocations",
+                "HoldingCost",
+                "Crops",
+                "RetailerLocations",
+                "LostSalesPenalty",
+                "ProductionDisruptionScenarios",
+                "ProbabilityProductionDisruption",
+                "Crops",
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "DisruptedTransportationCost",
+                "DistanceProductionWarehouse",
+                "Crops",
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "DisruptedTransportationCost",
+                "DistanceWarehouseRetailer",
+                "Crops",
+                "PotentialWarehouseLocations",
+                "HoldingCost",
+                "Crops",
+                "RetailerLocations",
+                "LostSalesPenalty",
+                "WarehouseDisruptionScenarios",
+                "ProbabilityWarehouseDisruption",
+                "Crops",
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "DisruptedTransportationCost",
+                "DistanceProductionWarehouse",
+                "Crops",
+                "PotentialWarehouseLocations",
+                "RetailerLocations",
+                "DisruptedTransportationCost",
+                "DistanceWarehouseRetailer",
+                "Crops",
+                "PotentialWarehouseLocations",
+                "PotentialWarehouseLocations",
+                "DisruptedTransportationCost",
+                "DistanceProductionWarehouse",
+                "Crops",
+                "PotentialWarehouseLocations",
+                "HoldingCost",
+                "Crops",
+                "RetailerLocations",
+                "LostSalesPenalty"
+            ]
+        }
+    ],
+    "constraints": [
+        {
+            "description": "The total quantity of crop c transported from production location i to all warehouses in the normal scenario should be less than or equal to the production quantity of crop c at production location i",
+            "formulation": "\\sum_{h=1}^{\\textup{{PotentialWarehouseLocations}} \\textup{{QuantityProductionWarehouseNormal}}_{ihc} \\leq \\textup{{ProductionQuantity}}_{ic}",
+            "reasoning": "This constraint ensures that the total amount of crop c sent from a production location i to all warehouses does not exceed the production capacity of that location for that crop. This aligns with the problem's requirement to respect production capacities.",
+            "status": "formulated",
+            "relevant_section": "Limited Warehouse Capacity",
+            "related_variables": [
+                "QuantityProductionWarehouseNormal"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "ProductionQuantity"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from all warehouses to retailer j in the normal scenario plus the lost sales of crop c at retailer j in normal scenario should be equal to the demand quantity of crop c at retailer location j",
+            "formulation": "\\sum_{h=1}^{\\textup{{PotentialWarehouseLocations}} \\textup{{QuantityWarehouseRetailerNormal}}_{hjc} + \\textup{{LostSalesNormal}}_{jc} = \\textup{{DemandQuantity}}_{jc}",
+            "reasoning": " This constraint ensures that the demand at each retailer j for each crop c is met either through deliveries from warehouses or is reflected as lost sales. This aligns with the problem's requirement to satisfy demand or account for unmet demand.",
+            "status": "formulated",
+            "relevant_section": "Lost Sales Penalty",
+            "related_variables": [
+                "QuantityWarehouseRetailerNormal",
+                "LostSalesNormal"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "DemandQuantity"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from all production locations to warehouse h in the normal scenario should be equal to the total quantity of crop c transported from warehouse h to all retailers in normal scenario",
+            "formulation": "\\sum_{i=1}^{\\textup{{ProductionLocations}}} \\textup{{QuantityProductionWarehouseNormal}}_{ihc} = \\sum_{j=1}^{\\textup{{RetailerLocations}}} \\textup{{QuantityWarehouseRetailerNormal}}_{hjc}",
+            "reasoning": "This constraint ensures that in the normal scenario, the total inflow of each crop c to a warehouse h from all production locations is equal to the total outflow of that crop from the warehouse to all retailers. This enforces a balance of flow at each warehouse in the normal operating condition.",
+            "status": "formulated",
+            "relevant_section": "Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityProductionWarehouseNormal",
+                "QuantityWarehouseRetailerNormal"
+            ],
+            "related_parameters": [
+                "ProductionLocations",
+                "RetailerLocations"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from all production locations to warehouse h in the Production Disruption scenario s should be less than or equal to the production quantity of crop c at production location i",
+            "formulation": "\\sum_{i=1}^{\\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseProductionDisruption}_{ihcs} \\leq \\textup{ProductionQuantity}_{ic}",
+            "reasoning": "This constraint appears to be intended to ensure that the total amount of crop c shipped from all production locations to a specific warehouse h during a Production Disruption Scenario s does not exceed the production capacity at each production location. This constraint needs to be adjusted to reflect the potential reduction in \\textup{{ProductionQuantity}}_{ic} due to the disruption scenario s. ",
+            "status": "formulated",
+            "relevant_section": "Production Disruption",
+            "related_variables": [
+                "QuantityProductionWarehouseProductionDisruption"
+            ],
+            "related_parameters": [
+                "ProductionLocations",
+                "ProductionQuantity"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from all warehouses to retailer j in the Production Disruption Scenario s plus the lost sales of crop c at retailer j in Production Disruption Scenario s should be equal to the demand quantity of crop c at retailer location j",
+            "formulation": "\\sum_{h=1}^{\\textup{{PotentialWarehouseLocations}} \\textup{{QuantityWarehouseRetailerProductionDisruption}}_{hjcs} + \\textup{{LostSalesProductionDisruption}}_{jcs} = \\textup{{DemandQuantity}}_{jc}",
+            "reasoning": "This constraint is similar to the one for the normal scenario but applies during a Production Disruption Scenario s. It ensures that the demand at each retailer j for each crop c is met either through deliveries from warehouses or is reflected as lost sales, even when there are disruptions in production.",
+            "status": "formulated",
+            "relevant_section": "Production Disruption",
+            "related_variables": [
+                "QuantityWarehouseRetailerProductionDisruption",
+                "LostSalesProductionDisruption"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "DemandQuantity"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from all production locations to warehouse h in the Production Disruption Scenario s should be equal to the total quantity of crop c transported from warehouse h to all retailers in Production Disruption Scenario s",
+            "formulation": "\\sum_{i=1}^{\\textup{{ProductionLocations}}} \\textup{{QuantityProductionWarehouseProductionDisruption}}_{ihcs} = \\sum_{j=1}^{\\textup{{RetailerLocations}}} \\textup{{QuantityWarehouseRetailerProductionDisruption}}_{hjcs}",
+            "reasoning": "Similar to the normal scenario constraint, this ensures the balance of flow for each crop at each warehouse during a Production Disruption Scenario s.  The inflow from production locations should match the outflow to retailers.",
+            "status": "formulated",
+            "relevant_section": "Production Disruption",
+            "related_variables": [
+                "QuantityProductionWarehouseProductionDisruption",
+                "QuantityWarehouseRetailerProductionDisruption"
+            ],
+            "related_parameters": [
+                "ProductionLocations",
+                "RetailerLocations"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from all production locations to warehouse h in the Warehouse Disruption Scenario w should be less than or equal to the production quantity of crop c at production location i",
+            "formulation": "\\sum_{i=1}^{\\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseWarehouseDisruption}_{ihcw} \\leq \\textup{ProductionQuantity}_{ic}",
+            "reasoning": " This constraint is similar to those in the normal and Production Disruption scenarios but applies to the Warehouse Disruption Scenario w. It makes sure that the total crop c shipped from all production locations to a particular warehouse h during this scenario doesn't surpass the production capacity of any individual production location. However, the constraint might need adjustments to account for the potential re-routing of crops due to the disrupted warehouse and the possibility that some warehouses might be receiving crops from other warehouses.",
+            "status": "formulated",
+            "relevant_section": "Warehouse Disruption",
+            "related_variables": [
+                "QuantityProductionWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "ProductionLocations",
+                "ProductionQuantity"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from all warehouses to retailer j in the Warehouse Disruption Scenario w plus the lost sales of crop c at retailer j in Warehouse Disruption Scenario w should be equal to the demand quantity of crop c at retailer location j",
+            "formulation": "\\sum_{h=1}^{\\textup{{PotentialWarehouseLocations}} \\textup{{QuantityWarehouseRetailerWarehouseDisruption}}_{hjcw} + \\textup{{LostSalesWarehouseDisruption}}_{jcw} = \\textup{{DemandQuantity}}_{jc}",
+            "reasoning": " This constraint, specific to Warehouse Disruption Scenario w, ensures that the demand for each crop c at each retailer j is satisfied either by deliveries from warehouses or accounted for as lost sales, considering the disruptions to warehouses.",
+            "status": "formulated",
+            "relevant_section": "Warehouse Disruption",
+            "related_variables": [
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "LostSalesWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "DemandQuantity"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from all production locations to warehouse h in the Warehouse Disruption Scenario w plus the total quantity of crop c transported from all warehouses to warehouse h in the Warehouse Disruption Scenario w should be equal to the total quantity of crop c transported from warehouse h to all retailers in Warehouse Disruption Scenario w",
+            "formulation": "\\sum_{i=1}^{\\textup{{ProductionLocations}}} \\textup{{QuantityProductionWarehouseWarehouseDisruption}}_{ihcw} + \\sum_{h'=1}^{\\textup{{PotentialWarehouseLocations}} \\textup{{QuantityWarehouseWarehouseWarehouseDisruption}}_{h'hcw} = \\sum_{j=1}^{\\textup{{RetailerLocations}}} \\textup{{QuantityWarehouseRetailerWarehouseDisruption}}_{hjcw}",
+            "reasoning": "This constraint ensures that during a Warehouse Disruption Scenario w, the total inflow of each crop c into a warehouse h (from both production locations and other warehouses) equals the total outflow of that crop from the warehouse to all retailers. It maintains the flow balance at each warehouse even during disruptions.",
+            "status": "formulated",
+            "relevant_section": "Warehouse Disruption",
+            "related_variables": [
+                "QuantityProductionWarehouseWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption",
+                "QuantityWarehouseRetailerWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "RetailerLocations"
+            ]
+        },
+        {
+            "description": "The total quantity of each crop stored in a warehouse h across all scenarios plus the total quantity of crop c transported from all warehouses to warehouse h in the Warehouse Disruption Scenario w should be less than or equal to the maximum warehouse capacity multiplied by the binary variable indicating whether a warehouse is opened at potential location h or not",
+            "formulation": "\\sum_{c=1}^{\\textup{{Crops}}} \\textup{{InventoryNormal}}_{hc} + \\sum_{c=1}^{\\textup{{Crops}}} \\sum_{s=1}^{\\textup{{ProductionDisruptionScenarios}}} \\textup{{InventoryProductionDisruption}}_{hcs} + \\sum_{c=1}^{\\textup{{Crops}}} \\sum_{w=1}^{\\textup{{WarehouseDisruptionScenarios}}} \\textup{{InventoryWarehouseDisruption}}_{hcw} + \\sum_{h'=1}^{\\textup{{PotentialWarehouseLocations}} \\textup{{QuantityWarehouseWarehouseWarehouseDisruption}}_{h'hcw} \\leq \\textup{{MaxWarehouseCapacity}} \\times \\textup{{BinaryWarehouseOpen}}_{h}",
+            "reasoning": "This constraint ensures that the total quantity of all crops stored in a warehouse h, considering all scenarios (normal, production disruptions, and warehouse disruptions), does not exceed the warehouse's maximum capacity. The inclusion of the binary variable \\textup{{BinaryWarehouseOpen}}_{h} ensures that the capacity restriction is applied only if a warehouse is open at location h.",
+            "status": "formulated",
+            "relevant_section": "Limited Warehouse Capacity",
+            "related_variables": [
+                "InventoryNormal",
+                "InventoryProductionDisruption",
+                "InventoryWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption",
+                "BinaryWarehouseOpen"
+            ],
+            "related_parameters": [
+                "Crops",
+                "Crops",
+                "ProductionDisruptionScenarios",
+                "Crops",
+                "WarehouseDisruptionScenarios",
+                "PotentialWarehouseLocations",
+                "MaxWarehouseCapacity"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from production location i to warehouse h in the normal scenario should be less than or equal to a large number multiplied by a binary variable that takes value 1 if the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station, 0 otherwise",
+            "formulation": "\\sum_{c=1}^{\\textup{Crops}} \\textup{QuantityProductionWarehouseNormal}_{ihc} \\leq M \\cdot \\textup{BinaryWarehouseOpen}_h \\cdot \\textup{IsWarehouseNearRailwayStation}_{ih}",
+            "reasoning": " This constraint aims to limit the transportation of crops from production locations to warehouses based on the distance to the nearest railway station.  However, the provided statement lacks a critical element: the definition of the binary variable. We need a binary variable that indicates whether a warehouse is located within the allowed distance from a railway station. Without this binary variable and its proper definition, the constraint remains not formulated.",
+            "status": "formulated",
+            "relevant_section": "Proximity to Transportation Hubs",
+            "related_variables": [
+                "QuantityProductionWarehouseNormal",
+                "BinaryWarehouseOpen",
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "Crops"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from production location i to warehouse h in the Production Disruption Scenario s should be less than or equal to a large number multiplied by a binary variable that takes value 1 if the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station, 0 otherwise",
+            "formulation": "\\sum_{i \\in \\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseProductionDisruption}_{ihcs} \\leq \\textup{LargeNumber} \\cdot \\textup{IsWarehouseNearRailwayStation}_{ih}",
+            "reasoning": "This constraint is similar to the previous one but applies during Production Disruption Scenario s. It intends to restrict the transportation of crops based on proximity to railway stations even during disruptions. However, it suffers from the same issue as the previous constraint \u2013 the lack of a defined binary variable indicating whether a warehouse is within the allowed distance from a railway station.",
+            "status": "formulated",
+            "relevant_section": "Proximity to Transportation Hubs",
+            "related_variables": [
+                "QuantityProductionWarehouseProductionDisruption",
+                "LargeNumber",
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "ProductionLocations"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from production location i to warehouse h in the Warehouse Disruption Scenario w should be less than or equal to a large number multiplied by a binary variable that takes value 1 if the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station, 0 otherwise",
+            "formulation": "\\sum_{i=1}^{\\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseWarehouseDisruption}_{ihcw} \\leq \\textup{LargeNumber} \\cdot \\textup{IsWarehouseNearRailwayStation}_{ih}",
+            "reasoning": "This constraint, meant for the Warehouse Disruption Scenario w, faces the same challenges as the previous two.  It aims to limit transportation based on distance to railway stations, but the absence of a clearly defined binary variable (indicating warehouse proximity to a railway station) makes it impossible to formulate accurately.",
+            "status": "formulated",
+            "relevant_section": "Proximity to Transportation Hubs",
+            "related_variables": [
+                "QuantityProductionWarehouseWarehouseDisruption",
+                "LargeNumber",
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "ProductionLocations"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from warehouse h to retailer j in the normal scenario should be less than or equal to a large number multiplied by a binary variable that takes value 1 if the distance between potential warehouse location h and retailer location j is less than or equal to the maximum allowed distance between warehouse and railway station, 0 otherwise",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityWarehouseRetailerNormal}_{hjc} \\leq \\textup{LargeNumber} \\cdot \\sum_{r=1}^{\\textup{RailwayStations}} \\textup{IsWarehouseNearRailwayStation}_{hr}",
+            "reasoning": "The statement aims to constrain the transportation of crops between warehouses and retailers based on their distances to railway stations. However, it seems to be based on a misunderstanding. The provided description focuses on the distance between warehouses and railway stations (\\textup{{MaxDistanceWarehouseRailway}}), not between retailers and railway stations.  The formulation provided is also incorrect as it is considering the distance between warehouse and railway station instead of distance between warehouse and retailer.",
+            "status": "formulated",
+            "relevant_section": "Proximity to Transportation Hubs",
+            "related_variables": [
+                "QuantityWarehouseRetailerNormal",
+                "LargeNumber",
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "RailwayStations"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from warehouse h to retailer j in the Production Disruption Scenario s should be less than or equal to a large number multiplied by a binary variable that takes value 1 if the distance between potential warehouse location h and retailer location j is less than or equal to the maximum allowed distance between warehouse and railway station, 0 otherwise",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityWarehouseRetailerProductionDisruption}_{hjcs} \\leq \\textup{LargeNumber} \\cdot \\textup{IsWarehouseNearRailwayStation}_{hj}",
+            "reasoning": "This statement repeats the same misconception from the previous one. It attempts to restrict the transportation between warehouses and retailers in the Production Disruption Scenario s based on their distances to railway stations. However, the provided description of the problem doesn't support this constraint.",
+            "status": "formulated",
+            "relevant_section": "Proximity to Transportation Hubs",
+            "related_variables": [
+                "QuantityWarehouseRetailerProductionDisruption",
+                "LargeNumber",
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from warehouse h to retailer j in the Warehouse Disruption Scenario w should be less than or equal to a large number multiplied by a binary variable that takes value 1 if the distance between potential warehouse location h and retailer location j is less than or equal to the maximum allowed distance between warehouse and railway station, 0 otherwise",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{hjcw} \\leq \\textup{LargeNumber} \\cdot \\textup{IsWarehouseNearRailwayStation}_{hj}",
+            "reasoning": "This statement, for the Warehouse Disruption Scenario w, mirrors the previous two. It incorrectly tries to limit transportation between warehouses and retailers based on their distances to railway stations, contradicting the problem description.",
+            "status": "formulated",
+            "relevant_section": "Proximity to Transportation Hubs",
+            "related_variables": [
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "LargeNumber",
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations"
+            ]
+        },
+        {
+            "description": "The total quantity of crop c transported from warehouse h to warehouse h' in the Warehouse Disruption Scenario w should be less than or equal to a large number multiplied by a binary variable that takes value 1 if the distance between potential warehouse location h and potential warehouse location h' is less than or equal to the maximum allowed distance between warehouse and railway station, 0 otherwise",
+            "formulation": "\\sum_{h' \\in \\textup{PotentialWarehouseLocations}} \\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{hh'cw} \\leq \\textup{LargeNumber} \\cdot \\textup{IsWarehouseNearRailwayStation}_{hh'}",
+            "reasoning": "The statement aims to constrain the quantity of crops moved between warehouses during a Warehouse Disruption Scenario. However, the description emphasizes the proximity of warehouses to railway stations, not the distance between warehouses. It incorrectly assumes that transportation between warehouses is restricted by their distance to a railway station.",
+            "status": "formulated",
+            "relevant_section": "Proximity to Transportation Hubs",
+            "related_variables": [
+                "QuantityWarehouseWarehouseWarehouseDisruption",
+                "LargeNumber",
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations"
+            ]
+        },
+        {
+            "description": "Inventory quantity of crop c at warehouse h in the normal scenario should be equal to the total quantity of crop c transported from all production locations to warehouse h in the normal scenario",
+            "formulation": "\\textup{{InventoryNormal}}_{hc} = \\sum_{i=1}^{\\textup{{ProductionLocations}}} \\textup{{QuantityProductionWarehouseNormal}}_{ihc}",
+            "reasoning": "This constraint defines the inventory quantity at each warehouse for each crop in the normal scenario. It states that the inventory should be equal to the total quantity transported from all production locations to that warehouse. This is a standard inventory balance equation.",
+            "status": "formulated",
+            "relevant_section": "Consider the inventory costs as well that is the total holding cost required in each scenario. You should add constraints to find the inventory quantity in each scenario. It is the inventory quantity multiplied by the \\\\param{HoldingCost}{c} of each crop.",
+            "related_variables": [
+                "InventoryNormal",
+                "QuantityProductionWarehouseNormal"
+            ],
+            "related_parameters": [
+                "ProductionLocations"
+            ]
+        },
+        {
+            "description": "Inventory quantity of crop c at warehouse h in the Production Disruption Scenario s should be equal to the total quantity of crop c transported from all production locations to warehouse h in the Production Disruption Scenario s",
+            "formulation": "\\textup{{InventoryProductionDisruption}}_{hcs} = \\sum_{i=1}^{\\textup{{ProductionLocations}}} \\textup{{QuantityProductionWarehouseProductionDisruption}}_{ihcs}",
+            "reasoning": "This constraint is similar to the previous one but applies during the Production Disruption Scenario s. It ensures that the inventory at each warehouse for each crop reflects the incoming shipments from production locations, even during disruptions.",
+            "status": "formulated",
+            "relevant_section": "Consider the inventory costs as well that is the total holding cost required in each scenario. You should add constraints to find the inventory quantity in each scenario. It is the inventory quantity multiplied by the \\\\param{HoldingCost}{c} of each crop.",
+            "related_variables": [
+                "InventoryProductionDisruption",
+                "QuantityProductionWarehouseProductionDisruption"
+            ],
+            "related_parameters": [
+                "ProductionLocations"
+            ]
+        },
+        {
+            "description": "Inventory quantity of crop c at warehouse h in the Warehouse Disruption Scenario w should be equal to the total quantity of crop c transported from all production locations to warehouse h in the Warehouse Disruption Scenario w plus the total quantity of crop c transported from all warehouses to warehouse h in the Warehouse Disruption Scenario w",
+            "formulation": "\\textup{{InventoryWarehouseDisruption}}_{hcw} = \\sum_{i=1}^{\\textup{{ProductionLocations}}} \\textup{{QuantityProductionWarehouseWarehouseDisruption}}_{ihcw} + \\sum_{h'=1}^{\\textup{{PotentialWarehouseLocations}} \\textup{{QuantityWarehouseWarehouseWarehouseDisruption}}_{h'hcw}",
+            "reasoning": "This constraint, specific to the Warehouse Disruption Scenario w, ensures that the inventory at each warehouse considers both the shipments from production locations and any transfers from other warehouses. This reflects the adjusted inventory levels due to warehouse disruptions.",
+            "status": "formulated",
+            "relevant_section": "Consider the inventory costs as well that is the total holding cost required in each scenario. You should add constraints to find the inventory quantity in each scenario. It is the inventory quantity multiplied by the \\\\param{HoldingCost}{c} of each crop.",
+            "related_variables": [
+                "InventoryWarehouseDisruption",
+                "QuantityProductionWarehouseWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations"
+            ]
+        },
+        {
+            "description": "Quantity of crop c transported from production location i to warehouse h in normal scenario is non-negative for all i, h, and c",
+            "formulation": "\\textup{{QuantityProductionWarehouseNormal}}_{ihc} \\geq 0",
+            "reasoning": "This is a standard non-negativity constraint ensuring that the quantity of crops transported cannot be negative.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "QuantityProductionWarehouseNormal"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Quantity of crop c transported from warehouse h to retailer j in normal scenario is non-negative for all h, j, and c",
+            "formulation": "\\textup{{QuantityWarehouseRetailerNormal}}_{hjc} \\geq 0",
+            "reasoning": "This enforces the non-negativity of the quantity of crops transported, a standard requirement in optimization models.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "QuantityWarehouseRetailerNormal"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Quantity of crop c transported from production location i to warehouse h in Production Disruption Scenario s is non-negative for all i, h, c and s",
+            "formulation": "\\textup{{QuantityProductionWarehouseProductionDisruption}}_{ihcs} \\geq 0",
+            "reasoning": "This non-negativity constraint ensures that crop quantities transported during disruptions are also non-negative.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "QuantityProductionWarehouseProductionDisruption"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Quantity of crop c transported from warehouse h to retailer j in Production Disruption Scenario s is non-negative for all h, j, c and s",
+            "formulation": "\\textup{{QuantityWarehouseRetailerProductionDisruption}}_{hjcs} \\geq 0",
+            "reasoning": "This is another non-negativity constraint to ensure realistic quantities in the model.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "QuantityWarehouseRetailerProductionDisruption"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Quantity of crop c transported from production location i to warehouse h in Warehouse Disruption Scenario w is non-negative for all i, h, c and w",
+            "formulation": "\\textup{{QuantityProductionWarehouseWarehouseDisruption}}_{ihcw} \\geq 0",
+            "reasoning": "This is a non-negativity constraint specific to the Warehouse Disruption Scenario.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "QuantityProductionWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Quantity of crop c transported from warehouse h to retailer j in Warehouse Disruption Scenario w is non-negative for all h, j, c and w",
+            "formulation": "\\textup{{QuantityWarehouseRetailerWarehouseDisruption}}_{hjcw} \\geq 0",
+            "reasoning": "This ensures the non-negativity of crop quantities during warehouse disruptions.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "QuantityWarehouseRetailerWarehouseDisruption"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Quantity of crop c transported from warehouse h to warehouse h' in Warehouse Disruption Scenario w is non-negative for all h, h', c and w",
+            "formulation": "\\textup{{QuantityWarehouseWarehouseWarehouseDisruption}}_{hh'cw} \\geq 0",
+            "reasoning": "This constraint enforces non-negativity for crop quantities transferred between warehouses during disruptions.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "QuantityWarehouseWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Quantity of lost sales of crop c at retailer j in normal scenario is non-negative for all j and c",
+            "formulation": "\\textup{{LostSalesNormal}}_{jc} \\geq 0",
+            "reasoning": "This ensures that lost sales, representing unmet demand, cannot be negative.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "LostSalesNormal"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Quantity of lost sales of crop c at retailer j in Production Disruption Scenario s is non-negative for all j, c and s",
+            "formulation": "\\textup{{LostSalesProductionDisruption}}_{jcs} \\geq 0",
+            "reasoning": "This non-negativity constraint applies to lost sales during production disruptions.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "LostSalesProductionDisruption"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Quantity of lost sales of crop c at retailer j in Warehouse Disruption Scenario w is non-negative for all j, c and w",
+            "formulation": "\\textup{{LostSalesWarehouseDisruption}}_{jcw} \\geq 0",
+            "reasoning": "This constraint ensures non-negative lost sales during warehouse disruptions.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "LostSalesWarehouseDisruption"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Inventory quantity of crop c at warehouse h in normal scenario is non-negative for all h and c",
+            "formulation": "\\textup{{InventoryNormal}}_{hc} \\geq 0",
+            "reasoning": "A standard non-negativity constraint for inventory levels.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "InventoryNormal"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Inventory quantity of crop c at warehouse h in Production Disruption Scenario s is non-negative for all h, c and s",
+            "formulation": "\\textup{{InventoryProductionDisruption}}_{hcs} \\geq 0",
+            "reasoning": "Ensures non-negative inventory levels during production disruptions.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "InventoryProductionDisruption"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Inventory quantity of crop c at warehouse h in Warehouse Disruption Scenario w is non-negative for all h, c and w",
+            "formulation": "\\textup{{InventoryWarehouseDisruption}}_{hcw} \\geq 0",
+            "reasoning": "This constraint enforces non-negative inventory levels during warehouse disruptions.",
+            "status": "formulated",
+            "relevant_section": "none",
+            "related_variables": [
+                "InventoryWarehouseDisruption"
+            ],
+            "related_parameters": []
+        },
+        {
+            "description": "Constraints for total production supply in normal scenario",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityProductionWarehouseNormal}_{ihc} \\leq \\textup{ProductionQuantity}_{ic} \\ \\forall i \\in \\{1,...,\\textup{ProductionLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityProductionWarehouseNormal"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "ProductionQuantity",
+                "ProductionLocations",
+                "Crops"
+            ]
+        },
+        {
+            "description": "Constraints for total supply from warehouses in normal scenario",
+            "formulation": "\\sum_{j=1}^{\\textup{RetailerLocations}} \\textup{QuantityWarehouseRetailerNormal}_{hjc} \\leq \\sum_{i=1}^{\\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseNormal}_{ihc} \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityWarehouseRetailerNormal",
+                "QuantityProductionWarehouseNormal"
+            ],
+            "related_parameters": [
+                "RetailerLocations",
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops"
+            ]
+        },
+        {
+            "description": "Constraints for demand satisfaction in normal scenario",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityWarehouseRetailerNormal}_{hjc} + \\textup{LostSalesNormal}_{jc} \\geq \\textup{DemandQuantity}_{jc} \\ \\forall j \\in \\{1,...,\\textup{RetailerLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityWarehouseRetailerNormal",
+                "LostSalesNormal"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "DemandQuantity",
+                "RetailerLocations",
+                "Crops"
+            ]
+        },
+        {
+            "description": "Constraints for warehouse capacity in normal scenario",
+            "formulation": "\\sum_{c=1}^{\\textup{Crops}} \\textup{InventoryNormal}_{hc} \\leq \\textup{MaxWarehouseCapacity} \\cdot \\textup{BinaryWarehouseOpen}_h \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "InventoryNormal",
+                "BinaryWarehouseOpen"
+            ],
+            "related_parameters": [
+                "Crops",
+                "MaxWarehouseCapacity",
+                "PotentialWarehouseLocations"
+            ]
+        },
+        {
+            "description": "Constraints for warehouse inventory in normal scenario",
+            "formulation": "\\textup{InventoryNormal}_{hc} \\eq \\sum_{i=1}^{\\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseNormal}_{ihc} \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "InventoryNormal",
+                "QuantityProductionWarehouseNormal"
+            ],
+            "related_parameters": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops"
+            ]
+        },
+        {
+            "description": "Constraints for total production supply in production disruption scenario",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityProductionWarehouseProductionDisruption}_{ihcs} \\leq \\textup{ProductionQuantity}_{ic} \\ \\forall i \\in \\{1,...,\\textup{ProductionLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}, s \\in \\{1,...,\\textup{ProductionDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityProductionWarehouseProductionDisruption"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "ProductionQuantity",
+                "ProductionLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for total supply from warehouses in production disruption scenario",
+            "formulation": "\\sum_{j=1}^{\\textup{RetailerLocations}} \\textup{QuantityWarehouseRetailerProductionDisruption}_{hjcs} \\leq \\sum_{i=1}^{\\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseProductionDisruption}_{ihcs} \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}, s \\in \\{1,...,\\textup{ProductionDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityWarehouseRetailerProductionDisruption",
+                "QuantityProductionWarehouseProductionDisruption"
+            ],
+            "related_parameters": [
+                "RetailerLocations",
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for demand satisfaction in production disruption scenario",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityWarehouseRetailerProductionDisruption}_{hjcs} + \\textup{LostSalesProductionDisruption}_{jcs} \\geq \\textup{DemandQuantity}_{jc} \\ \\forall j \\in \\{1,...,\\textup{RetailerLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}, s \\in \\{1,...,\\textup{ProductionDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityWarehouseRetailerProductionDisruption",
+                "LostSalesProductionDisruption"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "DemandQuantity",
+                "RetailerLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for warehouse capacity in production disruption scenario",
+            "formulation": "\\sum_{c=1}^{\\textup{Crops}} \\textup{InventoryProductionDisruption}_{hcs} \\leq \\textup{MaxWarehouseCapacity} \\cdot \\textup{BinaryWarehouseOpen}_h \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}, s \\in \\{1,...,\\textup{ProductionDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "InventoryProductionDisruption",
+                "BinaryWarehouseOpen"
+            ],
+            "related_parameters": [
+                "Crops",
+                "MaxWarehouseCapacity",
+                "PotentialWarehouseLocations",
+                "ProductionDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for warehouse inventory in production disruption scenario",
+            "formulation": "\\textup{InventoryProductionDisruption}_{hcs} \\eq \\sum_{i=1}^{\\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseProductionDisruption}_{ihcs} \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}, s \\in \\{1,...,\\textup{ProductionDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "InventoryProductionDisruption",
+                "QuantityProductionWarehouseProductionDisruption"
+            ],
+            "related_parameters": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "ProductionDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for total production supply in warehouse disruption scenario",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityProductionWarehouseWarehouseDisruption}_{ihcw} \\leq \\textup{ProductionQuantity}_{ic} \\ \\forall i \\in \\{1,...,\\textup{ProductionLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}, w \\in \\{1,...,\\textup{WarehouseDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityProductionWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "ProductionQuantity",
+                "ProductionLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for total supply from warehouses in warehouse disruption scenario",
+            "formulation": "\\sum_{j=1}^{\\textup{RetailerLocations}} \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{hjcw} + \\sum_{h'=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{hh'cw} \\leq \\sum_{i=1}^{\\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseWarehouseDisruption}_{ihcw} \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}, w \\in \\{1,...,\\textup{WarehouseDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption",
+                "QuantityProductionWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "RetailerLocations",
+                "PotentialWarehouseLocations",
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for demand satisfaction in warehouse disruption scenario",
+            "formulation": "\\sum_{h=1}^{\\textup{PotentialWarehouseLocations}} \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{hjcw} + \\textup{LostSalesWarehouseDisruption}_{jcw} \\geq \\textup{DemandQuantity}_{jc} \\ \\forall j \\in \\{1,...,\\textup{RetailerLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}, w \\in \\{1,...,\\textup{WarehouseDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "LostSalesWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "DemandQuantity",
+                "RetailerLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for warehouse capacity in warehouse disruption scenario",
+            "formulation": "\\sum_{c=1}^{\\textup{Crops}} \\textup{InventoryWarehouseDisruption}_{hcw} \\leq \\textup{MaxWarehouseCapacity} \\cdot (1-\\textup{PercentageCapacityAffected}_w) \\cdot \\textup{BinaryWarehouseOpen}_h \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}, w \\in \\{1,...,\\textup{WarehouseDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "InventoryWarehouseDisruption",
+                "BinaryWarehouseOpen"
+            ],
+            "related_parameters": [
+                "Crops",
+                "MaxWarehouseCapacity",
+                "PercentageCapacityAffected",
+                "PotentialWarehouseLocations",
+                "WarehouseDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for warehouse inventory in warehouse disruption scenario",
+            "formulation": "\\textup{InventoryWarehouseDisruption}_{hcw} \\eq \\sum_{i=1}^{\\textup{ProductionLocations}} \\textup{QuantityProductionWarehouseWarehouseDisruption}_{ihcw} \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}, c \\in \\{1,...,\\textup{Crops}\\}, w \\in \\{1,...,\\textup{WarehouseDisruptionScenarios}\\}",
+            "status": "formulated",
+            "related_variables": [
+                "InventoryWarehouseDisruption",
+                "QuantityProductionWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "ProductionLocations",
+                "PotentialWarehouseLocations",
+                "Crops",
+                "WarehouseDisruptionScenarios"
+            ]
+        },
+        {
+            "description": "Constraints for warehouse proximity to railway station",
+            "formulation": "\\sum_{r=1}^{\\textup{RailwayStations}} \\textup{DistanceWarehouseRailway}_{hr} \\leq \\textup{MaxDistanceWarehouseRailway} \\ \\forall h \\in \\{1,...,\\textup{PotentialWarehouseLocations}\\}",
+            "status": "formulated",
+            "related_variables": [],
+            "related_parameters": [
+                "RailwayStations",
+                "DistanceWarehouseRailway",
+                "MaxDistanceWarehouseRailway",
+                "PotentialWarehouseLocations"
+            ]
+        },
+        {
+            "description": "Binary variable that takes value 1 if the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station, 0 otherwise",
+            "formulation": "\\textup{IsWarehouseNearRailwayStation}_{ih} = \\begin{cases} 1 \\ \\text{if} \\ \\textup{DistanceProductionWarehouse}_{ih} \\leq \\textup{MaxDistanceWarehouseRailway} \\newline 0 \\ \\text{otherwise} \\end{cases}",
+            "status": "formulated",
+            "related_variables": [
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "DistanceProductionWarehouse",
+                "MaxDistanceWarehouseRailway"
+            ]
+        },
+        {
+            "description": "Auxiliary constraint to calculate the value of the binary variable indicating whether the distance between production location i and potential warehouse location h is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "formulation": "\\textup{IsWarehouseNearRailwayStation}_{ih} = \\begin{cases} 1 \\ \\textup{if} \\ \\textup{DistanceProductionWarehouse}_{ih} \\leq \\textup{MaxDistanceWarehouseRailway} \\\\ 0 \\ \\textup{otherwise} \\end{cases}",
+            "status": "formulated",
+            "related_variables": [
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "DistanceProductionWarehouse",
+                "MaxDistanceWarehouseRailway"
+            ]
+        },
+        {
+            "description": "Auxiliary constraint to define IsWarehouseNearRailwayStation binary variable",
+            "formulation": "\\textup{IsWarehouseNearRailwayStation}_{ih} \\leq \\textup{DistanceProductionWarehouse}_{ih} \\leq \\textup{MaxDistanceWarehouseRailway}",
+            "status": "formulated",
+            "related_variables": [
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "DistanceProductionWarehouse",
+                "MaxDistanceWarehouseRailway"
+            ]
+        },
+        {
+            "description": "Auxiliary constraint to calculate the binary variable, \\\\\\\\textup{IsWarehouseNearRailwayStation}, which indicates whether the distance between potential warehouse location h and railway station r is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "formulation": "\\textup{IsWarehouseNearRailwayStation}_{hr} \\leq \\begin{cases} 1 \\ \\text{if} \\ \\textup{DistanceWarehouseRailway}_{hr} \\leq \\textup{MaxDistanceWarehouseRailway} \\\\ 0 \\ \\text{otherwise} \\end{cases}",
+            "status": "formulated",
+            "related_variables": [
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "DistanceWarehouseRailway",
+                "MaxDistanceWarehouseRailway"
+            ]
+        },
+        {
+            "description": "Binary variable indicating whether the distance between potential warehouse location h and retailer location j is less than or equal to the maximum allowed distance between warehouse and railway station",
+            "formulation": "\\textup{IsWarehouseNearRailwayStation}_{hj} \\eq \\begin{cases} 1 \\ \\text{if} \\ \\textup{DistanceWarehouseRetailer}_{hj} \\leq \\textup{MaxDistanceWarehouseRailway} \\\\ 0 \\ \\text{otherwise} \\end{cases}",
+            "status": "formulated",
+            "related_variables": [
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "DistanceWarehouseRetailer",
+                "MaxDistanceWarehouseRailway"
+            ]
+        },
+        {
+            "description": "Auxiliary Constraint: The binary variable IsWarehouseNearRailwayStation_{hh'} is equal to 1 if the distance between warehouse h and warehouse h' is less than or equal to the maximum allowed distance between warehouse and railway station, 0 otherwise.",
+            "formulation": "\\textup{IsWarehouseNearRailwayStation}_{hh'} \\leq \\textup{IsWarehouseNearRailwayStation}_{hr} + \\textup{IsWarehouseNearRailwayStation}_{h'r} \\ \\forall h, h' \\in \\textup{PotentialWarehouseLocations}, r \\in \\textup{RailwayStations}",
+            "status": "formulated",
+            "related_variables": [
+                "IsWarehouseNearRailwayStation",
+                "IsWarehouseNearRailwayStation",
+                "IsWarehouseNearRailwayStation"
+            ],
+            "related_parameters": [
+                "PotentialWarehouseLocations",
+                "RailwayStations"
+            ]
+        }
+    ]
+}

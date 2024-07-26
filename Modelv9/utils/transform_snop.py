@@ -7,6 +7,9 @@ import google.generativeai as genai
 from agents.agent import *
 import re
 
+
+#    "description": *updated description* with new line replaced by 'double slash n' \\\\n character, parameters are replaced by 'dobule slash param{{}}' \\\\param{{}}  and variables replaced by 'dobule slash var{{}}' \\\\var{{}}, Do not inlcude a tab sequence while generating the updated description. Use four spaces instead.
+
 prompt_template = """
 You are an expert in optimization problems, including Linear Programming (LP) and Mixed-Integer Linear Programming (MILP). Your task is to read a given optimization problem, identify its type, and re-write it in a text-book format.
 Remember to analyze everything, follow the strict instructions and output only the json file.
@@ -29,7 +32,7 @@ You should:
 =====
 {{
     "problem_type": "LP" | "MILP" | "Other",
-    "description": *updated description* with new line replaced by 'double slash n' \\\\n character, parameters are replaced by 'dobule slash param{{}}' \\\\param{{}}  and variables replaced by 'dobule slash var{{}}' \\\\var{{}}, Do not inlcude a tab sequence while generating the updated description. Use four spaces instead.
+    "description": {description}
     "problem_info": "str",
     "input_format": "str",
     "output_info": "str",

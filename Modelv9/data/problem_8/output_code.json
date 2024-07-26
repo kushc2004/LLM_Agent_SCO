@@ -1,0 +1,758 @@
+{
+    "problem_type": "MILP",
+    "description": "A government agency in Sitapur district, Uttar Pradesh, India, aims to optimize the distribution of \\\\param{Crops} essential crops (wheat, paddy, and sugarcane) from \\\\param{NumProductionLocations} farmers (production locations) to \\\\param{NumRetailerLocations} retailers (consumption locations). They plan to establish a network of warehouses to manage crop flow. The objective is to determine:\n\n1. **Optimal Number of Warehouses and their Locations**: Minimize total supply chain costs, considering potential disruptions, by strategically locating warehouses.\n2. **Resource Allocation**:  Allocate crop transportation and storage resources efficiently under normal and disrupted scenarios to meet retailer demand.\n\n**Key Considerations**:\n\n- **Three-Echelon Supply Chain**: Farmers to Warehouses to Retailers\n- **Disruption Scenarios**:\n    - **Production Disruption**: All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). In this case, the production quantity at all locations will be reduced while the demand will remain the same. The other production locations that have surplus produce will supply the crops, and other warehouses will supply crops to the affected warehouse if required.  Here, other warehouses will also directly supply the retailers (surplus warehouse to retailer). The crop quantity shipped from each production location to the warehouse will differ from the normal scenario, but the quantity supplied from each warehouse to the retailer might remain the same.\n    - **Warehouse Disruption**: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding or power outages).  If a warehouse is disrupted, its capacity will be reduced. A reassignment strategy will be used where, along with the existing warehouse, other surplus warehouses will also supply the retailers (from the disrupted warehouse to the retailer + from another warehouse to the retailer). Additionally, other surplus warehouses will supply crops to the disrupted warehouse (from warehouse to warehouse). Both strategies will be used to meet demand in the warehouse disruption scenario. Here, the crop quantity shipped from each production location to the warehouse will be the same as in the normal scenario, but the quantity supplied from each warehouse to the retailer might change.\n- Variables for the supply of crops in different strategies should be considered in both disruption scenarios.\n- **Limited Warehouse Capacity**: Each warehouse has a maximum storage capacity (\\\\param{MaxCapacity}). This value is constant and the same for every warehouse.\n- **Transportation Costs**: Transportation costs are directly proportional to distance and vary by crop (\\\\param{TransportationCostPerKM}).\n- **Transportation Costs After Disruption**: Transportation costs after disruption are directly proportional to distance and vary by crop (\\\\param{DisruptedTransportationCostPerKM}).\n- **Holding Costs**: Each crop has a specific holding cost per unit at the warehouse (\\\\param{HoldingCostPerUnit}).\n- **Lost Sales Penalty**: A penalty is incurred for unmet demand at the retailers (\\\\param{LostSalesPenaltyPerUnit}).\n- **Proximity to Transportation Hubs**: Warehouses should be strategically located within a certain distance (\\\\param{MaxDistanceFromWarehouseToRailwayStation}) of major railway stations (\\\\param{NumRailwayStations}) to facilitate inter-state transportation.\n- **Inventory Costs**:  Consider the inventory costs, which represent the total holding cost required in each scenario. Constraints should be added to find the inventory quantity in each scenario, calculated as the inventory quantity multiplied by the holding cost of each crop.\n- **Fixed Cost of Warehouse**:  A fixed cost is associated with opening & operating a warehouse at a particular location.  This value is constant (\\\\param{FixedCostOfWarehouse}) and the same for every warehouse.\n-Probability of Production Disruption: Probability that the production location disruption scenario occurs (\\\\param{ProbabilityOfProductionDisruption}).\n-Probability of Warehouse Disruption: Probability that the warehouse location disruption scenario occurs (\\\\param{ProbabilityOfWarehouseDisruption}).\n-Percentage Capacity of Warehouses: Percentage of warehouse capacity affected due to the warehouse location disruption scenario (\\\\param{PercentageCapacityAffected}).\n\nThe goal is to determine the optimal values for the decision variables, minimizing the total supply chain cost while considering potential disruptions and satisfying all constraints.",
+    "problem_info": "A government agency aims to optimize the distribution of essential crops from farmers to retailers in Sitapur district, India, by establishing a network of warehouses. The objective is to determine the optimal number and locations of warehouses, as well as resource allocation strategies, while minimizing total supply chain costs and considering potential disruptions.",
+    "input_format": "Number of crops, number of production locations, number of retailer locations, number of railway stations, production quantity of each crop at each production location, demand quantity of each crop at each retailer location, maximum distance between warehouse and railway station, transportation cost per KM of each crop, transportation cost after disruption per KM of each crop, maximum capacity of warehouse, holding cost per unit of each crop, fixed cost of opening & operating a warehouse, lost sales penalty per unit of each crop, probability of production disruption, probability of warehouse disruption, percentage capacity of warehouses affected due to disruption, distance between each production location and potential warehouse location, distance between each potential warehouse location and retailer location, distance between each potential warehouse location and railway station.",
+    "output_info": "The output should provide the following information: \n- Optimal number of warehouses and their locations.\n- Quantity of each crop transported from each production location to each warehouse under normal and disrupted scenarios.\n- Quantity of each crop transported from each warehouse to each retailer under normal and disrupted scenarios.\n- Inventory levels of each crop at each warehouse under normal and disrupted scenarios.",
+    "output_format": "Optimal number of warehouses and their locations, quantity of each crop shipped from each production location to each warehouse in each scenario, quantity of each crop shipped from each warehouse to each retailer in each scenario, quantity of each crop shipped from each warehouse to each other warehouse in the warehouse disruption scenario.",
+    "parameters": [
+        {
+            "definition": "Number of Crops",
+            "symbol": "{Crops}",
+            "value": 3,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Production Locations",
+            "symbol": "{NumProductionLocations}",
+            "value": 10,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Retailer Locations",
+            "symbol": "{NumRetailerLocations}",
+            "value": 2,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Number of Railway Stations",
+            "symbol": "{NumRailwayStations}",
+            "value": 28,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Production Quantity of Crop c at Location i",
+            "symbol": "{ProductionQuantity}{ci}",
+            "value": [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 792.335999999999, 3804.1525], [1788.1024, 3539.4944, 2381.5872, 3786.3336, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 75474.472, 32843.8928, 30761.8384, 46990.5248, 0.0, 0.0]],
+            "shape": [
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Demand Quantity of Crop c at Location j",
+            "symbol": "{DemandQuantity}{cj}",
+            "value": [[3711.579999999997, 2038.499999999999], [0.0, 0.0], [0.0, 0.0]],
+            "shape": [
+                "Crops",
+                "NumRetailerLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum Distance between Warehouse and Railway Station",
+            "symbol": "{MaxDistanceFromWarehouseToRailwayStation}",
+            "value": 5,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation Cost per KM of Crop c",
+            "symbol": "{TransportationCostPerKM}{c}",
+            "value": [6,6,6],
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Transportation Cost after Disruption per KM of Crop c",
+            "symbol": "{DisruptedTransportationCostPerKM}{c}",
+            "value": [15,15,15],
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Maximum Capacity of Warehouse",
+            "symbol": "{MaxCapacity}",
+            "value": 100000000,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Holding Cost per Unit of Crop c",
+            "symbol": "{HoldingCostPerUnit}{c}",
+            "value": [4, 5, 3],
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Fixed Cost of opening & operating a Warehouse",
+            "symbol": "{FixedCostOfWarehouse}",
+            "value": 5000000,
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Lost Sales Penalty per Unit of Crop c",
+            "symbol": "{LostSalesPenaltyPerUnit}{c}",
+            "value": "",
+            "shape": [
+                "Crops"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability that Production Location Disruption Scenario Occurs",
+            "symbol": "{ProbabilityOfProductionDisruption}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Probability that Warehouse Location Disruption Scenario Occurs",
+            "symbol": "{ProbabilityOfWarehouseDisruption}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Percentage Capacity of Warehouses affected due to Warehouse Location Disruption Scenario",
+            "symbol": "{PercentageCapacityAffected}",
+            "value": "",
+            "shape": [],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Production Location i and Potential Warehouse Location h",
+            "symbol": "{DistanceProductionWarehouse}{ih}",
+            "value": "",
+            "shape": [
+                "NumProductionLocations",
+                "NumProductionLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Potential Warehouse Location h and Retailer Location j",
+            "symbol": "{DistanceWarehouseRetailer}{hj}",
+            "value": "",
+            "shape": [
+                "NumProductionLocations",
+                "NumRetailerLocations"
+            ],
+            "status": "formulated"
+        },
+        {
+            "definition": "Distance between Potential Warehouse Location h and Railway Station r",
+            "symbol": "{DistanceWarehouseRailwayStation}{hr}",
+            "value": "",
+            "shape": [
+                "NumProductionLocations",
+                "NumRailwayStations"
+            ],
+            "status": "formulated"
+        }
+    ],
+    "variables": [
+        {
+            "definition": "Quantity of Crop c shipped from Production Location i to Warehouse h in Normal Scenario",
+            "symbol": "{QuantityProductionWarehouseNormal}_{cih}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations",
+                "NumProductionLocations"
+            ],
+            "status": "coded",
+            "code": "QuantityProductionWarehouseNormal = model.addVars(Crops, NumProductionLocations, NumProductionLocations, vtype=GRB.CONTINUOUS, name=\"QuantityProductionWarehouseNormal\")"
+        },
+        {
+            "definition": "Quantity of Crop c shipped from Warehouse h to Retailer j in Normal Scenario",
+            "symbol": "{QuantityWarehouseRetailerNormal}_{chj}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations",
+                "NumRetailerLocations"
+            ],
+            "status": "coded",
+            "code": "QuantityWarehouseRetailerNormal = model.addVars(Crops, NumProductionLocations, NumRetailerLocations, vtype=GRB.CONTINUOUS, name=\"QuantityWarehouseRetailerNormal\")"
+        },
+        {
+            "definition": "Quantity of Crop c shipped from Production Location i to Warehouse h in Production Disruption Scenario",
+            "symbol": "{QuantityProductionWarehouseProductionDisruption}_{cih}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations",
+                "NumProductionLocations"
+            ],
+            "status": "coded",
+            "code": "QuantityProductionWarehouseProductionDisruption = model.addVars(Crops, NumProductionLocations, NumProductionLocations, vtype=gp.GRB.CONTINUOUS, name=\"QuantityProductionWarehouseProductionDisruption\")"
+        },
+        {
+            "definition": "Quantity of Crop c shipped from Warehouse h to Retailer j in Production Disruption Scenario",
+            "symbol": "{QuantityWarehouseRetailerProductionDisruption}_{chj}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations",
+                "NumRetailerLocations"
+            ],
+            "status": "coded",
+            "code": "QuantityWarehouseRetailerProductionDisruption = model.addVars(Crops, NumProductionLocations, NumRetailerLocations, vtype=GRB.CONTINUOUS, name=\"QuantityWarehouseRetailerProductionDisruption\")"
+        },
+        {
+            "definition": "Quantity of Crop c shipped from Production Location i to Warehouse h in Warehouse Disruption Scenario",
+            "symbol": "{QuantityProductionWarehouseWarehouseDisruption}_{cih}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations",
+                "NumProductionLocations"
+            ],
+            "status": "coded",
+            "code": "QuantityProductionWarehouseWarehouseDisruption = model.addVars(Crops, NumProductionLocations, NumProductionLocations, vtype=gp.GRB.CONTINUOUS, name=\"QuantityProductionWarehouseWarehouseDisruption\")"
+        },
+        {
+            "definition": "Quantity of Crop c shipped from Warehouse h to Retailer j in Warehouse Disruption Scenario",
+            "symbol": "{QuantityWarehouseRetailerWarehouseDisruption}_{chj}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations",
+                "NumRetailerLocations"
+            ],
+            "status": "coded",
+            "code": "QuantityWarehouseRetailerWarehouseDisruption = model.addVars(Crops, NumProductionLocations, NumRetailerLocations, vtype=gp.GRB.CONTINUOUS, name=\"QuantityWarehouseRetailerWarehouseDisruption\")"
+        },
+        {
+            "definition": "Quantity of Crop c shipped from Warehouse h to Warehouse h' in Warehouse Disruption Scenario",
+            "symbol": "{QuantityWarehouseWarehouseWarehouseDisruption}_{chh'}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations",
+                "NumProductionLocations"
+            ],
+            "status": "coded",
+            "code": "QuantityWarehouseWarehouseWarehouseDisruption = model.addVars(Crops, NumProductionLocations, NumProductionLocations, vtype=gp.GRB.CONTINUOUS, name=\"QuantityWarehouseWarehouseWarehouseDisruption\")"
+        },
+        {
+            "definition": "Binary variable indicating whether a Warehouse is established at Location h",
+            "symbol": "{WarehouseEstablished}_{h}",
+            "type": "binary",
+            "shape": [
+                "NumProductionLocations"
+            ],
+            "status": "coded",
+            "code": "WarehouseEstablished = model.addVars(NumProductionLocations, vtype=gp.GRB.BINARY, name=\"WarehouseEstablished\")"
+        },
+        {
+            "definition": "Inventory Level of Crop c at Warehouse h in Normal Scenario",
+            "symbol": "{InventoryNormal}_{ch}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "status": "coded",
+            "code": "InventoryNormal = model.addVars(Crops, NumProductionLocations, name=\"InventoryNormal\", vtype=GRB.CONTINUOUS)"
+        },
+        {
+            "definition": "Inventory Level of Crop c at Warehouse h in Production Disruption Scenario",
+            "symbol": "{InventoryProductionDisruption}_{ch}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "status": "coded",
+            "code": "InventoryProductionDisruption = model.addVars(Crops, NumProductionLocations, vtype=gp.GRB.CONTINUOUS, name=\"InventoryProductionDisruption\")"
+        },
+        {
+            "definition": "Inventory Level of Crop c at Warehouse h in Warehouse Disruption Scenario",
+            "symbol": "{InventoryWarehouseDisruption}_{ch}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "status": "coded",
+            "code": "InventoryWarehouseDisruption = model.addVars(Crops, NumProductionLocations, vtype=gp.GRB.CONTINUOUS, name=\"InventoryWarehouseDisruption\")"
+        },
+        {
+            "definition": "Lost Sales of Crop c at Retailer Location j",
+            "symbol": "{LostSales}_{cj}",
+            "type": "continuous",
+            "shape": [
+                "Crops",
+                "NumRetailerLocations"
+            ],
+            "status": "coded",
+            "code": "LostSales = model.addVars(Crops, NumRetailerLocations, vtype=gp.GRB.CONTINUOUS, name=\"LostSales\")"
+        }
+    ],
+    "data": [
+        {
+            "{NumProductionLocations}": 200,
+            "{NumRetailerLocations}": 350,
+            "{NumRailwayStations}": 10,
+            "{Crops}": 3,
+            "{ProductionQuantity}_{ci}": "",
+            "{DemandQuantity}_{cj}": "",
+            "{MaxDistanceFromWarehouseToRailwayStation}": 50,
+            "{TransportationCostPerKM}_{c}": [
+                0.5,
+                0.8,
+                1.2
+            ],
+            "{DisruptedTransportationCostPerKM}_{c}": [
+                0.6,
+                0.9,
+                1.5
+            ],
+            "{MaxCapacity}": 10000,
+            "{HoldingCostPerUnit}_{c}": [
+                0.02,
+                0.03,
+                0.05
+            ],
+            "{FixedCostOfWarehouse}": 5000,
+            "{LostSalesPenaltyPerUnit}_{c}": [
+                2,
+                3,
+                5
+            ],
+            "{ProbabilityOfProductionDisruption}": 0.1,
+            "{ProbabilityOfWarehouseDisruption}": 0.05,
+            "{PercentageCapacityAffected}": 0.2,
+            "{DistanceProductionWarehouse}_{ih}": "",
+            "{DistanceWarehouseRetailer}_{hj}": "",
+            "{DistanceWarehouseRailwayStation}_{hr}": ""
+        }
+    ],
+    "path": "/home/jiosaavn9/LLM_Agent_SCO/Modelv9/data/problem_8",
+    "problem_desc": "A government agency is responsible for ensuring the efficient distribution of essential crops (wheat, paddy, and sugarcane) from farmers (production locations) to retailers (consumption locations) in the Sitapur district of Uttar Pradesh, India. The agency plans to establish a network of warehouses to consolidate and manage the flow of these crops. Your task is to determine:\n\n1. **Optimal Number of Warehouses and their Locations**: Where should the agency build warehouses to minimize total supply chain costs, while considering potential disruptions?\n2. **Resource Allocation**: How should the agency allocate crop transportation and storage resources under normal and disrupted scenarios to meet retailer demand?\n\n**Key Considerations**:\n\n- **Three-Echelon Supply Chain**: Farmers to Warehouses to Retailers\n- **Disruption Scenarios**:\n    - **Production Disruption**: All farmers cannot supply crops due to unforeseen events (e.g., natural disasters, disease outbreaks). In this case the production quantity at all locations will be reduced while the demand will remain the same. The other production locations that have surplus produce will supply the crops and also other warehouses will supply crops to the warehouse if required. Here the other warehouses will also directly supply the the retailers (surplus warehouse to retailer). Here the crops quantity shipped from each production location to warehouse will be different as in the normal scenario but the quantity supplied from each warehouse to the retailer might be same.\n    - **Warehouse Disruption**: A percentage of warehouse capacity becomes unavailable (e.g., due to flooding, or power outages). If a warehouse is disrupted, the capacity of the warehouse will be reduced. We will use a reassignment strategy where along with the existing warehouse other surplus warehouse will also supply to the retailers (from disrupted warehouse to retailer + from another warehouse to retailer). Along with this other surplus warehouse will also supply crops to the disrupted warehouse (from warehouse to warehouse). Above both strategies will be used to meet the demand in case of warehouse disruption scenario. Here the crops quantity shipped from each production location to warehouse will be same as in the normal scenario but the quantity supplied from each warehouse to the retailer might get different.\n- You should consider variables for supply of crops in different strategies in both the disruption scenarios.\n- **Limited Warehouse Capacity**: Each warehouse has a maximum storage capacity. This value is constant and same for every warehouse.\n- **Transportation Costs**: Transportation costs are directly proportional to distance and vary by crop.\n- **Holding Costs**: Each crop has a specific holding cost per unit at the warehouse.\n- **Lost Sales Penalty**: A penalty is incurred for unmet demand at the retailers.\n- **Proximity to Transportation Hubs**: Warehouses should be strategically located within a certain distance of major railway stations to facilitate inter-state transportation.\n- Consider the inventory costs as well that is the total holding cost required in each scenario. You should add constraints to find the inventory quantity in each scenario. It is the inventory quantity multiplied by the holding cost of each crop.\n\nYour goal is to determine the optimal values for the decision variables, minimizing the total supply chain cost while considering potential disruptions and satisfying all constraints.\n\nThe data we have is the:\n\n- All production locations are actually the locations of the villages.\n- List of production locations with production quantity of each crop at each location\n- List of retailer locations with demand quantity of each crop at each locations\n- All production locations are potential warehouse locations that is a warehouse can be placed at any village location.\n- List of crops produced\n- List of nearby railway station locations\n- Set of production location disruption scenario\n- Set of warehouse location disruption scenario\n- Maximum distance between warehouse and railway station distance\n- Cost of transportation cost per km\n- Cost of transportation after disruption per *km*\n- Maximum capacity of warehouse at location *h*\n- Cost of holding each crop per *kg*\n- Fixed cost of opening & operating a warehouse at location *h*. This value is constant and same for every warehouse.\n- Cost of lost sales of each crop per *kg*\n- Probability that production location disruption scenario occurs\n- Probability that warehouse location disruption scenario occurs\n- Percentage capacity of warehouses affected due to warehouse location disruption scenario\n- Distance matrix:\n    - Distance between each production location and potential warehouse locations (same as production location). (this distances is same as the distance between every two potential warehouse locations also)\n    - Distance between each potential warehouse location and each retailer location\n    - Distance between each potential warehouse location and railway station location\n    \n\nYour task is to formulate the mathematical model with the objective function to minimize the total supply chain cost, incorporating the transportation costs, holding costs, fixed costs of warehouses, and lost sales penalties (lost sales of each crop per kg multiplied by quantity of lost sales). Include constraints for production capacities, warehouse capacities, demand satisfaction, transportation limits, and disruption scenarios. Then solve this model to find the optimal number of warehouses and their locations.",
+    "background": "A government agency in Sitapur district, Uttar Pradesh, India, aims to optimize the distribution of essential crops (wheat, paddy, and sugarcane) from farmers (production locations) to retailers (consumption locations), establishing a network of warehouses to manage crop flow. The objective is to determine the optimal number and locations of warehouses, and allocate crop transportation and storage resources efficiently, while minimizing total supply chain costs and considering potential disruptions (production and warehouse disruptions).",
+    "objective": [
+        {
+            "description": "Minimize the total cost, which includes transportation costs in normal and disruption scenarios, holding costs, lost sales penalties, and fixed costs of establishing warehouses, weighted by their respective probabilities.",
+            "status": "coded",
+            "formulation": "\\sum_{c=1}^{\\textup{Crops}} \\sum_{i=1}^{\\textup{NumProductionLocations}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseNormal}_{cih} * \\textup{DistanceProductionWarehouse}_{ih} * \\textup{TransportationCostPerKM}_{c} + \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{QuantityWarehouseRetailerNormal}_{chj} * \\textup{DistanceWarehouseRetailer}_{hj} * \\textup{TransportationCostPerKM}_{c} + \\textup{ProbabilityOfProductionDisruption} * (\\sum_{c=1}^{\\textup{Crops}} \\sum_{i=1}^{\\textup{NumProductionLocations}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseProductionDisruption}_{cih} * \\textup{DistanceProductionWarehouse}_{ih} *  \\textup{DisruptedTransportationCostPerKM}_{c} + \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{QuantityWarehouseRetailerProductionDisruption}_{chj} * \\textup{DistanceWarehouseRetailer}_{hj} * \\textup{DisruptedTransportationCostPerKM}_{c}) +  \\textup{ProbabilityOfWarehouseDisruption} * (\\sum_{c=1}^{\\textup{Crops}} \\sum_{i=1}^{\\textup{NumProductionLocations}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseWarehouseDisruption}_{cih} * \\textup{DistanceProductionWarehouse}_{ih} * \\textup{DisruptedTransportationCostPerKM}_{c} + \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{chj} * \\textup{DistanceWarehouseRetailer}_{hj} * \\textup{DisruptedTransportationCostPerKM}_{c} + \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\sum_{h'=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{chh'} * \\textup{DistanceProductionWarehouse}_{hh'} * \\textup{DisruptedTransportationCostPerKM}_{c}) + \\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{InventoryNormal}_{ch} * \\textup{HoldingCostPerUnit}_{c} +  \\textup{ProbabilityOfProductionDisruption} * (\\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{InventoryProductionDisruption}_{ch} * \\textup{HoldingCostPerUnit}_{c}) + \\textup{ProbabilityOfWarehouseDisruption} * (\\sum_{c=1}^{\\textup{Crops}} \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{InventoryWarehouseDisruption}_{ch} * \\textup{HoldingCostPerUnit}_{c}) + \\sum_{c=1}^{\\textup{Crops}} \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{LostSales}_{cj} * \\textup{LostSalesPenaltyPerUnit}_{c} + \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{WarehouseEstablished}_{h} * \\textup{FixedCostOfWarehouse}",
+            "related_variables": [
+                "QuantityProductionWarehouseNormal",
+                "QuantityWarehouseRetailerNormal",
+                "QuantityProductionWarehouseProductionDisruption",
+                "QuantityWarehouseRetailerProductionDisruption",
+                "QuantityProductionWarehouseWarehouseDisruption",
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption",
+                "InventoryNormal",
+                "InventoryProductionDisruption",
+                "InventoryWarehouseDisruption",
+                "LostSales",
+                "WarehouseEstablished"
+            ],
+            "related_parameters": [
+                "Crops",
+                "NumProductionLocations",
+                "NumProductionLocations",
+                "DistanceProductionWarehouse",
+                "TransportationCostPerKM",
+                "Crops",
+                "NumProductionLocations",
+                "NumRetailerLocations",
+                "DistanceWarehouseRetailer",
+                "TransportationCostPerKM",
+                "ProbabilityOfProductionDisruption",
+                "Crops",
+                "NumProductionLocations",
+                "NumProductionLocations",
+                "DistanceProductionWarehouse",
+                "DisruptedTransportationCostPerKM",
+                "Crops",
+                "NumProductionLocations",
+                "NumRetailerLocations",
+                "DistanceWarehouseRetailer",
+                "DisruptedTransportationCostPerKM",
+                "ProbabilityOfWarehouseDisruption",
+                "Crops",
+                "NumProductionLocations",
+                "NumProductionLocations",
+                "DistanceProductionWarehouse",
+                "DisruptedTransportationCostPerKM",
+                "Crops",
+                "NumProductionLocations",
+                "NumRetailerLocations",
+                "DistanceWarehouseRetailer",
+                "DisruptedTransportationCostPerKM",
+                "Crops",
+                "NumProductionLocations",
+                "NumProductionLocations",
+                "DistanceProductionWarehouse",
+                "DisruptedTransportationCostPerKM",
+                "Crops",
+                "NumProductionLocations",
+                "HoldingCostPerUnit",
+                "ProbabilityOfProductionDisruption",
+                "Crops",
+                "NumProductionLocations",
+                "HoldingCostPerUnit",
+                "ProbabilityOfWarehouseDisruption",
+                "Crops",
+                "NumProductionLocations",
+                "HoldingCostPerUnit",
+                "Crops",
+                "NumRetailerLocations",
+                "LostSalesPenaltyPerUnit",
+                "NumProductionLocations",
+                "FixedCostOfWarehouse"
+            ],
+            "code": "model.setObjective(gp.quicksum(gp.quicksum(gp.quicksum(QuantityProductionWarehouseNormal[c, i, h] * DistanceProductionWarehouse[i][h] * TransportationCostPerKM[c] for h in range(NumProductionLocations)) for i in range(NumProductionLocations)) for c in range(Crops)) + gp.quicksum(gp.quicksum(gp.quicksum(QuantityWarehouseRetailerNormal[c, h, j] * DistanceWarehouseRetailer[h][j] * TransportationCostPerKM[c] for j in range(NumRetailerLocations)) for h in range(NumProductionLocations)) for c in range(Crops)) + ProbabilityOfProductionDisruption * (gp.quicksum(gp.quicksum(gp.quicksum(QuantityProductionWarehouseProductionDisruption[c, i, h] * DistanceProductionWarehouse[i][h] * DisruptedTransportationCostPerKM[c] for h in range(NumProductionLocations)) for i in range(NumProductionLocations)) for c in range(Crops)) + gp.quicksum(gp.quicksum(gp.quicksum(QuantityWarehouseRetailerProductionDisruption[c, h, j] * DistanceWarehouseRetailer[h][j] * DisruptedTransportationCostPerKM[c] for j in range(NumRetailerLocations)) for h in range(NumProductionLocations)) for c in range(Crops))) + ProbabilityOfWarehouseDisruption * (gp.quicksum(gp.quicksum(gp.quicksum(QuantityProductionWarehouseWarehouseDisruption[c, i, h] * DistanceProductionWarehouse[i][h] * DisruptedTransportationCostPerKM[c] for h in range(NumProductionLocations)) for i in range(NumProductionLocations)) for c in range(Crops)) + gp.quicksum(gp.quicksum(gp.quicksum(QuantityWarehouseRetailerWarehouseDisruption[c, h, j] * DistanceWarehouseRetailer[h][j] * DisruptedTransportationCostPerKM[c] for j in range(NumRetailerLocations)) for h in range(NumProductionLocations)) for c in range(Crops)) + gp.quicksum(gp.quicksum(gp.quicksum(QuantityWarehouseWarehouseWarehouseDisruption[c, h, h_] * DistanceProductionWarehouse[h][h_] * DisruptedTransportationCostPerKM[c] for h_ in range(NumProductionLocations)) for h in range(NumProductionLocations)) for c in range(Crops))) + gp.quicksum(gp.quicksum(InventoryNormal[c, h] * HoldingCostPerUnit[c] for h in range(NumProductionLocations)) for c in range(Crops)) + ProbabilityOfProductionDisruption * (gp.quicksum(gp.quicksum(InventoryProductionDisruption[c, h] * HoldingCostPerUnit[c] for h in range(NumProductionLocations)) for c in range(Crops))) + ProbabilityOfWarehouseDisruption * (gp.quicksum(gp.quicksum(InventoryWarehouseDisruption[c, h] * HoldingCostPerUnit[c] for h in range(NumProductionLocations)) for c in range(Crops))) + gp.quicksum(gp.quicksum(LostSales[c, j] * LostSalesPenaltyPerUnit[c] for j in range(NumRetailerLocations)) for c in range(Crops)) + gp.quicksum(WarehouseEstablished[h] * FixedCostOfWarehouse for h in range(NumProductionLocations)), gp.GRB.MINIMIZE)"
+        }
+    ],
+    "constraints": [
+        {
+            "description": "The sum of crop quantities shipped from a production location \\textup{i} across all warehouses \\textup{h} should be less than or equal to the production quantity at that location \\textup{i} for each crop \\textup{c} in the normal scenario.",
+            "formulation": "\\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseNormal}_{cih} \\leq \\textup{ProductionQuantity}_{ci} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall i \\in \\{1, 2,... \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint ensures that the total amount of each crop shipped out from a production location does not exceed its production capacity in the normal scenario.",
+            "status": "coded",
+            "relevant_section": "Three-Echelon Supply Chain, Production Quantity of Crop c at Location i",
+            "related_variables": [
+                "QuantityProductionWarehouseNormal"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "ProductionQuantity",
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "code": "for c in range(Crops):\n    for i in range(NumProductionLocations):\n        model.addConstr(gp.quicksum(QuantityProductionWarehouseNormal[c, i, h] for h in range(NumProductionLocations)) <= ProductionQuantity[c][i], name='ProductionQuantityConstraint')"
+        },
+        {
+            "description": "The sum of crop quantities shipped from all production locations \\textup{i} to a warehouse \\textup{h} should be equal to the sum of crop quantities shipped from that warehouse \\textup{h} to all retailers \\textup{j} for each crop \\textup{c} in the normal scenario.",
+            "formulation": "\\sum_{i=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseNormal}_{cih} = \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{QuantityWarehouseRetailerNormal}_{chj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall h \\in \\{1, 2,... \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint enforces flow conservation of crops through each warehouse in the normal scenario. What comes in must equal what goes out.",
+            "status": "coded",
+            "relevant_section": "Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityProductionWarehouseNormal",
+                "QuantityWarehouseRetailerNormal"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "NumRetailerLocations",
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "code": "for c in range(Crops):\n    for h in range(NumProductionLocations):\n        model.addConstr(gp.quicksum(QuantityProductionWarehouseNormal[c, i, h] for i in range(NumProductionLocations)) == gp.quicksum(QuantityWarehouseRetailerNormal[c, h, j] for j in range(NumRetailerLocations)), name='FlowBalance_Normal')"
+        },
+        {
+            "description": "The sum of crop quantities shipped from all warehouses \\textup{h} to a retailer \\textup{j} should be less than or equal to the demand quantity at that retailer location \\textup{j} for each crop \\textup{c} in the normal scenario.",
+            "formulation": "\\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseRetailerNormal}_{chj} \\leq \\textup{DemandQuantity}_{cj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall j \\in \\{1, 2,... \\textup{NumRetailerLocations}\\}",
+            "reasoning": "This constraint ensures that the total amount of each crop shipped to a retailer location does not exceed its demand in the normal scenario.",
+            "status": "coded",
+            "relevant_section": "Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityWarehouseRetailerNormal"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "DemandQuantity",
+                "Crops",
+                "NumRetailerLocations"
+            ],
+            "code": "for c in range(Crops):\n    for j in range(NumRetailerLocations):\n        model.addConstr(gp.quicksum(QuantityWarehouseRetailerNormal[c, h, j] for h in range(NumProductionLocations)) <= DemandQuantity[c][j], name='DemandConstraint')"
+        },
+        {
+            "description": "The sum of crop quantities shipped from a production location \\textup{i} across all warehouses \\textup{h} should be less than or equal to the production quantity at that location \\textup{i} for each crop \\textup{c} in the production disruption scenario.",
+            "formulation": "\\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseProductionDisruption}_{cih} \\leq \\textup{ProductionQuantity}_{ci} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall i \\in \\{1, 2,... \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint ensures that even during a production disruption, the total shipment from a location doesn't exceed its production capacity.",
+            "status": "coded",
+            "relevant_section": "Production Disruption, Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityProductionWarehouseProductionDisruption"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "ProductionQuantity",
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "code": "for c in range(Crops):\n    for i in range(NumProductionLocations):\n        model.addConstr(gp.quicksum(QuantityProductionWarehouseProductionDisruption[c, i, h] for h in range(NumProductionLocations)) <= ProductionQuantity[c][i], name='ProductionQuantityConstraint')"
+        },
+        {
+            "description": "The sum of crop quantities shipped from all production locations \\textup{i} to a warehouse \\textup{h} should be equal to the sum of crop quantities shipped from that warehouse \\textup{h} to all retailers \\textup{j} for each crop \\textup{c} in the production disruption scenario.",
+            "formulation": "\\sum_{i=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseProductionDisruption}_{cih} = \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{QuantityWarehouseRetailerProductionDisruption}_{chj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall h \\in \\{1, 2,... \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint maintains flow conservation through each warehouse during a production disruption, ensuring incoming and outgoing quantities are balanced.",
+            "status": "coded",
+            "relevant_section": "Production Disruption, Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityProductionWarehouseProductionDisruption",
+                "QuantityWarehouseRetailerProductionDisruption"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "NumRetailerLocations",
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "code": "for c in range(Crops):\n    for h in range(NumProductionLocations):\n        model.addConstr(gp.quicksum(QuantityProductionWarehouseProductionDisruption[c, i, h] for i in range(NumProductionLocations)) == gp.quicksum(QuantityWarehouseRetailerProductionDisruption[c, h, j] for j in range(NumRetailerLocations)), name='FlowBalanceProductionDisruption')"
+        },
+        {
+            "description": "The sum of crop quantities shipped from all warehouses \\textup{h} to a retailer \\textup{j} should be less than or equal to the demand quantity at that retailer location \\textup{j} for each crop \\textup{c} in the production disruption scenario.",
+            "formulation": "\\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseRetailerProductionDisruption}_{chj} \\leq \\textup{DemandQuantity}_{cj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall j \\in \\{1, 2,... \\textup{NumRetailerLocations}\\}",
+            "reasoning": " This constraint ensures that shipments to retailers do not exceed their demand, even during a production disruption.",
+            "status": "coded",
+            "relevant_section": "Production Disruption, Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityWarehouseRetailerProductionDisruption"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "DemandQuantity",
+                "Crops",
+                "NumRetailerLocations"
+            ],
+            "code": "for c in range(Crops):\n    for j in range(NumRetailerLocations):\n        model.addConstr(gp.quicksum(QuantityWarehouseRetailerProductionDisruption[c, h, j] for h in range(NumProductionLocations)) <= DemandQuantity[c][j], name='DemandConstraint')"
+        },
+        {
+            "description": "The sum of crop quantities shipped from a production location \\textup{i} across all warehouses \\textup{h} should be less than or equal to the production quantity at that location \\textup{i} for each crop \\textup{c} in the warehouse disruption scenario.",
+            "formulation": "\\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseWarehouseDisruption}_{cih} \\leq \\textup{ProductionQuantity}_{ci} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall i \\in \\{1, 2,... \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint ensures that the total shipment from a production location doesn't exceed its capacity, even during a warehouse disruption.",
+            "status": "coded",
+            "relevant_section": "Warehouse Disruption, Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityProductionWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "ProductionQuantity",
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "code": "for c in range(Crops):\n    for i in range(NumProductionLocations):\n        model.addConstr(gp.quicksum(QuantityProductionWarehouseWarehouseDisruption[c, i, h] for h in range(NumProductionLocations)) <= ProductionQuantity[c][i], name='ProductionQuantityWarehouseDisruption')"
+        },
+        {
+            "description": "The sum of crop quantities shipped from all production locations \\textup{i} to a warehouse \\textup{h} should be equal to the sum of crop quantities shipped from that warehouse \\textup{h} to all retailers \\textup{j} plus the sum of crop quantities shipped from that warehouse \\textup{h} to all other warehouses \\textup{h'} for each crop \\textup{c} in the warehouse disruption scenario.",
+            "formulation": "\\sum_{i=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseWarehouseDisruption}_{cih} = \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{chj} + \\sum_{h'=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{chh'} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall h \\in \\{1, 2,... \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint enforces flow conservation during a warehouse disruption, accounting for potential shipments between warehouses.",
+            "status": "coded",
+            "relevant_section": "Warehouse Disruption, Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityProductionWarehouseWarehouseDisruption",
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "NumRetailerLocations",
+                "NumProductionLocations",
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "code": "for c in range(Crops):\n    for h in range(NumProductionLocations):\n        model.addConstr(gp.quicksum(QuantityProductionWarehouseWarehouseDisruption[c, i, h] for i in range(NumProductionLocations)) == gp.quicksum(QuantityWarehouseRetailerWarehouseDisruption[c, h, j] for j in range(NumRetailerLocations)) + gp.quicksum(QuantityWarehouseWarehouseWarehouseDisruption[c, h, h_] for h_ in range(NumProductionLocations)), name='WarehouseDisruptionFlowBalance')"
+        },
+        {
+            "description": "The sum of crop quantities shipped from all warehouses \\textup{h} to a retailer \\textup{j} plus the sum of crop quantities shipped from all other warehouses \\textup{h'} to a warehouse \\textup{h} should be less than or equal to the demand quantity at that retailer location \\textup{j} for each crop \\textup{c} in the warehouse disruption scenario.",
+            "formulation": "\\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{chj} + \\sum_{h'=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{h'hj} \\leq \\textup{DemandQuantity}_{cj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall j \\in \\{1, 2,... \\textup{NumRetailerLocations}\\}",
+            "reasoning": "This constraint ensures that during a warehouse disruption, the total amount of each crop received by a retailer (from both warehouses and other warehouses) doesn't exceed its demand.",
+            "status": "coded",
+            "relevant_section": "Warehouse Disruption, Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "NumProductionLocations",
+                "DemandQuantity",
+                "Crops",
+                "NumRetailerLocations"
+            ],
+            "code": "for c in range(Crops):\n    for j in range(NumRetailerLocations):\n        model.addConstr(gp.quicksum(QuantityWarehouseRetailerWarehouseDisruption[c, h, j] for h in range(NumProductionLocations)) + gp.quicksum(QuantityWarehouseWarehouseWarehouseDisruption[c, h_prime, h] for h_prime in range(NumProductionLocations) for h in range(NumProductionLocations)) <= DemandQuantity[c][j], name='DemandConstraint')"
+        },
+        {
+            "description": "The total quantity of all crops stored in a warehouse \\textup{h} should be less than or equal to the warehouse's maximum capacity multiplied by a binary variable indicating if the warehouse is established at location \\textup{h}.",
+            "formulation": "\\sum_{c=1}^{\\textup{Crops}} \\textup{InventoryNormal}_{ch} \\leq \\textup{MaxCapacity} \\times \\textup{WarehouseEstablished}_{h} \\quad \\forall h \\in \\{1, 2, ..., \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint ensures that the warehouse capacity is not exceeded if a warehouse is established at a location. If no warehouse is established, then the inventory held at that location should be zero.",
+            "status": "coded",
+            "relevant_section": "Limited Warehouse Capacity",
+            "related_variables": [
+                "InventoryNormal",
+                "WarehouseEstablished"
+            ],
+            "related_parameters": [
+                "Crops",
+                "MaxCapacity",
+                "NumProductionLocations"
+            ],
+            "code": "for h in range(NumProductionLocations):\n    model.addConstr(gp.quicksum(InventoryNormal[c, h] for c in range(Crops)) <= MaxCapacity * WarehouseEstablished[h], name='WarehouseCapacityConstraint')"
+        },
+        {
+            "description": "A warehouse can only be established at location \\textup{h} if it is within the maximum allowed distance from at least one railway station \\textup{r}.",
+            "formulation": "\\textup{WarehouseEstablished}_{h} \\leq \\sum_{r=1}^{\\textup{NumRailwayStations}} \\mathbb{1}_{\\{\\textup{DistanceWarehouseRailwayStation}_{hr} \\leq \\textup{MaxDistanceFromWarehouseToRailwayStation}\\}} \\quad \\forall h \\in \\{1, 2, ..., \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint ensures that a warehouse is only established if it's within the maximum allowed distance to at least one railway station. Here, \\(\\mathbb{1}_{\\{condition\\}}\\) represents an indicator function that equals 1 if the condition is true and 0 otherwise.",
+            "status": "coded",
+            "relevant_section": "Proximity to Transportation Hubs",
+            "related_variables": [
+                "WarehouseEstablished"
+            ],
+            "related_parameters": [
+                "NumRailwayStations",
+                "DistanceWarehouseRailwayStation",
+                "MaxDistanceFromWarehouseToRailwayStation",
+                "NumProductionLocations"
+            ],
+            "code": "for h in range(NumProductionLocations):\n    model.addConstr(WarehouseEstablished[h] <= gp.quicksum(1 for r in range(NumRailwayStations) if DistanceWarehouseRailwayStation[h][r] <= MaxDistanceFromWarehouseToRailwayStation), name=\"WarehouseLocationConstraint\")"
+        },
+        {
+            "description": "Inventory level of crop \\textup{c} at warehouse \\textup{h} in the normal scenario should be equal to the difference between the total inflow and outflow of the crop at that warehouse.",
+            "formulation": "\\textup{InventoryNormal}_{ch} = \\sum_{i=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseNormal}_{cih} - \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{QuantityWarehouseRetailerNormal}_{chj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall h \\in \\{1, 2,... \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint defines the inventory level at each warehouse for each crop in the normal scenario based on the difference between incoming shipments from production locations and outgoing shipments to retailers.",
+            "status": "coded",
+            "relevant_section": "Inventory Costs",
+            "related_variables": [
+                "InventoryNormal",
+                "QuantityProductionWarehouseNormal",
+                "QuantityWarehouseRetailerNormal"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "NumRetailerLocations",
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "code": "for c in range(Crops):\n    for h in range(NumProductionLocations):\n        model.addConstr(InventoryNormal[c, h] == gp.quicksum(QuantityProductionWarehouseNormal[c, i, h] for i in range(NumProductionLocations)) - gp.quicksum(QuantityWarehouseRetailerNormal[c, h, j] for j in range(NumRetailerLocations)), name='InventoryBalanceNormal')"
+        },
+        {
+            "description": "Inventory level of crop \\textup{c} at warehouse \\textup{h} in the production disruption scenario should be equal to the difference between the total inflow and outflow of the crop at that warehouse.",
+            "formulation": "\\textup{InventoryProductionDisruption}_{ch} = \\sum_{i=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseProductionDisruption}_{cih} - \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{QuantityWarehouseRetailerProductionDisruption}_{chj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall h \\in \\{1, 2,... \\textup{NumProductionLocations}\\}",
+            "reasoning": " This constraint defines the inventory level at each warehouse for each crop during a production disruption. It ensures that the inventory reflects the changed inflow and outflow due to the disruption.",
+            "status": "coded",
+            "relevant_section": "Inventory Costs, Production Disruption",
+            "related_variables": [
+                "InventoryProductionDisruption",
+                "QuantityProductionWarehouseProductionDisruption",
+                "QuantityWarehouseRetailerProductionDisruption"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "NumRetailerLocations",
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "code": "for c in range(Crops):\n    for h in range(NumProductionLocations):\n        model.addConstr(InventoryProductionDisruption[c, h] == gp.quicksum(QuantityProductionWarehouseProductionDisruption[c, i, h] for i in range(NumProductionLocations)) - gp.quicksum(QuantityWarehouseRetailerProductionDisruption[c, h, j] for j in range(NumRetailerLocations)), name='InventoryBalanceProductionDisruption')"
+        },
+        {
+            "description": "Inventory level of crop \\textup{c} at warehouse \\textup{h} in the warehouse disruption scenario should be equal to the difference between the total inflow and outflow of the crop at that warehouse.",
+            "formulation": "\\textup{InventoryWarehouseDisruption}_{ch} = \\sum_{i=1}^{\\textup{NumProductionLocations}} \\textup{QuantityProductionWarehouseWarehouseDisruption}_{cih} + \\sum_{h'=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{h'ch}  - \\sum_{j=1}^{\\textup{NumRetailerLocations}} \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{chj} - \\sum_{h'=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{chh'} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall h \\in \\{1, 2,... \\textup{NumProductionLocations}\\}",
+            "reasoning": "This constraint defines the inventory level during a warehouse disruption, considering potential shipments between warehouses and the reduced capacity of the disrupted warehouse.",
+            "status": "coded",
+            "relevant_section": "Inventory Costs, Warehouse Disruption",
+            "related_variables": [
+                "InventoryWarehouseDisruption",
+                "QuantityProductionWarehouseWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption",
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "NumProductionLocations",
+                "NumProductionLocations",
+                "NumRetailerLocations",
+                "NumProductionLocations",
+                "Crops",
+                "NumProductionLocations"
+            ],
+            "code": "for c in range(Crops):\n    for h in range(NumProductionLocations):\n        model.addConstr(InventoryWarehouseDisruption[c, h] == gp.quicksum(QuantityProductionWarehouseWarehouseDisruption[c, i, h] for i in range(NumProductionLocations)) + gp.quicksum(QuantityWarehouseWarehouseWarehouseDisruption[h_prime, c, h] for h_prime in range(NumProductionLocations)) - gp.quicksum(QuantityWarehouseRetailerWarehouseDisruption[c, h, j] for j in range(NumRetailerLocations)) - gp.quicksum(QuantityWarehouseWarehouseWarehouseDisruption[c, h, h_prime] for h_prime in range(NumProductionLocations)), name='InventoryBalanceWarehouseDisruption')"
+        },
+        {
+            "description": "The quantity of crops shipped between any pair of nodes should be non-negative.",
+            "formulation": "\\textup{QuantityProductionWarehouseNormal}_{cih}, \\textup{QuantityWarehouseRetailerNormal}_{chj}, \\textup{QuantityProductionWarehouseProductionDisruption}_{cih}, \\textup{QuantityWarehouseRetailerProductionDisruption}_{chj}, \\textup{QuantityProductionWarehouseWarehouseDisruption}_{cih}, \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{chj}, \\textup{QuantityWarehouseWarehouseWarehouseDisruption}_{chh'} \\geq 0 \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\}, \\forall i, h, h' \\in \\{1, 2,... \\textup{NumProductionLocations}\\}, \\forall j \\in \\{1, 2,... \\textup{NumRetailerLocations}\\}",
+            "reasoning": "This set of constraints ensures that all shipment quantities are non-negative, reflecting the real-world scenario where you cannot ship a negative amount of crops.",
+            "status": "coded",
+            "relevant_section": "Three-Echelon Supply Chain",
+            "related_variables": [
+                "QuantityProductionWarehouseNormal",
+                "QuantityWarehouseRetailerNormal",
+                "QuantityProductionWarehouseProductionDisruption",
+                "QuantityWarehouseRetailerProductionDisruption",
+                "QuantityProductionWarehouseWarehouseDisruption",
+                "QuantityWarehouseRetailerWarehouseDisruption",
+                "QuantityWarehouseWarehouseWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "Crops",
+                "NumProductionLocations",
+                "NumRetailerLocations"
+            ],
+            "code": "for c in range(Crops):\n    for i in range(NumProductionLocations):\n        for h in range(NumProductionLocations):\n            model.addConstr(QuantityProductionWarehouseNormal[c, i, h] >= 0, name='QuantityProductionWarehouseNormalNonNegative')\n    for h in range(NumProductionLocations):\n        for j in range(NumRetailerLocations):\n            model.addConstr(QuantityWarehouseRetailerNormal[c, h, j] >= 0, name='QuantityWarehouseRetailerNormalNonNegative')\n    for i in range(NumProductionLocations):\n        for h in range(NumProductionLocations):\n            model.addConstr(QuantityProductionWarehouseProductionDisruption[c, i, h] >= 0, name='QuantityProductionWarehouseProductionDisruptionNonNegative')\n    for h in range(NumProductionLocations):\n        for j in range(NumRetailerLocations):\n            model.addConstr(QuantityWarehouseRetailerProductionDisruption[c, h, j] >= 0, name='QuantityWarehouseRetailerProductionDisruptionNonNegative')\n    for i in range(NumProductionLocations):\n        for h in range(NumProductionLocations):\n            model.addConstr(QuantityProductionWarehouseWarehouseDisruption[c, i, h] >= 0, name='QuantityProductionWarehouseWarehouseDisruptionNonNegative')\n    for h in range(NumProductionLocations):\n        for j in range(NumRetailerLocations):\n            model.addConstr(QuantityWarehouseRetailerWarehouseDisruption[c, h, j] >= 0, name='QuantityWarehouseRetailerWarehouseDisruptionNonNegative')\n    for h in range(NumProductionLocations):\n        for h_ in range(NumProductionLocations):\n            model.addConstr(QuantityWarehouseWarehouseWarehouseDisruption[c, h, h_] >= 0, name='QuantityWarehouseWarehouseWarehouseDisruptionNonNegative')"
+        },
+        {
+            "description": "Lost sales of crop \\textup{c} at retailer location \\textup{j} should be equal to the difference between demand and the total quantity received from all warehouses \\textup{h} in the normal scenario.",
+            "formulation": "\\textup{LostSales}_{cj} = \\textup{DemandQuantity}_{cj} - \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseRetailerNormal}_{chj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\},  \\forall j \\in \\{1, 2,... \\textup{NumRetailerLocations}\\}",
+            "reasoning": " This constraint calculates lost sales, which occur when the total quantity shipped to a retailer falls short of the demand in the normal scenario.",
+            "status": "coded",
+            "relevant_section": "Lost Sales Penalty",
+            "related_variables": [
+                "LostSales",
+                "QuantityWarehouseRetailerNormal"
+            ],
+            "related_parameters": [
+                "DemandQuantity",
+                "NumProductionLocations",
+                "Crops",
+                "NumRetailerLocations"
+            ],
+            "code": "for c in range(Crops):\n    for j in range(NumRetailerLocations):\n        model.addConstr(LostSales[c, j] == DemandQuantity[c][j] - gp.quicksum(QuantityWarehouseRetailerNormal[c, h, j] for h in range(NumProductionLocations)), name='LostSalesConstraint')"
+        },
+        {
+            "description": "Lost sales of crop \\textup{c} at retailer location \\textup{j} should be equal to the difference between demand and the total quantity received from all warehouses \\textup{h} in the production disruption scenario.",
+            "formulation": "\\textup{LostSales}_{cj} = \\textup{DemandQuantity}_{cj} - \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseRetailerProductionDisruption}_{chj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\},  \\forall j \\in \\{1, 2,... \\textup{NumRetailerLocations}\\}",
+            "reasoning": "This constraint calculates lost sales during a production disruption. It accounts for the potentially reduced supply from warehouses due to disruptions at production locations.",
+            "status": "coded",
+            "relevant_section": "Lost Sales Penalty, Production Disruption",
+            "related_variables": [
+                "LostSales",
+                "QuantityWarehouseRetailerProductionDisruption"
+            ],
+            "related_parameters": [
+                "DemandQuantity",
+                "NumProductionLocations",
+                "Crops",
+                "NumRetailerLocations"
+            ],
+            "code": "for c in range(Crops):\n    for j in range(NumRetailerLocations):\n        model.addConstr(LostSales[c, j] == DemandQuantity[c][j] - gp.quicksum(QuantityWarehouseRetailerProductionDisruption[c, h, j] for h in range(NumProductionLocations)), name='LostSalesConstraint')"
+        },
+        {
+            "description": "Lost sales of crop \\textup{c} at retailer location \\textup{j} should be equal to the difference between demand and the total quantity received from all warehouses \\textup{h} in the warehouse disruption scenario.",
+            "formulation": "\\textup{LostSales}_{cj} = \\textup{DemandQuantity}_{cj} - \\sum_{h=1}^{\\textup{NumProductionLocations}} \\textup{QuantityWarehouseRetailerWarehouseDisruption}_{chj} \\quad \\forall c \\in \\{1, 2, ..., \\textup{Crops}\\},  \\forall j \\in \\{1, 2,... \\textup{NumRetailerLocations}\\}",
+            "reasoning": "This constraint determines lost sales during a warehouse disruption. It considers the potential shortage in supply to retailers caused by disruptions at warehouses.",
+            "status": "coded",
+            "relevant_section": "Lost Sales Penalty, Warehouse Disruption",
+            "related_variables": [
+                "LostSales",
+                "QuantityWarehouseRetailerWarehouseDisruption"
+            ],
+            "related_parameters": [
+                "DemandQuantity",
+                "NumProductionLocations",
+                "Crops",
+                "NumRetailerLocations"
+            ],
+            "code": "for c in range(Crops):\n    for j in range(NumRetailerLocations):\n        model.addConstr(LostSales[c, j] == DemandQuantity[c][j] - gp.quicksum(QuantityWarehouseRetailerWarehouseDisruption[c, h, j] for h in range(NumProductionLocations)), name='LostSalesConstraint')"
+        }
+    ]
+}
